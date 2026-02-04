@@ -1,0 +1,32 @@
+{
+  "name": "@pincer/skill-payments",
+  "version": "1.0.0",
+  "description": "PNCR payment integration for OpenClaw skills",
+  "main": "payment-lib.js",
+  "scripts": {
+    "example": "node examples/paid-skill-example.js",
+    "balance": "node -e \"const {checkBalance} = require('./payment-lib'); checkBalance(process.argv[1]).then(console.log);\"",
+    "test": "echo \"Tests coming soon\""
+  },
+  "keywords": [
+    "pincer",
+    "pncr",
+    "openclaw",
+    "skills",
+    "payments",
+    "ai-agents",
+    "web3"
+  ],
+  "author": "Pincer Protocol 🦞",
+  "license": "MIT",
+  "dependencies": {
+    "ethers": "^6.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pincerprotocol/pincer-protocol"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

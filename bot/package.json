@@ -1,0 +1,23 @@
+{
+  "name": "pincer-telegram-bot",
+  "version": "1.0.0",
+  "description": "Pincer Protocol Telegram Bots - Scout, Herald, Forge",
+  "main": "start-all.js",
+  "scripts": {
+    "start": "node start-all.js",
+    "scout": "node scout-bot.js",
+    "herald": "node herald-bot.js",
+    "forge": "node forge-bot.js",
+    "dev:scout": "node --watch scout-bot.js",
+    "dev:herald": "node --watch herald-bot.js",
+    "dev:forge": "node --watch forge-bot.js"
+  },
+  "keywords": ["pincer", "pncr", "telegram", "bot", "crypto"],
+  "author": "Pincer Protocol",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
+    "telegraf": "^4.16.3"
+  }
+}

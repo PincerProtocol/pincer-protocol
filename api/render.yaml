@@ -1,0 +1,21 @@
+# Render Blueprint
+services:
+  - type: web
+    name: pincer-api
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: RPC_URL
+        value: https://base-sepolia-rpc.publicnode.com
+      - key: PNCR_TOKEN_ADDRESS
+        value: 0x09De9dE982E488Cd92774Ecc1b98e8EDF8dAF57c
+      - key: ESCROW_ADDRESS
+        value: 0x85e223717E9297AA1c57f57B1e28aa2a6A9f6FC7
+      - key: PRIVATE_KEY
+        sync: false  # Set manually in Render dashboard

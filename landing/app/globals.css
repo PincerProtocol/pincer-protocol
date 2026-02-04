@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pincer-blue: #1a365d;
+  --pincer-light: #2c5282;
+  --pincer-accent: #63b3ed;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  min-height: 100vh;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #63b3ed, #4fd1c5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.card {
+  @apply bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6;
+}
+
+.btn-primary {
+  @apply bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-3 px-8 rounded-lg hover:opacity-90 transition-opacity;
+}
