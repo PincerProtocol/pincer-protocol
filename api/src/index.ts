@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { config } from './config';
 import routes from './routes';
+import walletRoutes from './routes/wallet';
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 // Routes
 app.use('/', routes);
+app.use('/wallet', walletRoutes);
 
 // 404 handler
 app.use((_req, res) => {
