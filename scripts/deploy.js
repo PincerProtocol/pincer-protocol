@@ -7,18 +7,19 @@ async function main() {
   console.log("Deployer:", deployer.address);
   console.log("Balance:", hre.ethers.formatEther(await hre.ethers.provider.getBalance(deployer.address)), "ETH\n");
 
-  // 환경 변수에서 지갑 주소 가져오기
-  const teamWallet = process.env.TEAM_WALLET || deployer.address;
-  const ecosystemWallet = process.env.ECOSYSTEM_WALLET || deployer.address;
-  const liquidityWallet = process.env.LIQUIDITY_WALLET || deployer.address;
+  // 환경 변수에서 지갑 주소 가져오기 (기본값: deployer)
+  // 새 토큰노믹스: Community 52%, Treasury 20%, Team 14%, Investors 14%
   const communityWallet = process.env.COMMUNITY_WALLET || deployer.address;
+  const treasuryWallet = process.env.TREASURY_WALLET || deployer.address;
+  const teamWallet = process.env.TEAM_WALLET || deployer.address;
+  const investorWallet = process.env.INVESTOR_WALLET || deployer.address;
   const feeRecipient = process.env.FEE_RECIPIENT || deployer.address;
 
-  console.log("=== Distribution Wallets ===");
-  console.log("Team:", teamWallet);
-  console.log("Ecosystem:", ecosystemWallet);
-  console.log("Liquidity:", liquidityWallet);
-  console.log("Community:", communityWallet);
+  console.log("=== Distribution Wallets (New Tokenomics) ===");
+  console.log("Community (52%):", communityWallet);
+  console.log("Treasury (20%):", treasuryWallet);
+  console.log("Team (14%):", teamWallet);
+  console.log("Investors (14%):", investorWallet);
   console.log("Fee Recipient:", feeRecipient);
   console.log("");
 
@@ -28,10 +29,10 @@ async function main() {
   console.log("=== Deploying PNCRToken ===");
   const PNCRToken = await hre.ethers.getContractFactory("PNCRToken");
   const token = await PNCRToken.deploy(
+    communityWallet,
+    treasuryWallet,
     teamWallet,
-    ecosystemWallet,
-    liquidityWallet,
-    communityWallet
+    investorWallet
   );
   await token.waitForDeployment();
   const tokenAddress = await token.getAddress();
@@ -103,7 +104,11 @@ async function main() {
   console.log("  PNCRStaking:", stakingAddress);
   console.log("  ReputationSystem:", reputationAddress);
   console.log("");
-  console.log("Token Supply: 175,000,000,000 PNCR (175B - GPT-3 Parameters)");
+  console.log("Token Distribution (175B PNCR):");
+  console.log("  Community (52%): 91B PNCR");
+  console.log("  Treasury (20%): 35B PNCR");
+  console.log("  Team (14%): 24.5B PNCR");
+  console.log("  Investors (14%): 24.5B PNCR");
   console.log("");
   console.log("Network:", hre.network.name);
   console.log("Chain ID:", (await hre.ethers.provider.getNetwork()).chainId.toString());
@@ -113,7 +118,7 @@ async function main() {
   console.log("===========================================");
   console.log("");
   console.log("# Verify PNCRToken:");
-  console.log(`npx hardhat verify --network ${hre.network.name} ${tokenAddress} "${teamWallet}" "${ecosystemWallet}" "${liquidityWallet}" "${communityWallet}"`);
+  console.log(`npx hardhat verify --network ${hre.network.name} ${tokenAddress} "${communityWallet}" "${treasuryWallet}" "${teamWallet}" "${investorWallet}"`);
   console.log("");
   console.log("# Verify SimpleEscrow:");
   console.log(`npx hardhat verify --network ${hre.network.name} ${escrowAddress} "${tokenAddress}" "${feeRecipient}"`);
