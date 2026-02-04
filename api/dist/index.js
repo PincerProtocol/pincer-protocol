@@ -9,6 +9,9 @@ const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const config_1 = require("./config");
 const routes_1 = __importDefault(require("./routes"));
+const wallet_1 = __importDefault(require("./routes/wallet"));
+const tasks_1 = __importDefault(require("./routes/tasks"));
+const agents_1 = __importDefault(require("./routes/agents"));
 const app = (0, express_1.default)();
 exports.app = app;
 // Middleware
@@ -17,6 +20,9 @@ app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 // Routes
 app.use('/', routes_1.default);
+app.use('/wallet', wallet_1.default);
+app.use('/tasks', tasks_1.default);
+app.use('/agents', agents_1.default);
 // 404 handler
 app.use((_req, res) => {
     res.status(404).json({ error: 'Not Found' });
@@ -36,4 +42,5 @@ if (process.env.NODE_ENV !== 'test') {
         console.log(`   Escrow: ${config_1.config.escrowAddress}`);
     });
 }
+exports.default = app;
 //# sourceMappingURL=index.js.map

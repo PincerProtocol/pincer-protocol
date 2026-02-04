@@ -41,6 +41,18 @@ declare class BlockchainService {
         escrowDuration: number;
         transactionCount: number;
     }>;
+    submitDeliveryProof(escrowId: number): Promise<TransactionResult>;
+    autoComplete(escrowId: number): Promise<TransactionResult>;
+    openDispute(escrowId: number): Promise<TransactionResult>;
+    getEscrowStatus(escrowId: number): Promise<{
+        escrow: EscrowData;
+        canAutoComplete: boolean;
+        canCancel: boolean;
+        sellerClaimed: boolean;
+        sellerClaimTime: Date | null;
+        timeUntilAutoComplete: number | null;
+        timeUntilExpiry: number | null;
+    } | null>;
 }
 export declare const blockchainService: BlockchainService;
 export {};

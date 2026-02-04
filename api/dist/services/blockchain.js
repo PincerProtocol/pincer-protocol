@@ -31,6 +31,7 @@ class BlockchainService {
             case config_1.EscrowStatus.PENDING: return 'PENDING';
             case config_1.EscrowStatus.COMPLETED: return 'COMPLETED';
             case config_1.EscrowStatus.CANCELLED: return 'CANCELLED';
+            case 3: return 'DISPUTED'; // DISPUTED status
             default: return 'UNKNOWN';
         }
     }
@@ -162,7 +163,7 @@ class BlockchainService {
     async getContractInfo() {
         const [feeRate, escrowDuration, transactionCount] = await Promise.all([
             this.escrowContract.feeRate(),
-            this.escrowContract.ESCROW_DURATION(),
+            this.escrowContract.DEFAULT_ESCROW_DURATION(),
             this.escrowContract.transactionCount(),
         ]);
         return {
@@ -170,6 +171,84 @@ class BlockchainService {
             escrowDuration: Number(escrowDuration),
             transactionCount: Number(transactionCount),
         };
+    }
+    // New seller protection methods
+    async submitDeliveryProof(escrowId) {
+        try {
+            const signedEscrow = this.getSignedEscrowContract();
+            const tx = await signedEscrow.submitDeliveryProof(escrowId);
+            const receipt = await tx.wait();
+            return { success: true, txHash: receipt.hash };
+        }
+        catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+    async autoComplete(escrowId) {
+        try {
+            const signedEscrow = this.getSignedEscrowContract();
+            const tx = await signedEscrow.autoComplete(escrowId);
+            const receipt = await tx.wait();
+            return { success: true, txHash: receipt.hash };
+        }
+        catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+    async openDispute(escrowId) {
+        try {
+            const signedEscrow = this.getSignedEscrowContract();
+            const tx = await signedEscrow.openDispute(escrowId);
+            const receipt = await tx.wait();
+            return { success: true, txHash: receipt.hash };
+        }
+        catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+    async getEscrowStatus(escrowId) {
+        try {
+            const txn = await this.escrowContract.getTransaction(escrowId);
+            const decimals = await this.tokenContract.decimals();
+            if (Number(txn.id) === 0) {
+                return null;
+            }
+            const [canAutoComplete, canCancel] = await Promise.all([
+                this.escrowContract.canAutoComplete(escrowId),
+                this.escrowContract.canCancel(escrowId),
+            ]);
+            const now = Math.floor(Date.now() / 1000);
+            const sellerClaimTime = Number(txn.sellerClaimTime);
+            const SELLER_CLAIM_WINDOW = 24 * 60 * 60; // 24 hours
+            let timeUntilAutoComplete = null;
+            if (txn.sellerClaimed && sellerClaimTime > 0) {
+                const autoCompleteTime = sellerClaimTime + SELLER_CLAIM_WINDOW;
+                timeUntilAutoComplete = Math.max(0, autoCompleteTime - now);
+            }
+            const expiresAt = Number(txn.expiresAt);
+            const timeUntilExpiry = Math.max(0, expiresAt - now);
+            return {
+                escrow: {
+                    id: Number(txn.id),
+                    buyer: txn.buyer,
+                    seller: txn.seller,
+                    amount: (0, ethers_1.formatUnits)(txn.amount, decimals),
+                    fee: (0, ethers_1.formatUnits)(txn.fee, decimals),
+                    status: this.statusToString(Number(txn.status)),
+                    createdAt: new Date(Number(txn.createdAt) * 1000),
+                    expiresAt: new Date(expiresAt * 1000),
+                },
+                canAutoComplete,
+                canCancel,
+                sellerClaimed: txn.sellerClaimed,
+                sellerClaimTime: sellerClaimTime > 0 ? new Date(sellerClaimTime * 1000) : null,
+                timeUntilAutoComplete,
+                timeUntilExpiry,
+            };
+        }
+        catch (error) {
+            return null;
+        }
     }
 }
 exports.blockchainService = new BlockchainService();

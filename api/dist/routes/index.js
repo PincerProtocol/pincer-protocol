@@ -131,6 +131,88 @@ router.post('/escrow/:txId/cancel', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+// POST /escrow/:txId/claim - Seller submits delivery proof
+router.post('/escrow/:txId/claim', async (req, res) => {
+    try {
+        const escrowId = parseInt(req.params.txId);
+        if (isNaN(escrowId) || escrowId <= 0) {
+            return res.status(400).json({ error: 'Invalid escrow ID' });
+        }
+        const result = await blockchain_1.blockchainService.submitDeliveryProof(escrowId);
+        if (result.success) {
+            res.json({
+                success: true,
+                txHash: result.txHash,
+                message: 'Delivery proof submitted. Auto-complete available in 24h if buyer does not respond.'
+            });
+        }
+        else {
+            res.status(500).json({ success: false, error: result.error });
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+// POST /escrow/:txId/auto-complete - Auto-complete after 24h
+router.post('/escrow/:txId/auto-complete', async (req, res) => {
+    try {
+        const escrowId = parseInt(req.params.txId);
+        if (isNaN(escrowId) || escrowId <= 0) {
+            return res.status(400).json({ error: 'Invalid escrow ID' });
+        }
+        const result = await blockchain_1.blockchainService.autoComplete(escrowId);
+        if (result.success) {
+            res.json({ success: true, txHash: result.txHash });
+        }
+        else {
+            res.status(500).json({ success: false, error: result.error });
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+// POST /escrow/:txId/dispute - Open a dispute
+router.post('/escrow/:txId/dispute', async (req, res) => {
+    try {
+        const escrowId = parseInt(req.params.txId);
+        if (isNaN(escrowId) || escrowId <= 0) {
+            return res.status(400).json({ error: 'Invalid escrow ID' });
+        }
+        const result = await blockchain_1.blockchainService.openDispute(escrowId);
+        if (result.success) {
+            res.json({
+                success: true,
+                txHash: result.txHash,
+                message: 'Dispute opened. Funds are locked pending resolution.'
+            });
+        }
+        else {
+            res.status(500).json({ success: false, error: result.error });
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+// GET /escrow/:txId/status - Get detailed escrow status
+router.get('/escrow/:txId/status', async (req, res) => {
+    try {
+        const escrowId = parseInt(req.params.txId);
+        if (isNaN(escrowId) || escrowId <= 0) {
+            return res.status(400).json({ error: 'Invalid escrow ID' });
+        }
+        const status = await blockchain_1.blockchainService.getEscrowStatus(escrowId);
+        if (!status) {
+            return res.status(404).json({ error: 'Escrow not found' });
+        }
+        res.json(status);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 // GET /agents/:address/history
 router.get('/agents/:address/history', async (req, res) => {
     try {
