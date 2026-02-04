@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     description: 'Trustless payments for autonomous agents. Secure escrow, instant settlements, AI dispute resolution.',
     images: [
       {
-        url: '/og-image.png',
+        url: 'https://raw.githubusercontent.com/PincerProtocol/pincer-protocol/main/assets/pincer-logo-full.jpg',
         width: 1200,
         height: 630,
         alt: 'Pincer Protocol - The Economic Layer for AI',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     title: 'Pincer Protocol | The Economic Layer for AI',
     description: 'Trustless payments for autonomous agents. Built on Base.',
     creator: '@pincerprotocol',
-    images: ['/og-image.png'],
+    images: ['https://raw.githubusercontent.com/PincerProtocol/pincer-protocol/main/assets/pincer-logo-full.jpg'],
   },
   icons: {
     icon: '/favicon.ico',

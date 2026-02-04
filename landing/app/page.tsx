@@ -410,6 +410,7 @@ export default function Home() {
                   <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full" style={{width: '52%'}}></div>
                   </div>
+                  <div className="text-xs text-slate-500 mt-1">Quest-based distribution</div>
                 </div>
                 <div>
                   <div className="flex justify-between mb-1">
@@ -419,6 +420,7 @@ export default function Home() {
                   <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full" style={{width: '20%'}}></div>
                   </div>
+                  <div className="text-xs text-slate-500 mt-1">Multi-sig managed</div>
                 </div>
                 <div>
                   <div className="flex justify-between mb-1">
@@ -428,6 +430,7 @@ export default function Home() {
                   <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full" style={{width: '14%'}}></div>
                   </div>
+                  <div className="text-xs text-slate-500 mt-1">2-month cliff, 2-year vesting</div>
                 </div>
                 <div>
                   <div className="flex justify-between mb-1">
@@ -437,6 +440,7 @@ export default function Home() {
                   <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full" style={{width: '14%'}}></div>
                   </div>
+                  <div className="text-xs text-slate-500 mt-1">1-month cliff, 1-year vesting</div>
                 </div>
               </div>
             </div>
@@ -481,7 +485,7 @@ export default function Home() {
             {[
               { name: 'PNCR Token', addr: '0x09De9dE982E488Cd92774Ecc1b98e8EDF8dAF57c', desc: 'ERC-20 (175B Supply)' },
               { name: 'SimpleEscrow', addr: '0x85e223717E9297AA1c57f57B1e28aa2a6A9f6FC7', desc: 'Trustless Escrow' },
-              { name: 'PNCRStaking', addr: '0x4e748d2E381fa4A3043F8cfD55B5c31ce13D9E79', desc: '4-Tier (10-50% APY)' },
+              { name: 'PNCRStaking', addr: '0x4e748d2E381fa4A3043F8cfD55B5c31ce13D9E79', desc: 'Coming Soon' },
               { name: 'ReputationSystem', addr: '0xeF825139C3B17265E867864627f85720Ab6dB9e0', desc: 'On-chain Trust' },
             ].map((c, i) => (
               <a 
