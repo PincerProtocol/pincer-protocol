@@ -51,13 +51,15 @@ export default function SoulDetailPage() {
         }
       } catch (error) {
         console.error('Error fetching soul:', error);
-        setMessage('데이터를 불러오는 중 오류가 발생했습니다.');
+        setMessage('오류가 발생했습니다.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSoul();
+    if (params.id) {
+      fetchSoul();
+    }
   }, [params.id]);
 
   const handleBuySoul = async () => {
@@ -76,8 +78,8 @@ export default function SoulDetailPage() {
     setMessage('');
 
     try {
-      // API 호출
-      const response = await fetch(`/api/souls/${params.id}/purchase`, {
+      // 구매 API 호출
+      const response = await fetch(`/api/souls/${soul.id}/purchase`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,17 +90,29 @@ export default function SoulDetailPage() {
         }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const result = await response.json();
-        setMessage(`✅ ${soul.name} 구매 완료! 거래 ID: ${result.transactionId}`);
-        setUserBalance(userBalance - soul.price);
+        setMessage(`✅ 구매 성공! ${data.message || 'Soul이 전송되었습니다.'}`);
+        setUserBalance(prev => prev - soul.price);
+        // 3초 후 홈으로 이동
+        setTimeout(() => {
+          router.push('/');
+        }, 3000);
       } else {
-        const error = await response.json();
-        setMessage(`❌ 구매 실패: ${error.message || '알 수 없는 오류'}`);
+        // 잔액 부족 (402) → /deposit 리다이렉트
+        if (response.status === 402) {
+          setMessage('잔액이 부족합니다. 입금 페이지로 이동합니다...');
+          setTimeout(() => {
+            router.push('/deposit');
+          }, 2000);
+        } else {
+          setMessage(`❌ 오류: ${data.error || '구매 실패'}`);
+        }
       }
     } catch (error) {
       console.error('Purchase error:', error);
-      setMessage('❌ 구매 중 오류가 발생했습니다.');
+      setMessage('❌ 네트워크 오류가 발생했습니다.');
     } finally {
       setPurchasing(false);
     }
@@ -106,22 +120,21 @@ export default function SoulDetailPage() {
 
   if (loading) {
     return (
-      <div className="container">
-        <div className="loading">
-          <div className="spinner">🦞</div>
-          <p>Loading Soul...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg text-[var(--color-text-muted)]">로딩 중...</div>
       </div>
     );
   }
 
   if (!soul) {
     return (
-      <div className="container">
-        <div className="error">
-          <h2>😕 Soul을 찾을 수 없습니다</h2>
-          <p>{message}</p>
-          <button className="btn-enhanced" onClick={() => router.push('/')}>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl font-semibold mb-4">Soul을 찾을 수 없습니다</div>
+          <button
+            onClick={() => router.push('/')}
+            className="btn-primary"
+          >
             홈으로 돌아가기
           </button>
         </div>
@@ -130,401 +143,132 @@ export default function SoulDetailPage() {
   }
 
   return (
-    <div className="soul-detail-page">
-      <div className="container">
-        {/* 헤더 섹션 */}
-        <div className="soul-header">
-          <div className="soul-avatar">
-            <Image
-              src={soul.avatar}
-              alt={soul.name}
-              width={200}
-              height={200}
-              className="avatar-image"
-            />
-          </div>
-          <div className="soul-info">
-            <h1 className="soul-name">{soul.name}</h1>
-            <p className="soul-specialty">{soul.specialty}</p>
-            <p className="soul-description">{soul.description}</p>
-            <div className="soul-price">
-              <span className="price-label">Price:</span>
-              <span className="price-value">${soul.price}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 구매 섹션 */}
-        <div className="purchase-section">
-          <div className="balance-info">
-            <span className="balance-label">현재 잔액:</span>
-            <span className="balance-value">${userBalance}</span>
-          </div>
-          <button
-            className="btn-enhanced buy-button"
-            onClick={handleBuySoul}
-            disabled={purchasing}
-          >
-            {purchasing ? '구매 중...' : `🦞 Buy ${soul.name}`}
-          </button>
-          {message && (
-            <div className={`message ${message.includes('✅') ? 'success' : 'error'}`}>
-              {message}
-            </div>
-          )}
-        </div>
-
-        {/* 판매자 정보 */}
-        <div className="seller-section">
-          <h2>판매자 정보</h2>
-          <div className="seller-card">
-            <Image
-              src={soul.seller.avatar}
-              alt={soul.seller.name}
-              width={60}
-              height={60}
-              className="seller-avatar"
-            />
-            <div className="seller-details">
-              <h3>{soul.seller.name}</h3>
-              <div className="seller-rating">
-                {'⭐'.repeat(Math.floor(soul.seller.rating))}
-                <span className="rating-value">({soul.seller.rating})</span>
+    <div className="min-h-screen py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* 상단: Soul 정보 */}
+        <div className="card p-8 mb-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Avatar */}
+            <div className="w-32 h-32 flex-shrink-0 mx-auto md:mx-0">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-[var(--color-primary)]/20 to-[var(--color-primary)]/5 flex items-center justify-center">
+                <Image
+                  src={soul.avatar}
+                  alt={soul.name}
+                  width={128}
+                  height={128}
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* 태그 섹션 */}
-        <div className="tags-section">
-          <h2>태그</h2>
-          <div className="tags">
-            {soul.tags.map((tag, index) => (
-              <span key={index} className="tag">
-                {tag}
-              </span>
-            ))}
+            {/* Info */}
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold mb-2">{soul.name}</h1>
+              <div className="text-lg text-[var(--color-primary)] font-medium mb-3">
+                {soul.specialty}
+              </div>
+              <p className="text-[var(--color-text-muted)] mb-4">
+                {soul.description}
+              </p>
+
+              {/* Tags */}
+              <div className="flex gap-2 flex-wrap mb-4">
+                {soul.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1 bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] rounded-lg text-sm"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              {/* Seller */}
+              <div className="flex items-center gap-3 pt-4 border-t border-[var(--color-border)]">
+                <Image
+                  src={soul.seller.avatar}
+                  alt={soul.seller.name}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+                <div>
+                  <div className="text-sm font-medium">{soul.seller.name}</div>
+                  <div className="text-xs text-[var(--color-text-muted)]">
+                    ⭐ {soul.seller.rating} 평점
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 가격 & 구매 */}
+            <div className="flex flex-col items-center justify-center border-l-0 md:border-l border-[var(--color-border)] pl-0 md:pl-6 min-w-[200px]">
+              <div className="text-4xl font-bold text-[var(--color-primary)] mb-2">
+                {soul.price}
+              </div>
+              <div className="text-sm text-[var(--color-text-muted)] mb-4">PNCR</div>
+
+              <button
+                onClick={handleBuySoul}
+                disabled={purchasing}
+                className="btn-primary btn-enhanced w-full"
+              >
+                {purchasing ? '구매 중...' : '🛒 Buy Soul'}
+              </button>
+
+              {/* 사용자 잔액 */}
+              <div className="text-xs text-[var(--color-text-muted)] mt-3">
+                잔액: {userBalance} PNCR
+              </div>
+
+              {/* 메시지 */}
+              {message && (
+                <div className={`mt-4 p-3 rounded-lg text-sm text-center ${
+                  message.startsWith('✅') 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                    : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                }`}>
+                  {message}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* 리뷰 섹션 */}
-        <div className="reviews-section">
-          <h2>리뷰 ({soul.reviews.length})</h2>
-          <div className="reviews-list">
-            {soul.reviews.map((review) => (
-              <div key={review.id} className="review-card">
-                <div className="review-header">
-                  <span className="review-author">{review.author}</span>
-                  <span className="review-rating">
-                    {'⭐'.repeat(review.rating)}
-                  </span>
+        <div className="card p-8">
+          <h2 className="text-2xl font-bold mb-6">리뷰</h2>
+
+          {soul.reviews.length === 0 ? (
+            <div className="text-[var(--color-text-muted)] text-center py-8">
+              아직 리뷰가 없습니다.
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {soul.reviews.map((review) => (
+                <div
+                  key={review.id}
+                  className="border-b border-[var(--color-border)] last:border-0 pb-6 last:pb-0"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="font-medium">{review.author}</div>
+                      <div className="text-sm text-[var(--color-text-muted)]">
+                        {review.date}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-yellow-500">⭐</span>
+                      <span className="font-semibold">{review.rating}</span>
+                    </div>
+                  </div>
+                  <p className="text-[var(--color-text-muted)]">{review.comment}</p>
                 </div>
-                <p className="review-comment">{review.comment}</p>
-                <span className="review-date">{review.date}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-
-      <style jsx>{`
-        .soul-detail-page {
-          min-height: 100vh;
-          background: #f8fafc;
-          padding: 40px 0;
-        }
-
-        .container {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 0 24px;
-        }
-
-        .loading {
-          text-align: center;
-          padding: 100px 20px;
-        }
-
-        .spinner {
-          font-size: 48px;
-          animation: spin 2s linear infinite;
-        }
-
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        .error {
-          text-align: center;
-          padding: 100px 20px;
-        }
-
-        .error h2 {
-          color: #105190;
-          margin-bottom: 16px;
-        }
-
-        .soul-header {
-          display: flex;
-          gap: 40px;
-          margin-bottom: 40px;
-          background: white;
-          border-radius: 12px;
-          padding: 40px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .soul-avatar {
-          flex-shrink: 0;
-        }
-
-        .avatar-image {
-          border-radius: 12px;
-          object-fit: cover;
-        }
-
-        .soul-info {
-          flex: 1;
-        }
-
-        .soul-name {
-          font-size: 48px;
-          font-weight: 700;
-          color: #105190;
-          margin-bottom: 16px;
-        }
-
-        .soul-specialty {
-          font-size: 24px;
-          color: #10b981;
-          font-weight: 600;
-          margin-bottom: 16px;
-        }
-
-        .soul-description {
-          font-size: 18px;
-          color: #6b7280;
-          line-height: 1.6;
-          margin-bottom: 24px;
-        }
-
-        .soul-price {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          font-size: 32px;
-        }
-
-        .price-label {
-          color: #6b7280;
-          font-weight: 500;
-        }
-
-        .price-value {
-          color: #105190;
-          font-weight: 700;
-        }
-
-        .purchase-section {
-          background: white;
-          border-radius: 12px;
-          padding: 32px;
-          margin-bottom: 40px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-          text-align: center;
-        }
-
-        .balance-info {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 24px;
-          font-size: 20px;
-        }
-
-        .balance-label {
-          color: #6b7280;
-        }
-
-        .balance-value {
-          color: #10b981;
-          font-weight: 700;
-        }
-
-        .btn-enhanced {
-          background: #105190;
-          color: white;
-          border: none;
-          border-radius: 8px;
-          padding: 16px 48px;
-          font-size: 20px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .btn-enhanced:hover {
-          background: #0a3a5e;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(16, 81, 144, 0.3);
-        }
-
-        .btn-enhanced:disabled {
-          background: #6b7280;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .buy-button {
-          font-size: 24px;
-          padding: 20px 60px;
-        }
-
-        .message {
-          margin-top: 24px;
-          padding: 16px;
-          border-radius: 8px;
-          font-size: 18px;
-          font-weight: 500;
-        }
-
-        .message.success {
-          background: #d1fae5;
-          color: #065f46;
-        }
-
-        .message.error {
-          background: #fee2e2;
-          color: #991b1b;
-        }
-
-        .seller-section,
-        .tags-section,
-        .reviews-section {
-          background: white;
-          border-radius: 12px;
-          padding: 32px;
-          margin-bottom: 24px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        h2 {
-          font-size: 28px;
-          color: #105190;
-          margin-bottom: 24px;
-          font-weight: 700;
-        }
-
-        .seller-card {
-          display: flex;
-          align-items: center;
-          gap: 20px;
-        }
-
-        .seller-avatar {
-          border-radius: 50%;
-          object-fit: cover;
-        }
-
-        .seller-details h3 {
-          font-size: 20px;
-          color: #0f172a;
-          margin-bottom: 8px;
-        }
-
-        .seller-rating {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 18px;
-        }
-
-        .rating-value {
-          color: #6b7280;
-          font-size: 16px;
-        }
-
-        .tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 12px;
-        }
-
-        .tag {
-          background: #e5e7eb;
-          color: #0f172a;
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-size: 14px;
-          font-weight: 500;
-        }
-
-        .reviews-list {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
-
-        .review-card {
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-          padding: 20px;
-        }
-
-        .review-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 12px;
-        }
-
-        .review-author {
-          font-weight: 600;
-          color: #0f172a;
-        }
-
-        .review-rating {
-          font-size: 16px;
-        }
-
-        .review-comment {
-          color: #6b7280;
-          line-height: 1.6;
-          margin-bottom: 12px;
-        }
-
-        .review-date {
-          font-size: 14px;
-          color: #9ca3af;
-        }
-
-        @media (max-width: 768px) {
-          .soul-header {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-          }
-
-          .soul-name {
-            font-size: 32px;
-          }
-
-          .soul-specialty {
-            font-size: 20px;
-          }
-
-          .soul-description {
-            font-size: 16px;
-          }
-
-          .buy-button {
-            font-size: 18px;
-            padding: 16px 40px;
-          }
-        }
-      `}</style>
     </div>
   );
 }
