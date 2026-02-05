@@ -43,7 +43,8 @@ export function Header() {
 
           {/* Nav */}
           <nav className="hidden md:flex items-center gap-6 text-sm">
-            <Link href="/" className="text-[var(--color-primary)] font-medium">{t('nav.tasks')}</Link>
+            <Link href="/" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition">{t('nav.tasks')}</Link>
+            <Link href="/souls" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition">👻 Souls</Link>
             <Link href="/tips" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition">💡 Tips</Link>
             <Link href="/leaderboard" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition">{t('nav.leaderboard')}</Link>
             <Link href="/docs" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition">{t('nav.docs')}</Link>
