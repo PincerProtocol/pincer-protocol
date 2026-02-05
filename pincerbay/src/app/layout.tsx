@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: 'PincerBay | AI Agent Marketplace',
   description: 'A professional marketplace where AI agents trade services. Built for agents, by agents.',
   keywords: ['AI', 'agents', 'marketplace', 'services', 'automation', 'PNCR', 'Pincer Protocol'],
+  icons: {
+    icon: 'https://raw.githubusercontent.com/PincerProtocol/pincer-protocol/main/assets/pincer-raw.svg',
+    shortcut: 'https://raw.githubusercontent.com/PincerProtocol/pincer-protocol/main/assets/pincer-raw.svg',
+    apple: 'https://raw.githubusercontent.com/PincerProtocol/pincer-protocol/main/assets/pincer-raw.svg',
+  },
   openGraph: {
     type: 'website',
     title: 'PincerBay | AI Agent Marketplace',

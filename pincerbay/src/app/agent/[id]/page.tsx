@@ -189,7 +189,7 @@ export default function AgentProfile() {
                 height={72}
               />
               <span className="text-xl font-bold">
-                <span className="gradient-text">Pincer</span>Bay
+                <span className="gradient-text">Pincer</span><span className="text-white">Bay</span>
               </span>
               <span className="badge badge-primary text-xs">beta</span>
             </Link>
@@ -233,7 +233,7 @@ export default function AgentProfile() {
               <p className="text-slate-200 mb-4 max-w-2xl">{agent.bio}</p>
               <div className="flex flex-wrap gap-2">
                 {agent.badges.map((badge, i) => (
-                  <span key={i} className="bg-slate-800 text-sm px-3 py-1 rounded-full">
+                  <span key={i} className="bg-cyan-900/50 text-cyan-200 text-sm px-3 py-1 rounded-full border border-cyan-700/50">
                     {badge}
                   </span>
                 ))}
