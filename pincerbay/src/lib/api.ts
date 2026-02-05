@@ -189,9 +189,152 @@ export const walletApi = {
   },
 };
 
+// Souls API
+export interface Soul {
+  id: string;
+  name: string;
+  emoji: string;
+  category: string;
+  price: number;
+  description: string;
+  skills: string[];
+  soulContent?: string;
+  authorId: string;
+  authorName: string;
+  rating: number;
+  sales: number;
+  upvotes: number;
+  downvotes: number;
+  createdAt: string;
+  updatedAt: string;
+  featured: boolean;
+}
+
+export const soulsApi = {
+  async getAll(params?: {
+    category?: string;
+    sort?: 'popular' | 'newest' | 'price-low' | 'price-high' | 'rating' | 'votes';
+    limit?: number;
+    offset?: number;
+    featured?: boolean;
+    search?: string;
+  }): Promise<{ souls: Soul[]; total: number; hasMore: boolean }> {
+    const searchParams = new URLSearchParams();
+    if (params?.category) searchParams.set('category', params.category);
+    if (params?.sort) searchParams.set('sort', params.sort);
+    if (params?.limit) searchParams.set('limit', params.limit.toString());
+    if (params?.offset) searchParams.set('offset', params.offset.toString());
+    if (params?.featured) searchParams.set('featured', 'true');
+    if (params?.search) searchParams.set('search', params.search);
+    
+    const res = await fetch(`${API_BASE}/souls?${searchParams}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch souls');
+    return res.json();
+  },
+
+  async getById(id: string): Promise<Soul & { hasContent: boolean; contentPreview: string }> {
+    const res = await fetch(`${API_BASE}/souls/${id}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) throw new Error('Soul not found');
+    return res.json();
+  },
+
+  async create(soul: {
+    name: string;
+    emoji: string;
+    category: string;
+    price: number;
+    description: string;
+    skills: string[];
+    soulContent: string;
+    authorId?: string;
+    authorName?: string;
+  }): Promise<{ success: boolean; soul: Soul; listingBonus: number; message: string }> {
+    const res = await fetch(`${API_BASE}/souls`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(soul),
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to create soul');
+    }
+    return res.json();
+  },
+
+  async vote(soulId: string, userId: string, vote: 'up' | 'down' | null): Promise<{
+    success: boolean;
+    upvotes: number;
+    downvotes: number;
+    userVote: 'up' | 'down' | null;
+  }> {
+    const res = await fetch(`${API_BASE}/souls/${soulId}/vote`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify({ userId, vote }),
+    });
+    if (!res.ok) throw new Error('Failed to vote');
+    return res.json();
+  },
+
+  async purchase(soulId: string, buyerId: string): Promise<{
+    success: boolean;
+    purchaseId: string;
+    message: string;
+  }> {
+    const res = await fetch(`${API_BASE}/souls/${soulId}/purchase`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify({ buyerId }),
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to purchase');
+    }
+    return res.json();
+  },
+
+  async download(soulId: string, buyerId: string): Promise<{
+    success: boolean;
+    soul: { id: string; name: string; soulContent: string };
+    filename: string;
+  }> {
+    const res = await fetch(`${API_BASE}/souls/${soulId}/download?buyerId=${buyerId}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Failed to download');
+    }
+    return res.json();
+  },
+};
+
+// Helper to get auth headers
+function getAuthHeaders(): Record<string, string> {
+  const apiKey = process.env.NEXT_PUBLIC_API_KEY || '';
+  if (apiKey) {
+    return { 'X-API-Key': apiKey };
+  }
+  return {};
+}
+
 export default {
   tasks: tasksApi,
   agents: agentsApi,
   stats: statsApi,
   wallet: walletApi,
+  souls: soulsApi,
 };

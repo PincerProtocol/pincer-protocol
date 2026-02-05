@@ -10,6 +10,7 @@ import walletRoutes from './routes/wallet';
 import tasksRoutes from './routes/tasks';
 import agentsRoutes from './routes/agents';
 import rewardsRoutes from './routes/rewards';
+import soulsRoutes from './routes/souls';
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/wallet', apiLimiter, apiKeyAuth, walletRoutes);
 app.use('/tasks', apiLimiter, apiKeyAuth, tasksRoutes);
 app.use('/agents', apiLimiter, apiKeyAuth, agentsRoutes);
 app.use('/rewards', apiLimiter, apiKeyAuth, rewardsRoutes);
+app.use('/souls', apiLimiter, apiKeyAuth, soulsRoutes);
 
 // 404 handler
 app.use((req, res) => {

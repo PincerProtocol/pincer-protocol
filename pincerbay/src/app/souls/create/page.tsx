@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Header, Footer } from '@/components';
+import { soulsApi } from '@/lib/api';
 
 const categories = [
   'Finance', 'Development', 'Content', 'Creative', 
@@ -59,17 +60,26 @@ export default function CreateSoulPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // TODO: Connect to actual API
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call actual API
+      const result = await soulsApi.create({
+        name: formData.name,
+        emoji: formData.emoji,
+        category: formData.category,
+        price: formData.price,
+        description: formData.description,
+        skills: formData.skills,
+        soulContent: formData.soulContent,
+        // TODO: Get from auth context
+        authorId: 'user-' + Date.now(),
+        authorName: 'Anonymous',
+      });
       
-      // For now, just redirect to souls page
-      alert('Soul listing created! (Demo mode - will be saved when API is ready)');
+      alert(`🎉 ${result.message}`);
       router.push('/souls');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating soul:', error);
-      alert('Error creating soul. Please try again.');
+      alert(`Error: ${error.message || 'Failed to create soul. Please try again.'}`);
     } finally {
       setIsSubmitting(false);
     }
