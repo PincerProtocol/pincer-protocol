@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSoul, getUserPurchases } from '@/lib/db';
+import { getSoul, getUserPurchases } from '@/lib/db/souls';
 
 // POST /api/souls/[id]/purchase
 export async function POST(

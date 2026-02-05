@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSoul, hasPurchased } from '@/lib/db';
+import { getSoul, hasPurchased } from '@/lib/db/souls';
 
 // GET /api/souls/[id]/download
 export async function GET(

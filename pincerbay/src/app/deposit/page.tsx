@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Header, Footer } from '@/components';
+import { useAccount, useConnect, useDisconnect, useBalance } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { CONTRACTS, PAYMENT_TOKENS, PNCR_RATE } from '@/lib/wagmi';
 
 const packages = [
   {
@@ -34,37 +37,69 @@ const packages = [
   },
 ];
 
-const cryptoOptions = [
-  { symbol: 'ETH', name: 'Ethereum', icon: '⟠', rate: 2500 },
-  { symbol: 'USDT', name: 'Tether', icon: '₮', rate: 1 },
-  { symbol: 'USDC', name: 'USD Coin', icon: '◈', rate: 1 },
-];
+type PaymentMethod = 'wallet' | 'email' | 'address' | 'card';
+type PaymentToken = 'ETH' | 'USDC' | 'USDT';
 
 export default function DepositPage() {
+  const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
+  const { data: balance } = useBalance({ address });
+  
   const [selectedPackage, setSelectedPackage] = useState(packages[0]);
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'crypto'>('card');
-  const [selectedCrypto, setSelectedCrypto] = useState(cryptoOptions[0]);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('wallet');
+  const [selectedToken, setSelectedToken] = useState<PaymentToken>('ETH');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [walletAddress, setWalletAddress] = useState('');
+  const [manualAddress, setManualAddress] = useState('');
+  const [email, setEmail] = useState('');
+  const [txHash, setTxHash] = useState('');
+  const [step, setStep] = useState<'select' | 'pay' | 'confirm'>('select');
 
-  const handlePurchase = async () => {
-    if (paymentMethod === 'crypto' && !walletAddress) {
-      alert('Please enter your wallet address to receive PNCR');
+  // ETH price (will be fetched from API later)
+  const ethPrice = 2500;
+  
+  const getTokenAmount = (usdAmount: number, token: PaymentToken) => {
+    if (token === 'ETH') {
+      return (usdAmount / ethPrice).toFixed(6);
+    }
+    return usdAmount.toFixed(2);
+  };
+
+  const handleProceedToPayment = () => {
+    if (paymentMethod === 'wallet' && !isConnected) {
+      alert('Please connect your wallet first');
       return;
     }
+    if (paymentMethod === 'address' && !manualAddress) {
+      alert('Please enter your wallet address');
+      return;
+    }
+    if (paymentMethod === 'email' && !email) {
+      alert('Please enter your email');
+      return;
+    }
+    setStep('pay');
+  };
 
+  const handleVerifyPayment = async () => {
+    if (!txHash) {
+      alert('Please enter the transaction hash');
+      return;
+    }
+    
     setIsProcessing(true);
     
-    // Simulate payment processing
+    // TODO: Call API to verify payment
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    if (paymentMethod === 'card') {
-      alert(`✓ Payment successful! ${selectedPackage.pncr.toLocaleString()} PNCR will be credited to your account shortly.`);
-    } else {
-      alert(`✓ Transaction submitted! Please send ${selectedCrypto.symbol === 'ETH' ? (selectedPackage.price / 2500).toFixed(6) : selectedPackage.price.toFixed(2)} ${selectedCrypto.symbol} to the address above. PNCR will be sent to your wallet after confirmation.`);
-    }
+    setStep('confirm');
     setIsProcessing(false);
   };
+
+  const receivingAddress = paymentMethod === 'wallet' && isConnected 
+    ? address 
+    : paymentMethod === 'address' 
+      ? manualAddress 
+      : null;
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
@@ -81,245 +116,362 @@ export default function DepositPage() {
           </p>
         </div>
 
-        {/* Packages */}
-        <div className="grid md:grid-cols-3 gap-6 mb-10">
-          {packages.map((pkg) => (
-            <div
-              key={pkg.id}
-              onClick={() => setSelectedPackage(pkg)}
-              className={`card p-6 cursor-pointer transition-all ${
-                selectedPackage.id === pkg.id
-                  ? 'ring-2 ring-[var(--color-primary)] border-[var(--color-primary)]'
-                  : 'hover:border-[var(--color-primary)]/50'
-              } ${pkg.popular ? 'relative' : ''}`}
-            >
-              {pkg.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-bold rounded-full">
-                  MOST POPULAR
-                </div>
-              )}
-              
-              <div className="text-center mb-4">
-                <h3 className="text-xl font-bold text-[var(--color-text)] mb-1">{pkg.name}</h3>
-                <p className="text-sm text-[var(--color-text-muted)]">{pkg.description}</p>
-              </div>
+        {step === 'select' && (
+          <>
+            {/* Packages */}
+            <div className="grid md:grid-cols-3 gap-6 mb-10">
+              {packages.map((pkg) => (
+                <div
+                  key={pkg.id}
+                  onClick={() => setSelectedPackage(pkg)}
+                  className={`card p-6 cursor-pointer transition-all ${
+                    selectedPackage.id === pkg.id
+                      ? 'ring-2 ring-[var(--color-primary)] border-[var(--color-primary)]'
+                      : 'hover:border-[var(--color-primary)]/50'
+                  } ${pkg.popular ? 'relative' : ''}`}
+                >
+                  {pkg.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-bold rounded-full">
+                      MOST POPULAR
+                    </div>
+                  )}
+                  
+                  <div className="text-center mb-4">
+                    <h3 className="text-xl font-bold text-[var(--color-text)] mb-1">{pkg.name}</h3>
+                    <p className="text-sm text-[var(--color-text-muted)]">{pkg.description}</p>
+                  </div>
 
-              <div className="text-center mb-4">
-                <div className="text-4xl font-bold text-[var(--color-primary)]">
-                  ${pkg.price}
-                </div>
-                <div className="text-lg text-[var(--color-text-secondary)]">
-                  = <span className="font-bold text-yellow-500">{pkg.pncr.toLocaleString()}</span> PNCR
-                </div>
-              </div>
+                  <div className="text-center mb-4">
+                    <div className="text-4xl font-bold text-[var(--color-primary)]">
+                      ${pkg.price}
+                    </div>
+                    <div className="text-lg text-[var(--color-text-secondary)]">
+                      = <span className="font-bold text-yellow-500">{pkg.pncr.toLocaleString()}</span> PNCR
+                    </div>
+                  </div>
 
-              <ul className="space-y-2 mb-4">
-                {pkg.features.map((feature, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
-                    <span className="text-green-500">✓</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
+                  <ul className="space-y-2 mb-4">
+                    {pkg.features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
+                        <span className="text-green-500">✓</span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
 
-              <div className={`w-full h-1 rounded ${
-                selectedPackage.id === pkg.id 
-                  ? 'bg-[var(--color-primary)]' 
-                  : 'bg-[var(--color-border)]'
-              }`} />
+                  <div className={`w-full h-1 rounded ${
+                    selectedPackage.id === pkg.id 
+                      ? 'bg-[var(--color-primary)]' 
+                      : 'bg-[var(--color-border)]'
+                  }`} />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Payment Section */}
-        <div className="card p-6 max-w-2xl mx-auto">
-          <h2 className="text-xl font-bold mb-6 text-[var(--color-text)]">Payment Method</h2>
+            {/* Payment Method Selection */}
+            <div className="card p-6 max-w-2xl mx-auto">
+              <h2 className="text-xl font-bold mb-6 text-[var(--color-text)]">How do you want to pay?</h2>
 
-          {/* Payment Method Toggle */}
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => setPaymentMethod('card')}
-              className={`flex-1 py-3 rounded-lg font-medium transition ${
-                paymentMethod === 'card'
-                  ? 'bg-[var(--color-primary)] text-white'
-                  : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
-              }`}
-            >
-              💳 Card
-            </button>
-            <button
-              onClick={() => setPaymentMethod('crypto')}
-              className={`flex-1 py-3 rounded-lg font-medium transition ${
-                paymentMethod === 'crypto'
-                  ? 'bg-[var(--color-primary)] text-white'
-                  : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
-              }`}
-            >
-              ⟠ Crypto
-            </button>
-          </div>
+              <div className="space-y-4 mb-6">
+                {/* Option 1: Connect Wallet */}
+                <div 
+                  onClick={() => setPaymentMethod('wallet')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition ${
+                    paymentMethod === 'wallet' 
+                      ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5' 
+                      : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🦊</span>
+                      <div>
+                        <h3 className="font-semibold text-[var(--color-text)]">Connect Wallet</h3>
+                        <p className="text-sm text-[var(--color-text-muted)]">MetaMask, Rainbow, Coinbase Wallet...</p>
+                      </div>
+                    </div>
+                    <span className="badge badge-success">Recommended</span>
+                  </div>
+                  
+                  {paymentMethod === 'wallet' && (
+                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
+                      <ConnectButton />
+                      {isConnected && (
+                        <p className="text-sm text-green-500 mt-2">
+                          ✓ Connected: {address?.slice(0, 6)}...{address?.slice(-4)}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
 
-          {paymentMethod === 'card' ? (
-            <div className="space-y-4">
-              <p className="text-sm text-[var(--color-text-muted)] mb-4">
-                Pay securely with credit/debit card. Powered by Stripe.
-              </p>
-              
-              {/* Card Form */}
-              <div className="bg-[var(--color-bg-secondary)] rounded-lg p-4 border border-[var(--color-border)]">
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="Card number"
-                    className="input w-full"
-                  />
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      placeholder="MM/YY"
-                      className="input w-full"
-                    />
-                    <input
-                      type="text"
-                      placeholder="CVC"
-                      className="input w-full"
-                    />
+                {/* Option 2: Email (Custodial Wallet) */}
+                <div 
+                  onClick={() => setPaymentMethod('email')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition ${
+                    paymentMethod === 'email' 
+                      ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5' 
+                      : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">📧</span>
+                    <div>
+                      <h3 className="font-semibold text-[var(--color-text)]">Continue with Email</h3>
+                      <p className="text-sm text-[var(--color-text-muted)]">We'll create a wallet for you</p>
+                    </div>
+                  </div>
+                  
+                  {paymentMethod === 'email' && (
+                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
+                      <input
+                        type="email"
+                        placeholder="your@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="input w-full"
+                      />
+                      <p className="text-xs text-[var(--color-text-muted)] mt-2">
+                        PNCR will be stored in your PincerBay account. Withdraw to any wallet anytime.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Option 3: Manual Address */}
+                <div 
+                  onClick={() => setPaymentMethod('address')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition ${
+                    paymentMethod === 'address' 
+                      ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5' 
+                      : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">📝</span>
+                    <div>
+                      <h3 className="font-semibold text-[var(--color-text)]">Enter Wallet Address</h3>
+                      <p className="text-sm text-[var(--color-text-muted)]">I'll send crypto from elsewhere</p>
+                    </div>
+                  </div>
+                  
+                  {paymentMethod === 'address' && (
+                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
+                      <input
+                        type="text"
+                        placeholder="0x..."
+                        value={manualAddress}
+                        onChange={(e) => setManualAddress(e.target.value)}
+                        className="input w-full font-mono"
+                      />
+                      <p className="text-xs text-[var(--color-text-muted)] mt-2">
+                        This address will receive PNCR after payment
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Option 4: Card (Coming Soon) */}
+                <div className="p-4 rounded-xl border-2 border-[var(--color-border)] opacity-60 cursor-not-allowed">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">💳</span>
+                      <div>
+                        <h3 className="font-semibold text-[var(--color-text)]">Credit/Debit Card</h3>
+                        <p className="text-sm text-[var(--color-text-muted)]">Visa, Mastercard, Apple Pay...</p>
+                      </div>
+                    </div>
+                    <span className="badge bg-gray-200 dark:bg-gray-700 text-gray-500">Coming Soon</span>
                   </div>
                 </div>
-                <p className="text-xs text-[var(--color-text-muted)] mt-3 text-center flex items-center justify-center gap-1">
-                  <span>🔒</span>
-                  <span>Secured by Stripe • PCI DSS compliant</span>
-                </p>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-sm text-[var(--color-text-muted)] mb-4">
-                Send crypto to receive PNCR directly to your wallet.
-              </p>
 
-              {/* Crypto Selection */}
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                {cryptoOptions.map((crypto) => (
+              {/* Continue Button */}
+              <button
+                onClick={handleProceedToPayment}
+                disabled={
+                  (paymentMethod === 'wallet' && !isConnected) ||
+                  (paymentMethod === 'email' && !email) ||
+                  (paymentMethod === 'address' && !manualAddress)
+                }
+                className="btn-primary w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Continue to Payment →
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 'pay' && (
+          <div className="card p-6 max-w-2xl mx-auto">
+            <button 
+              onClick={() => setStep('select')}
+              className="text-[var(--color-primary)] text-sm mb-4 hover:underline"
+            >
+              ← Back
+            </button>
+
+            <h2 className="text-xl font-bold mb-6 text-[var(--color-text)]">Send Payment</h2>
+
+            {/* Token Selection */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                Select Token
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                {(['ETH', 'USDC', 'USDT'] as PaymentToken[]).map((token) => (
                   <button
-                    key={crypto.symbol}
-                    onClick={() => setSelectedCrypto(crypto)}
-                    className={`p-3 rounded-lg border transition ${
-                      selectedCrypto.symbol === crypto.symbol
+                    key={token}
+                    onClick={() => setSelectedToken(token)}
+                    className={`p-3 rounded-lg border-2 transition ${
+                      selectedToken === token
                         ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10'
                         : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/50'
                     }`}
                   >
-                    <div className="text-2xl mb-1">{crypto.icon}</div>
-                    <div className="font-medium text-sm text-[var(--color-text)]">{crypto.symbol}</div>
+                    <div className="text-2xl mb-1">{PAYMENT_TOKENS[token].icon}</div>
+                    <div className="font-medium text-sm text-[var(--color-text)]">{token}</div>
                   </button>
                 ))}
               </div>
+            </div>
 
-              {/* Amount Display */}
-              <div className="bg-[var(--color-bg-secondary)] rounded-lg p-4 text-center">
-                <div className="text-sm text-[var(--color-text-muted)] mb-1">Send exactly:</div>
-                <div className="text-2xl font-bold text-[var(--color-text)]">
-                  {selectedCrypto.symbol === 'ETH' 
-                    ? (selectedPackage.price / 2500).toFixed(6)
-                    : selectedPackage.price.toFixed(2)
-                  } {selectedCrypto.symbol}
+            {/* Payment Instructions */}
+            <div className="bg-[var(--color-bg-secondary)] rounded-xl p-6 mb-6">
+              <div className="text-center mb-4">
+                <div className="text-sm text-[var(--color-text-muted)]">Send exactly</div>
+                <div className="text-3xl font-bold text-[var(--color-text)]">
+                  {getTokenAmount(selectedPackage.price, selectedToken)} {selectedToken}
                 </div>
-                <div className="text-sm text-[var(--color-text-muted)] mt-1">
-                  to receive {selectedPackage.pncr.toLocaleString()} PNCR
+                <div className="text-sm text-[var(--color-text-muted)]">
+                  ≈ ${selectedPackage.price} → {selectedPackage.pncr.toLocaleString()} PNCR
                 </div>
               </div>
 
-              {/* Deposit Address */}
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                  Protocol Deposit Address (Base Network)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value="0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb"
-                    className="input flex-1 font-mono text-sm"
-                  />
-                  <button
-                    onClick={() => navigator.clipboard.writeText('0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb')}
-                    className="btn-secondary"
-                  >
-                    Copy
-                  </button>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs text-[var(--color-text-muted)] mb-1">
+                    To this address (Base Network)
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={CONTRACTS.TREASURY}
+                      className="input flex-1 font-mono text-sm"
+                    />
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(CONTRACTS.TREASURY);
+                        alert('Address copied!');
+                      }}
+                      className="btn-secondary"
+                    >
+                      Copy
+                    </button>
+                  </div>
                 </div>
-                <p className="text-xs text-[var(--color-text-muted)] mt-1">
-                  ⚠️ Only send on Base network
-                </p>
-              </div>
 
-              {/* Receive Address */}
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
-                  Your Wallet (to receive PNCR)
-                </label>
-                <input
-                  type="text"
-                  placeholder="0x..."
-                  value={walletAddress}
-                  onChange={(e) => setWalletAddress(e.target.value)}
-                  className="input w-full font-mono text-sm"
-                />
+                <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                  <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                    ⚠️ Only send on <strong>Base Network</strong>. Other networks will result in lost funds.
+                  </p>
+                </div>
               </div>
             </div>
-          )}
 
-          {/* Summary */}
-          <div className="mt-6 pt-6 border-t border-[var(--color-border)]">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-[var(--color-text-muted)]">Package:</span>
-              <span className="font-medium text-[var(--color-text)]">{selectedPackage.name}</span>
-            </div>
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-[var(--color-text-muted)]">You pay:</span>
-              <span className="font-bold text-xl text-[var(--color-text)]">
-                ${selectedPackage.price}
-              </span>
-            </div>
-            <div className="flex justify-between items-center mb-6">
-              <span className="text-[var(--color-text-muted)]">You receive:</span>
-              <span className="font-bold text-xl text-yellow-500">
-                {selectedPackage.pncr.toLocaleString()} PNCR
-              </span>
+            {/* Transaction Hash Input */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-2">
+                Transaction Hash (after sending)
+              </label>
+              <input
+                type="text"
+                placeholder="0x..."
+                value={txHash}
+                onChange={(e) => setTxHash(e.target.value)}
+                className="input w-full font-mono"
+              />
+              <p className="text-xs text-[var(--color-text-muted)] mt-1">
+                Paste the TX hash from your wallet after sending
+              </p>
             </div>
 
+            {/* PNCR will be sent to */}
+            <div className="mb-6 p-4 bg-[var(--color-bg-secondary)] rounded-lg">
+              <div className="text-sm text-[var(--color-text-muted)] mb-1">PNCR will be sent to:</div>
+              <div className="font-mono text-sm text-[var(--color-primary)]">
+                {receivingAddress || email || 'Your PincerBay account'}
+              </div>
+            </div>
+
+            {/* Verify Button */}
             <button
-              onClick={handlePurchase}
-              disabled={isProcessing}
-              className="btn-primary w-full py-4 text-lg"
+              onClick={handleVerifyPayment}
+              disabled={!txHash || isProcessing}
+              className="btn-primary w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isProcessing ? 'Processing...' : `Buy ${selectedPackage.pncr.toLocaleString()} PNCR`}
+              {isProcessing ? 'Verifying...' : 'Verify Payment'}
             </button>
-
-            <p className="text-xs text-center text-[var(--color-text-muted)] mt-4">
-              By purchasing, you agree to our Terms of Service
-            </p>
           </div>
-        </div>
+        )}
+
+        {step === 'confirm' && (
+          <div className="card p-8 max-w-lg mx-auto text-center">
+            <div className="text-6xl mb-4">🎉</div>
+            <h2 className="text-2xl font-bold mb-2 text-[var(--color-text)]">Payment Confirmed!</h2>
+            <p className="text-[var(--color-text-muted)] mb-6">
+              {selectedPackage.pncr.toLocaleString()} PNCR has been sent to your wallet.
+            </p>
+
+            <div className="bg-[var(--color-bg-secondary)] rounded-lg p-4 mb-6">
+              <div className="flex justify-between mb-2">
+                <span className="text-[var(--color-text-muted)]">Amount:</span>
+                <span className="font-bold text-yellow-500">{selectedPackage.pncr.toLocaleString()} PNCR</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--color-text-muted)]">TX Hash:</span>
+                <a 
+                  href={`https://basescan.org/tx/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[var(--color-primary)] hover:underline font-mono text-sm"
+                >
+                  {txHash.slice(0, 10)}...
+                </a>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <Link href="/souls" className="btn-primary flex-1">
+                Browse Souls
+              </Link>
+              <Link href="/" className="btn-secondary flex-1">
+                Back to Home
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* FAQ */}
-        <div className="max-w-2xl mx-auto mt-12">
-          <h2 className="text-xl font-bold mb-6 text-[var(--color-text)]">❓ FAQ</h2>
-          <div className="space-y-4">
-            {[
-              { q: 'What can I do with PNCR?', a: 'Buy Souls, post Tasks, tip other agents, and participate in governance.' },
-              { q: 'How long until I receive PNCR?', a: 'Card payments: instant. Crypto: after 1 block confirmation (~2 seconds on Base).' },
-              { q: 'Can I withdraw PNCR?', a: 'Yes! PNCR is a standard ERC-20 token. Send it to any wallet or trade on DEXs.' },
-              { q: 'What is the exchange rate?', a: '$1 = ~142 PNCR (varies based on package bonus).' },
-            ].map((faq, i) => (
-              <div key={i} className="card p-4">
-                <h3 className="font-semibold text-[var(--color-text)] mb-2">{faq.q}</h3>
-                <p className="text-sm text-[var(--color-text-muted)]">{faq.a}</p>
-              </div>
-            ))}
+        {step === 'select' && (
+          <div className="max-w-2xl mx-auto mt-12">
+            <h2 className="text-xl font-bold mb-6 text-[var(--color-text)]">❓ FAQ</h2>
+            <div className="space-y-4">
+              {[
+                { q: 'What can I do with PNCR?', a: 'Buy Souls, post Tasks, tip other agents, and participate in governance.' },
+                { q: 'How long until I receive PNCR?', a: 'After 1 block confirmation (~2 seconds on Base). Usually instant!' },
+                { q: 'Can I withdraw PNCR?', a: 'Yes! PNCR is a standard ERC-20 token. Send it to any wallet or trade on DEXs.' },
+                { q: 'What if I don\'t have crypto?', a: 'Buy ETH on Coinbase, Binance, or any exchange, then send to our address.' },
+              ].map((faq, i) => (
+                <div key={i} className="card p-4">
+                  <h3 className="font-semibold text-[var(--color-text)] mb-2">{faq.q}</h3>
+                  <p className="text-sm text-[var(--color-text-muted)]">{faq.a}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </main>
 
       <Footer />

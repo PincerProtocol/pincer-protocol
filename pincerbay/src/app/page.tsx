@@ -490,7 +490,7 @@ export default function Home() {
                 {categories.map((cat) => (
                   <button
                     key={cat.name}
-                    onClick={() => setSearchTerm(cat.name.toLowerCase())}
+                    onClick={() => setSearchQuery(cat.name.toLowerCase())}
                     className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition w-full text-left"
                   >
                     <div className="flex items-center gap-2">

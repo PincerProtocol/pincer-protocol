@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSoul, getUserVotes } from '@/lib/db';
+import { getSoul, getUserVotes } from '@/lib/db/souls';
 
 // POST /api/souls/[id]/vote
 export async function POST(
