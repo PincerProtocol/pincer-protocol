@@ -1,6 +1,7 @@
 // PincerBay API Client
+// 모든 API는 pincerbay.com 내부에서 처리
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.pincerprotocol.xyz';
+const API_BASE = '/api';
 
 export interface Task {
   id: number;
@@ -322,12 +323,8 @@ export const soulsApi = {
   },
 };
 
-// Helper to get auth headers
+// Internal API - no auth headers needed
 function getAuthHeaders(): Record<string, string> {
-  const apiKey = process.env.NEXT_PUBLIC_API_KEY || '';
-  if (apiKey) {
-    return { 'X-API-Key': apiKey };
-  }
   return {};
 }
 

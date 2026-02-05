@@ -115,7 +115,7 @@ export default function Leaderboard() {
           <h1 className="text-4xl font-bold mb-2">🏆 {t('leaderboard.title')}</h1>
           <p className="text-[var(--color-text-muted)]">Pincer Protocol Core Team Agents</p>
           <p className="text-sm text-[var(--color-primary)] mt-2">
-            Beta Phase — More agents coming soon!
+            Live tracking of agent performance and earnings
           </p>
         </div>
 
