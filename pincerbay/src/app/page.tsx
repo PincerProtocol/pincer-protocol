@@ -2,8 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Header, Footer } from '@/components';
 import { useI18n } from '@/lib/i18n';
+
+// Agent avatar mapping
+const agentAvatars: Record<string, string> = {
+  'Scout': '/agents/scout.webp',
+  'Forge': '/agents/forge.webp',
+  'Herald': '/agents/herald.webp',
+  'Sentinel': '/agents/sentinel.webp',
+  'Pincer': '/agents/pincer.webp',
+};
 
 // Mock souls data
 const mockSouls = [
@@ -303,8 +313,18 @@ export default function SoulsPage() {
                       className="card card-hover p-5 bg-gradient-to-br from-[var(--color-primary)]/5 to-transparent border-[var(--color-primary)]/20"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="w-16 h-16 rounded-xl bg-[var(--color-bg-secondary)] flex items-center justify-center text-3xl border border-[var(--color-border)]">
-                          {soul.emoji}
+                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-[var(--color-bg-secondary)] flex items-center justify-center border border-[var(--color-border)]">
+                          {agentAvatars[soul.author] ? (
+                            <Image
+                              src={agentAvatars[soul.author]}
+                              alt={soul.author}
+                              width={64}
+                              height={64}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-3xl">{soul.emoji}</span>
+                          )}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
@@ -352,8 +372,18 @@ export default function SoulsPage() {
                 {filteredSouls.map((soul) => (
                   <div key={soul.id} className="card card-hover p-4">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-12 h-12 rounded-lg bg-[var(--color-bg-secondary)] flex items-center justify-center text-2xl border border-[var(--color-border)]">
-                        {soul.emoji}
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-[var(--color-bg-secondary)] flex items-center justify-center border border-[var(--color-border)]">
+                        {agentAvatars[soul.author] ? (
+                          <Image
+                            src={agentAvatars[soul.author]}
+                            alt={soul.author}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-2xl">{soul.emoji}</span>
+                        )}
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-[var(--color-text)]">{soul.name}</h3>
@@ -444,9 +474,9 @@ export default function SoulsPage() {
               <h3 className="font-bold mb-4">🏆 Top Sellers</h3>
               <div className="space-y-3">
                 {[
-                  { name: 'Herald', emoji: '📢', sales: 190, earnings: 45000 },
-                  { name: 'Scout', emoji: '🔍', sales: 57, earnings: 38500 },
-                  { name: 'Forge', emoji: '⚒️', sales: 18, earnings: 32400 },
+                  { name: 'Herald', sales: 190, earnings: 45000 },
+                  { name: 'Scout', sales: 57, earnings: 38500 },
+                  { name: 'Forge', sales: 18, earnings: 32400 },
                 ].map((seller, i) => (
                   <Link
                     key={seller.name}
@@ -454,7 +484,15 @@ export default function SoulsPage() {
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition"
                   >
                     <span className="text-lg font-bold text-[var(--color-text-muted)]">#{i + 1}</span>
-                    <span className="text-xl">{seller.emoji}</span>
+                    <div className="w-8 h-8 rounded-full overflow-hidden">
+                      <Image
+                        src={agentAvatars[seller.name] || '/agents/scout.webp'}
+                        alt={seller.name}
+                        width={32}
+                        height={32}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                     <div className="flex-1">
                       <div className="font-medium text-sm text-[var(--color-text)]">{seller.name}</div>
                       <div className="text-xs text-[var(--color-text-muted)]">{seller.sales} sales</div>
@@ -500,8 +538,18 @@ export default function SoulsPage() {
             <div className="p-6 border-b border-[var(--color-border)]">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-xl bg-[var(--color-bg-secondary)] flex items-center justify-center text-3xl border border-[var(--color-border)]">
-                    {previewSoul.emoji}
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-[var(--color-bg-secondary)] flex items-center justify-center border border-[var(--color-border)]">
+                    {agentAvatars[previewSoul.author] ? (
+                      <Image
+                        src={agentAvatars[previewSoul.author]}
+                        alt={previewSoul.author}
+                        width={64}
+                        height={64}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-3xl">{previewSoul.emoji}</span>
+                    )}
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-[var(--color-text)]">{previewSoul.name}</h2>
