@@ -6,6 +6,7 @@ import routes from './routes';
 import walletRoutes from './routes/wallet';
 import tasksRoutes from './routes/tasks';
 import agentsRoutes from './routes/agents';
+import rewardsRoutes from './routes/rewards';
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use('/', routes);
 app.use('/wallet', walletRoutes);
 app.use('/tasks', tasksRoutes);
 app.use('/agents', agentsRoutes);
+app.use('/rewards', rewardsRoutes);
 
 // 404 handler
 app.use((_req, res) => {
