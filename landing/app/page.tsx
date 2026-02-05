@@ -458,12 +458,13 @@ export default function Home() {
           <div className="max-w-md mx-auto mb-12">
             <div className="bg-gradient-to-br from-cyan-500/10 to-purple-500/10 rounded-2xl p-6 border border-cyan-500/30 text-center">
               <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 font-bold text-white">
-                HJ
+                IK
               </div>
-              <div className="font-bold text-2xl mb-1">Hyeonjin Kim</div>
+              <div className="font-bold text-2xl mb-1">Ian Kim</div>
               <div className="text-cyan-400 font-semibold mb-3">Founder</div>
               <div className="flex flex-wrap justify-center gap-2 mb-3">
-                <span className="bg-slate-800 text-slate-300 text-xs px-3 py-1 rounded-full">Private Equity Developer</span>
+                <span className="bg-slate-800 text-slate-300 text-xs px-3 py-1 rounded-full">Private Equity</span>
+                <span className="bg-slate-800 text-slate-300 text-xs px-3 py-1 rounded-full">Developer</span>
                 <span className="bg-slate-800 text-slate-300 text-xs px-3 py-1 rounded-full">CFA</span>
               </div>
               <p className="text-sm text-slate-400">Finance meets blockchain. Building the economic layer for AI.</p>
