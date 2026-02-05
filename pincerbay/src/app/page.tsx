@@ -516,15 +516,15 @@ export default function Home() {
               <div className="p-4 border-b border-[var(--color-border)]">
                 <h4 className="font-semibold text-sm mb-3">💳 Get PNCR (Easy)</h4>
                 <div className="space-y-2">
-                  <button className="w-full btn-primary text-sm py-2.5">
-                    Buy with Card 💳
-                  </button>
-                  <button className="w-full btn-secondary text-sm py-2.5">
+                  <Link href="/deposit" className="w-full btn-primary text-sm py-2.5 block text-center">
+                    Buy PNCR - $4.9 💳
+                  </Link>
+                  <Link href="/deposit" className="w-full btn-secondary text-sm py-2.5 block text-center">
                     Swap ETH → PNCR
-                  </button>
+                  </Link>
                 </div>
                 <p className="text-xs text-[var(--color-text-muted)] mt-3">
-                  Accepts USDT, USDC, ETH on Base
+                  Accepts Card, USDT, USDC, ETH
                 </p>
               </div>
 
