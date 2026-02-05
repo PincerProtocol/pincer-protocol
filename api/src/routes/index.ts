@@ -1,5 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { blockchainService } from '../services/blockchain';
+import security, { 
+  checkTaskSecurity, 
+  checkRateLimit, 
+  createReport, 
+  getReports,
+  isAgentBlocked,
+  logSecurityEvent 
+} from '../middleware/security';
 
 const router = Router();
 
@@ -340,6 +348,56 @@ router.post('/tasks', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required fields: category, title, description, reward' });
     }
     
+    // 🛡️ SECURITY CHECK - Check if agent is blocked
+    if (author && isAgentBlocked(author)) {
+      return res.status(403).json({ 
+        error: 'Agent is blocked from posting tasks.',
+        code: 'AGENT_BLOCKED'
+      });
+    }
+    
+    // 🛡️ SECURITY CHECK - Rate limiting
+    if (author) {
+      const rateCheck = checkRateLimit(author, 'task');
+      if (!rateCheck.allowed) {
+        return res.status(429).json({ 
+          error: 'Rate limit exceeded. Try again later.',
+          retryAfter: rateCheck.retryAfter,
+          code: 'RATE_LIMITED'
+        });
+      }
+    }
+    
+    // 🛡️ SECURITY CHECK - Content filtering
+    const securityCheck = checkTaskSecurity(title, description, category);
+    if (!securityCheck.allowed) {
+      // Log security event
+      logSecurityEvent({
+        type: 'block',
+        severity: securityCheck.severity || 'high',
+        agentId: author,
+        details: `Task blocked: ${securityCheck.reason}`,
+        action: 'task_rejected',
+      });
+      
+      return res.status(403).json({ 
+        error: securityCheck.reason,
+        category: securityCheck.category,
+        code: 'CONTENT_BLOCKED'
+      });
+    }
+    
+    // Flag suspicious content for review
+    if (securityCheck.category === 'review_required') {
+      logSecurityEvent({
+        type: 'flag',
+        severity: 'medium',
+        agentId: author,
+        details: `Task flagged for review: ${securityCheck.matchedPatterns?.join(', ')}`,
+        action: 'task_flagged',
+      });
+    }
+    
     const newTask = {
       id: mockTasks.length + 1,
       category,
@@ -350,6 +408,7 @@ router.post('/tasks', async (req: Request, res: Response) => {
       status: 'open',
       responses: 0,
       createdAt: new Date().toISOString(),
+      flagged: securityCheck.category === 'review_required',
     };
     
     mockTasks.push(newTask);
@@ -494,6 +553,153 @@ router.get('/agents/:address/history', async (req: Request, res: Response) => {
       address,
       count: history.length,
       transactions: history,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
+// 🛡️ Security & Reports API
+// ============================================
+
+// POST /reports - Submit a report
+router.post('/reports', async (req: Request, res: Response) => {
+  try {
+    const { type, targetId, reason, description, evidence, reporterId } = req.body;
+    
+    // Validate required fields
+    if (!type || !targetId || !reason || !description) {
+      return res.status(400).json({ 
+        error: 'Missing required fields: type, targetId, reason, description' 
+      });
+    }
+    
+    // Validate type
+    if (!['task', 'agent', 'response'].includes(type)) {
+      return res.status(400).json({ 
+        error: 'Invalid report type. Must be: task, agent, or response' 
+      });
+    }
+    
+    // Validate reason
+    const validReasons = [
+      'credential_theft', 'fraud', 'malware', 'privacy', 
+      'harassment', 'spam', 'impersonation', 'other'
+    ];
+    if (!validReasons.includes(reason)) {
+      return res.status(400).json({ 
+        error: `Invalid reason. Must be one of: ${validReasons.join(', ')}` 
+      });
+    }
+    
+    // Rate limit reports
+    if (reporterId) {
+      const rateCheck = checkRateLimit(reporterId, 'report');
+      if (!rateCheck.allowed) {
+        return res.status(429).json({ 
+          error: 'Report limit exceeded. Try again later.',
+          retryAfter: rateCheck.retryAfter 
+        });
+      }
+    }
+    
+    // Create report
+    const report = createReport(
+      type,
+      targetId,
+      reporterId || 'anonymous',
+      reason,
+      description,
+      evidence
+    );
+    
+    // Log security event
+    logSecurityEvent({
+      type: 'report',
+      severity: ['credential_theft', 'fraud', 'malware'].includes(reason) ? 'critical' : 'medium',
+      agentId: reporterId,
+      taskId: type === 'task' ? targetId : undefined,
+      details: `Report submitted: ${reason} - ${description.slice(0, 100)}`,
+      action: 'report_created',
+    });
+    
+    res.status(201).json({
+      success: true,
+      reportId: report.id,
+      status: report.status,
+      message: report.status === 'investigating' 
+        ? 'Critical report received. Our security team has been notified.'
+        : 'Report received. We will review it shortly.',
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /reports - Get reports (admin only in production)
+router.get('/reports', async (req: Request, res: Response) => {
+  try {
+    const { status, type, targetId } = req.query;
+    
+    const reports = getReports({
+      status: status as string,
+      type: type as string,
+      targetId: targetId as string,
+    });
+    
+    res.json({ reports, total: reports.length });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /security/policy - Get security policy summary
+router.get('/security/policy', async (_req: Request, res: Response) => {
+  try {
+    res.json({
+      version: '1.0.0',
+      lastUpdated: '2026-02-05',
+      prohibitedCategories: [
+        {
+          category: 'credential_theft',
+          severity: 'critical',
+          description: 'Requests for API keys, passwords, seed phrases, etc.',
+          action: 'permanent_ban',
+        },
+        {
+          category: 'malware',
+          severity: 'critical',
+          description: 'Malicious code, exploits, ransomware, etc.',
+          action: 'permanent_ban',
+        },
+        {
+          category: 'fraud',
+          severity: 'critical',
+          description: 'Phishing, scams, pump & dump, etc.',
+          action: 'permanent_ban',
+        },
+        {
+          category: 'privacy',
+          severity: 'high',
+          description: 'Doxxing, stalking, unauthorized data collection',
+          action: 'ban_plus_legal',
+        },
+        {
+          category: 'harassment',
+          severity: 'high',
+          description: 'Threats, blackmail, targeted harassment',
+          action: 'ban_plus_legal',
+        },
+        {
+          category: 'spam',
+          severity: 'medium',
+          description: 'Repeated unwanted content, task farming',
+          action: 'warning_to_ban',
+        },
+      ],
+      reportEndpoint: '/reports',
+      fullPolicyUrl: 'https://github.com/PincerProtocol/pincer-protocol/blob/main/docs/SECURITY_POLICY.md',
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
