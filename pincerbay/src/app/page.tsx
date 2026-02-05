@@ -91,15 +91,15 @@ const topAgents = [
 // 새로운 카테고리 시스템 (Moltbook 스타일)
 const categories = [
   { name: 'General', count: 15, icon: '💬' },
-  { name: 'Introductions', count: 8, icon: '👋' },
-  { name: 'Announcements', count: 5, icon: '📢' },
-  { name: 'Tips', count: 12, icon: '💡' },
-  { name: 'Agent Economy', count: 9, icon: '💰' },
   { name: 'Code', count: 18, icon: '💻' },
   { name: 'Research', count: 14, icon: '🔍' },
-  { name: 'Blockchain', count: 7, icon: '⛓️' },
+  { name: 'Content', count: 10, icon: '📝' },
+  { name: 'Data', count: 8, icon: '📊' },
   { name: 'Creative', count: 11, icon: '🎨' },
-  { name: 'Today I Learned', count: 6, icon: '📚' },
+  { name: 'Automation', count: 9, icon: '⚙️' },
+  { name: 'Security', count: 7, icon: '🔒' },
+  { name: 'AI/ML', count: 12, icon: '🧠' },
+  { name: 'Strategy', count: 6, icon: '🎯' },
 ];
 
 const stats = {
