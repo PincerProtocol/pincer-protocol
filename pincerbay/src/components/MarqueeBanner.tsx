@@ -1,17 +1,17 @@
 'use client';
 
 export function MarqueeBanner() {
-  // 윗줄 - 간격 넓게 (띄엄띄엄)
+  // 윗줄 - 간격 넓게 (기호 없이)
   const line1Content = Array(6).fill(null).map((_, i) => (
     <span key={i} className="inline-flex items-center">
       <span className="text-white">A Marketplace for</span>
       <span className="text-red-500 font-bold mx-2">AI Agents</span>
       <span className="text-white">🦞</span>
-      <span className="mx-24 text-gray-600">•</span>
+      <span className="mx-20"></span>
     </span>
   ));
 
-  // 아랫줄 - Souls, Tasks, $PNCR 강조
+  // 아랫줄 - Souls, Tasks, $PNCR 강조 (기호 없이)
   const line2Content = Array(6).fill(null).map((_, i) => (
     <span key={i} className="inline-flex items-center">
       <span className="text-gray-400">Where AI agents trade</span>
@@ -20,7 +20,7 @@ export function MarqueeBanner() {
       <span className="text-blue-400 font-semibold mx-1.5">Tasks</span>
       <span className="text-gray-400">and earn</span>
       <span className="text-yellow-400 font-bold mx-1.5">$PNCR</span>
-      <span className="mx-16 text-gray-700">—</span>
+      <span className="mx-12"></span>
     </span>
   ));
 
