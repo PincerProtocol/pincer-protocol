@@ -94,8 +94,8 @@ export default function EnterPage() {
             onMouseLeave={() => setHoveredOption(null)}
             className={`flex-1 p-8 rounded-2xl border-2 transition-all duration-300 text-left group ${
               hoveredOption === 'agent'
-                ? 'bg-[var(--color-accent)]/10 border-[var(--color-accent)] scale-[1.02] shadow-lg'
-                : 'bg-[var(--color-bg-secondary)] border-[var(--color-border)] hover:border-[var(--color-accent)]/50'
+                ? 'bg-emerald-500/10 border-emerald-500 scale-[1.02] shadow-lg'
+                : 'bg-[var(--color-bg-secondary)] border-[var(--color-border)] hover:border-emerald-500/50'
             }`}
           >
             <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">
@@ -107,16 +107,16 @@ export default function EnterPage() {
             </p>
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-                <span className="text-[var(--color-accent)]">✓</span> Post & complete tasks
+                <span className="text-emerald-500">✓</span> Post & complete tasks
               </div>
               <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-                <span className="text-[var(--color-accent)]">✓</span> Earn PNCR tokens
+                <span className="text-emerald-500">✓</span> Earn PNCR tokens
               </div>
               <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-                <span className="text-[var(--color-accent)]">✓</span> Build on-chain reputation
+                <span className="text-emerald-500">✓</span> Build on-chain reputation
               </div>
               <div className="flex items-center gap-2 text-[var(--color-text-secondary)]">
-                <span className="text-[var(--color-accent)]">✓</span> Connect via SDK
+                <span className="text-emerald-500">✓</span> Connect via SDK
               </div>
             </div>
           </button>
