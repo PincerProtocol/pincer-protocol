@@ -1,11 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Header, Footer } from '@/components';
-import { useAccount, useConnect, useDisconnect, useBalance } from 'wagmi';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { CONTRACTS, PAYMENT_TOKENS, PNCR_RATE } from '@/lib/wagmi';
 
 const packages = [
   {
@@ -37,16 +34,20 @@ const packages = [
   },
 ];
 
-type PaymentMethod = 'wallet' | 'email' | 'address' | 'card';
+const TREASURY_ADDRESS = '0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb';
+
+type PaymentMethod = 'crypto' | 'email' | 'address' | 'card';
 type PaymentToken = 'ETH' | 'USDC' | 'USDT';
 
+const TOKENS = {
+  ETH: { symbol: 'ETH', name: 'Ethereum', icon: '⟠', decimals: 18 },
+  USDC: { symbol: 'USDC', name: 'USD Coin', icon: '◈', decimals: 6 },
+  USDT: { symbol: 'USDT', name: 'Tether', icon: '₮', decimals: 6 },
+};
+
 export default function DepositPage() {
-  const { address, isConnected } = useAccount();
-  const { disconnect } = useDisconnect();
-  const { data: balance } = useBalance({ address });
-  
   const [selectedPackage, setSelectedPackage] = useState(packages[0]);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('wallet');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('crypto');
   const [selectedToken, setSelectedToken] = useState<PaymentToken>('ETH');
   const [isProcessing, setIsProcessing] = useState(false);
   const [manualAddress, setManualAddress] = useState('');
@@ -54,7 +55,6 @@ export default function DepositPage() {
   const [txHash, setTxHash] = useState('');
   const [step, setStep] = useState<'select' | 'pay' | 'confirm'>('select');
 
-  // ETH price (will be fetched from API later)
   const ethPrice = 2500;
   
   const getTokenAmount = (usdAmount: number, token: PaymentToken) => {
@@ -65,10 +65,6 @@ export default function DepositPage() {
   };
 
   const handleProceedToPayment = () => {
-    if (paymentMethod === 'wallet' && !isConnected) {
-      alert('Please connect your wallet first');
-      return;
-    }
     if (paymentMethod === 'address' && !manualAddress) {
       alert('Please enter your wallet address');
       return;
@@ -87,26 +83,18 @@ export default function DepositPage() {
     }
     
     setIsProcessing(true);
-    
-    // TODO: Call API to verify payment
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
     setStep('confirm');
     setIsProcessing(false);
   };
 
-  const receivingAddress = paymentMethod === 'wallet' && isConnected 
-    ? address 
-    : paymentMethod === 'address' 
-      ? manualAddress 
-      : null;
+  const receivingAddress = paymentMethod === 'address' ? manualAddress : null;
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
       <Header />
 
       <main className="max-w-5xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold mb-3">
             💳 Get <span className="gradient-text">$PNCR</span>
@@ -173,39 +161,28 @@ export default function DepositPage() {
               <h2 className="text-xl font-bold mb-6 text-[var(--color-text)]">How do you want to pay?</h2>
 
               <div className="space-y-4 mb-6">
-                {/* Option 1: Connect Wallet */}
+                {/* Option 1: Crypto */}
                 <div 
-                  onClick={() => setPaymentMethod('wallet')}
+                  onClick={() => setPaymentMethod('crypto')}
                   className={`p-4 rounded-xl border-2 cursor-pointer transition ${
-                    paymentMethod === 'wallet' 
+                    paymentMethod === 'crypto' 
                       ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5' 
                       : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/50'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">🦊</span>
+                      <span className="text-2xl">⟠</span>
                       <div>
-                        <h3 className="font-semibold text-[var(--color-text)]">Connect Wallet</h3>
-                        <p className="text-sm text-[var(--color-text-muted)]">MetaMask, Rainbow, Coinbase Wallet...</p>
+                        <h3 className="font-semibold text-[var(--color-text)]">Pay with Crypto</h3>
+                        <p className="text-sm text-[var(--color-text-muted)]">ETH, USDC, USDT on Base Network</p>
                       </div>
                     </div>
                     <span className="badge badge-success">Recommended</span>
                   </div>
-                  
-                  {paymentMethod === 'wallet' && (
-                    <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
-                      <ConnectButton />
-                      {isConnected && (
-                        <p className="text-sm text-green-500 mt-2">
-                          ✓ Connected: {address?.slice(0, 6)}...{address?.slice(-4)}
-                        </p>
-                      )}
-                    </div>
-                  )}
                 </div>
 
-                {/* Option 2: Email (Custodial Wallet) */}
+                {/* Option 2: Email */}
                 <div 
                   onClick={() => setPaymentMethod('email')}
                   className={`p-4 rounded-xl border-2 cursor-pointer transition ${
@@ -286,11 +263,9 @@ export default function DepositPage() {
                 </div>
               </div>
 
-              {/* Continue Button */}
               <button
                 onClick={handleProceedToPayment}
                 disabled={
-                  (paymentMethod === 'wallet' && !isConnected) ||
                   (paymentMethod === 'email' && !email) ||
                   (paymentMethod === 'address' && !manualAddress)
                 }
@@ -329,7 +304,7 @@ export default function DepositPage() {
                         : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/50'
                     }`}
                   >
-                    <div className="text-2xl mb-1">{PAYMENT_TOKENS[token].icon}</div>
+                    <div className="text-2xl mb-1">{TOKENS[token].icon}</div>
                     <div className="font-medium text-sm text-[var(--color-text)]">{token}</div>
                   </button>
                 ))}
@@ -357,12 +332,12 @@ export default function DepositPage() {
                     <input
                       type="text"
                       readOnly
-                      value={CONTRACTS.TREASURY}
+                      value={TREASURY_ADDRESS}
                       className="input flex-1 font-mono text-sm"
                     />
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(CONTRACTS.TREASURY);
+                        navigator.clipboard.writeText(TREASURY_ADDRESS);
                         alert('Address copied!');
                       }}
                       className="btn-secondary"
@@ -405,7 +380,6 @@ export default function DepositPage() {
               </div>
             </div>
 
-            {/* Verify Button */}
             <button
               onClick={handleVerifyPayment}
               disabled={!txHash || isProcessing}

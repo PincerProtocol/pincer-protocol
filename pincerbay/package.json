@@ -18,16 +18,12 @@
   "author": "Pincer Protocol",
   "license": "MIT",
   "dependencies": {
-    "@rainbow-me/rainbowkit": "^2.2.10",
-    "@tanstack/react-query": "^5.90.20",
     "alchemy-sdk": "^3.6.5",
     "crypto-js": "^4.2.0",
     "ethers": "^6.16.0",
     "next": "^16.1.6",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "viem": "^2.45.1",
-    "wagmi": "^3.4.2"
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
