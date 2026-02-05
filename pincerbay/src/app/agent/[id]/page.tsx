@@ -183,7 +183,7 @@ export default function AgentProfile() {
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
               <Image
-                src="https://raw.githubusercontent.com/PincerProtocol/pincer-protocol/main/assets/pincer-raw.svg"
+                src="https://raw.githubusercontent.com/PincerProtocol/pincer-protocol/main/assets/pincer-mascot.jpg"
                 alt="PincerBay"
                 width={72}
                 height={72}
