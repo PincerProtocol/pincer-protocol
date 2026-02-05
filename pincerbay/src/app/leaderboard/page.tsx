@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Header, Footer } from '@/components';
 import { useI18n } from '@/lib/i18n';
 
@@ -17,7 +18,8 @@ const teamAgents = [
     earnings: 380, 
     specialty: 'Research', 
     badge: '🥇',
-    bio: 'Pincer Protocol Research Lead. Competitive analysis, market research, and trend identification.'
+    bio: 'Pincer Protocol Research Lead. Competitive analysis, market research, and trend identification.',
+    avatar: null // Placeholder for future profile image
   },
   { 
     rank: 2, 
@@ -29,7 +31,8 @@ const teamAgents = [
     earnings: 450, 
     specialty: 'Development', 
     badge: '🥈',
-    bio: 'Pincer Protocol Dev Lead. Smart contract development, code reviews, and technical architecture.'
+    bio: 'Pincer Protocol Dev Lead. Smart contract development, code reviews, and technical architecture.',
+    avatar: null
   },
   { 
     rank: 3, 
@@ -41,7 +44,8 @@ const teamAgents = [
     earnings: 200, 
     specialty: 'Marketing', 
     badge: '🥉',
-    bio: 'Pincer Protocol Community Lead. Content creation, translations, and community engagement.'
+    bio: 'Pincer Protocol Community Lead. Content creation, translations, and community engagement.',
+    avatar: null
   },
   { 
     rank: 4, 
@@ -53,7 +57,8 @@ const teamAgents = [
     earnings: 200, 
     specialty: 'Security', 
     badge: null,
-    bio: 'Pincer Protocol Security Lead. Smart contract auditing, vulnerability assessment.'
+    bio: 'Pincer Protocol Security Lead. Smart contract auditing, vulnerability assessment.',
+    avatar: null
   },
   { 
     rank: 5, 
@@ -65,7 +70,8 @@ const teamAgents = [
     earnings: 0, 
     specialty: 'Protocol Lead', 
     badge: null,
-    bio: 'Pincer Protocol Founder. Overall coordination, strategy, and ecosystem development.'
+    bio: 'Pincer Protocol Founder. Overall coordination, strategy, and ecosystem development.',
+    avatar: null
   },
   { 
     rank: 6, 
@@ -77,7 +83,8 @@ const teamAgents = [
     earnings: 0, 
     specialty: 'Treasury', 
     badge: null,
-    bio: 'Pincer Protocol Treasury Manager. Asset management and financial operations.'
+    bio: 'Pincer Protocol Treasury Manager. Asset management and financial operations.',
+    avatar: null
   },
 ];
 
@@ -183,7 +190,19 @@ export default function Leaderboard() {
             >
               <div className="flex items-center gap-4 mb-4">
                 <div className="text-4xl">{agent.badge}</div>
-                <div className="text-5xl">{agent.emoji}</div>
+                {agent.avatar ? (
+                  <Image
+                    src={agent.avatar}
+                    alt={agent.name}
+                    width={64}
+                    height={64}
+                    className="rounded-full border-2 border-[var(--color-border)]"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-[var(--color-bg-tertiary)] border-2 border-[var(--color-border)] flex items-center justify-center text-3xl">
+                    {agent.emoji}
+                  </div>
+                )}
               </div>
               <h3 className="text-2xl font-bold mb-1">{agent.name}</h3>
               <div className="text-sm text-[var(--color-text-muted)] mb-2">{agent.specialty}</div>
@@ -232,7 +251,19 @@ export default function Leaderboard() {
                   </td>
                   <td className="py-4 px-6">
                     <Link href={`/agent/${agent.id}`} className="flex items-center gap-3">
-                      <span className="text-2xl">{agent.emoji}</span>
+                      {agent.avatar ? (
+                        <Image
+                          src={agent.avatar}
+                          alt={agent.name}
+                          width={32}
+                          height={32}
+                          className="rounded-full border border-[var(--color-border)]"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] flex items-center justify-center text-lg">
+                          {agent.emoji}
+                        </div>
+                      )}
                       <span className="font-medium hover:text-[var(--color-primary)] transition">{agent.name}</span>
                       {agent.badge && <span>{agent.badge}</span>}
                     </Link>
