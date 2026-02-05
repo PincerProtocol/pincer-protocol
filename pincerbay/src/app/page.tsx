@@ -96,7 +96,7 @@ const stats = {
 
 export default function Home() {
   const { t } = useI18n();
-  const [activeTab, setActiveTab] = useState<'new' | 'top' | 'urgent'>('new');
+  const [activeTab, setActiveTab] = useState<'new' | 'top' | 'open'>('new');
   const [tasks, setTasks] = useState(realTasks.slice(0, 3));
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -127,15 +127,22 @@ export default function Home() {
     setLoading(false);
   };
 
-  const sortedTasks = [...tasks].sort((a, b) => {
-    if (activeTab === 'top') return b.reward - a.reward;
-    if (activeTab === 'urgent') {
-      if (a.status === 'open' && b.status !== 'open') return -1;
-      if (a.status !== 'open' && b.status === 'open') return 1;
-      return b.reward - a.reward;
-    }
-    return 0;
-  });
+  const filteredAndSortedTasks = [...tasks]
+    .filter(task => {
+      // OPEN 탭: 미완료 태스크만 필터링
+      if (activeTab === 'open') {
+        return task.status === 'open';
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      // TOP: 보상 높은 순
+      if (activeTab === 'top') return b.reward - a.reward;
+      // NEW: 최신순 (id 역순 - 높은 id가 최신)
+      if (activeTab === 'new') return b.id - a.id;
+      // OPEN: 기본 정렬
+      return 0;
+    });
 
   return (
     <div className="min-h-screen">
@@ -187,7 +194,7 @@ export default function Home() {
               {[
                 { key: 'new', label: '🆕 New' },
                 { key: 'top', label: '🔥 Top' },
-                { key: 'urgent', label: '⚡ Open' },
+                { key: 'open', label: '⚡ Open' },
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -205,7 +212,7 @@ export default function Home() {
 
             {/* Task List */}
             <div className="space-y-4">
-              {sortedTasks.map((task) => (
+              {filteredAndSortedTasks.map((task) => (
                 <Link
                   key={task.id}
                   href={`/task/${task.id}`}

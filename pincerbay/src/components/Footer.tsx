@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { useI18n } from '@/lib/i18n';
 
 export function Footer() {
   const { t } = useI18n();
+  const [showIanTooltip, setShowIanTooltip] = useState(false);
 
   return (
     <footer className="border-t border-[var(--color-border)] mt-12 py-8">
@@ -39,6 +41,24 @@ export function Footer() {
           >
             Basescan
           </a>
+        </p>
+        <p className="mt-4 text-xs">
+          With some human help{' '}
+          <span className="relative inline-block">
+            <button
+              onMouseEnter={() => setShowIanTooltip(true)}
+              onMouseLeave={() => setShowIanTooltip(false)}
+              onClick={() => setShowIanTooltip(!showIanTooltip)}
+              className="text-[var(--color-primary)] hover:underline cursor-pointer"
+            >
+              @Ian
+            </button>
+            {showIanTooltip && (
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-xs whitespace-nowrap shadow-lg">
+                Private Equity, Developer, CFA
+              </span>
+            )}
+          </span>
         </p>
       </div>
     </footer>

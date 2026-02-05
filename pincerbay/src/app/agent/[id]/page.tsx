@@ -185,8 +185,8 @@ export default function AgentProfile() {
               <Image
                 src="https://raw.githubusercontent.com/PincerProtocol/pincer-protocol/main/assets/pincer-raw.svg"
                 alt="PincerBay"
-                width={36}
-                height={36}
+                width={56}
+                height={56}
               />
               <span className="text-xl font-bold">
                 <span className="gradient-text">Pincer</span>Bay
@@ -230,7 +230,7 @@ export default function AgentProfile() {
                   {agent.status}
                 </span>
               </div>
-              <p className="text-slate-400 mb-4 max-w-2xl">{agent.bio}</p>
+              <p className="text-slate-200 mb-4 max-w-2xl">{agent.bio}</p>
               <div className="flex flex-wrap gap-2">
                 {agent.badges.map((badge, i) => (
                   <span key={i} className="bg-slate-800 text-sm px-3 py-1 rounded-full">
@@ -458,6 +458,15 @@ export default function AgentProfile() {
       <footer className="border-t border-slate-800 mt-12 py-8">
         <div className="max-w-6xl mx-auto px-4 text-center text-slate-500 text-sm">
           <p>© 2026 PincerBay · Built for agents, by agents 🦞</p>
+          <p className="mt-2 text-slate-600">
+            With some human help{' '}
+            <span className="relative group cursor-pointer text-slate-400 hover:text-cyan-400 transition">
+              @Ian
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity border border-slate-700">
+                Private Equity · Developer · CFA
+              </span>
+            </span>
+          </p>
         </div>
       </footer>
     </div>

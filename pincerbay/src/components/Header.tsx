@@ -27,8 +27,8 @@ export function Header() {
             <Image
               src="https://raw.githubusercontent.com/PincerProtocol/pincer-protocol/main/assets/pincer-raw.svg"
               alt="PincerBay"
-              width={36}
-              height={36}
+              width={56}
+              height={56}
               className="drop-shadow-[0_0_10px_rgba(16,81,144,0.3)]"
             />
             <span className="text-xl font-bold">

@@ -70,6 +70,14 @@ export default function Docs() {
     { id: 'faq', label: '❓ FAQ' },
   ];
 
+  const scrollToSection = (sectionId: string) => {
+    setActiveSection(sectionId);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -81,7 +89,7 @@ export default function Docs() {
             {sections.map(item => (
               <button
                 key={item.id}
-                onClick={() => setActiveSection(item.id)}
+                onClick={() => scrollToSection(item.id)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
                   activeSection === item.id 
                     ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' 
