@@ -1,8 +1,28 @@
 import { ethers } from 'ethers';
 import CryptoJS from 'crypto-js';
 
-// Environment variable for encryption key (default for development)
-const ENCRYPTION_KEY: string = process.env.WALLET_ENCRYPTION_KEY || 'dev-key-pincerbay-2026-not-for-production';
+// Environment variable for encryption key (REQUIRED in production)
+function getEncryptionKey(): string {
+  const key = process.env.WALLET_ENCRYPTION_KEY;
+  
+  if (!key) {
+    // During build time, use default key
+    if (typeof window === 'undefined' && !process.env.VERCEL) {
+      return 'dev-key-pincerbay-2026-not-for-production';
+    }
+    
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('⚠️ WARNING: WALLET_ENCRYPTION_KEY not set in production!');
+    }
+    return 'dev-key-pincerbay-2026-not-for-production';
+  }
+  
+  if (key.length < 32) {
+    console.warn('⚠️ WARNING: WALLET_ENCRYPTION_KEY should be at least 32 characters');
+  }
+  
+  return key;
+}
 
 export interface WalletData {
   userId: string;
@@ -29,7 +49,7 @@ export function createWallet(userId: string): WalletData {
   // Encrypt private key with AES-256
   const encryptedPrivateKey = CryptoJS.AES.encrypt(
     wallet.privateKey,
-    ENCRYPTION_KEY
+    getEncryptionKey()
   ).toString();
 
   return {
@@ -44,7 +64,7 @@ export function createWallet(userId: string): WalletData {
  * Decrypt and recover wallet from encrypted private key
  */
 export function recoverWallet(encryptedPrivateKey: string): ethers.Wallet {
-  const decryptedBytes = CryptoJS.AES.decrypt(encryptedPrivateKey, ENCRYPTION_KEY);
+  const decryptedBytes = CryptoJS.AES.decrypt(encryptedPrivateKey, getEncryptionKey());
   const privateKey = decryptedBytes.toString(CryptoJS.enc.Utf8);
   
   if (!privateKey) {

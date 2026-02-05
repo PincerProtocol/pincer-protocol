@@ -11,8 +11,9 @@ export const runtime = 'nodejs';
  * Withdraw funds from custodial wallet to user's external wallet
  */
 export async function POST(request: NextRequest) {
+  let body: any;
   try {
-    const body = await request.json();
+    body = await request.json();
     const { userId, to, amount, asset } = body;
 
     // Validation
@@ -117,7 +118,13 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error processing withdrawal:', error);
+    // Log sanitized error (no sensitive data)
+    console.error('Error processing withdrawal:', {
+      userId: body?.userId,
+      to: body?.to,
+      timestamp: new Date().toISOString(),
+      error: process.env.NODE_ENV === 'production' ? 'Internal error' : error,
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -157,7 +164,13 @@ export async function GET(request: NextRequest) {
       data: withdrawals,
     });
   } catch (error) {
-    console.error('Error fetching withdrawal history:', error);
+    // Log sanitized error (no sensitive data)
+    const url = new URL(request.url);
+    console.error('Error fetching withdrawal history:', {
+      userId: url.searchParams.get('userId'),
+      timestamp: new Date().toISOString(),
+      error: process.env.NODE_ENV === 'production' ? 'Internal error' : error,
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

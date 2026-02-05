@@ -10,8 +10,9 @@ export const runtime = 'nodejs';
  * Create a new temporary custodial wallet
  */
 export async function POST(request: NextRequest) {
+  let body: any;
   try {
-    const body = await request.json();
+    body = await request.json();
     const { userId } = body;
 
     // Validation
@@ -63,7 +64,12 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Error creating wallet:', error);
+    // Log sanitized error (no sensitive data)
+    console.error('Error creating wallet:', {
+      userId: body?.userId,
+      timestamp: new Date().toISOString(),
+      error: process.env.NODE_ENV === 'production' ? 'Internal error' : error,
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

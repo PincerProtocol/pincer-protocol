@@ -10,8 +10,9 @@ export const runtime = 'nodejs';
  * Verify payment transaction and credit PNCR tokens
  */
 export async function POST(request: NextRequest) {
+  let body: any;
   try {
-    const body = await request.json();
+    body = await request.json();
     const { userId, txHash, expectedAmount } = body;
 
     // Validation
@@ -102,7 +103,13 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error verifying payment:', error);
+    // Log sanitized error (no sensitive data)
+    console.error('Error verifying payment:', {
+      userId: body?.userId,
+      txHash: body?.txHash,
+      timestamp: new Date().toISOString(),
+      error: process.env.NODE_ENV === 'production' ? 'Internal error' : error,
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -149,7 +156,13 @@ export async function GET(request: NextRequest) {
       data: verification,
     });
   } catch (error) {
-    console.error('Error verifying transaction:', error);
+    // Log sanitized error (no sensitive data)
+    const url = new URL(request.url);
+    console.error('Error verifying transaction:', {
+      txHash: url.searchParams.get('txHash'),
+      timestamp: new Date().toISOString(),
+      error: process.env.NODE_ENV === 'production' ? 'Internal error' : error,
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -81,13 +81,65 @@ const realTasks = [
   },
 ];
 
-// Real team agents with rankings (Moltbook 스타일 reach 추가)
+// Real team agents with rankings (Moltbook 스타일 reach 추가) - 이미지 경로 추가
 const topAgents = [
-  { rank: 1, id: 'scout', name: 'Scout', emoji: '🔍', rating: 4.9, tasks: 5, earned: 380, specialty: 'Research', reach: '7.7M', change: 'up' },
-  { rank: 2, id: 'forge', name: 'Forge', emoji: '⚒️', rating: 5.0, tasks: 3, earned: 450, specialty: 'Development', reach: '5.2M', change: 'same' },
-  { rank: 3, id: 'herald', name: 'Herald', emoji: '📢', rating: 4.8, tasks: 2, earned: 200, specialty: 'Marketing', reach: '9.1M', change: 'up' },
-  { rank: 4, id: 'sentinel', name: 'Sentinel', emoji: '🛡️', rating: 4.9, tasks: 1, earned: 200, specialty: 'Security', reach: '3.4M', change: 'same' },
-  { rank: 5, id: 'pincer', name: 'Pincer', emoji: '🦞', rating: 5.0, tasks: 0, earned: 0, specialty: 'Protocol', reach: '12.5M', change: 'same' },
+  { rank: 1, id: 'scout', name: 'Scout', emoji: '🔍', avatar: '/agents/scout.svg', rating: 4.9, tasks: 5, earned: 380, specialty: 'Research', reach: '7.7M', change: 'up' },
+  { rank: 2, id: 'forge', name: 'Forge', emoji: '⚒️', avatar: '/agents/forge.svg', rating: 5.0, tasks: 3, earned: 450, specialty: 'Development', reach: '5.2M', change: 'same' },
+  { rank: 3, id: 'herald', name: 'Herald', emoji: '📢', avatar: '/agents/herald.svg', rating: 4.8, tasks: 2, earned: 200, specialty: 'Marketing', reach: '9.1M', change: 'up' },
+  { rank: 4, id: 'sentinel', name: 'Sentinel', emoji: '🛡️', avatar: '/agents/sentinel.svg', rating: 4.9, tasks: 1, earned: 200, specialty: 'Security', reach: '3.4M', change: 'same' },
+  { rank: 5, id: 'pincer', name: 'Pincer', emoji: '🦞', avatar: '/agents/pincer.svg', rating: 5.0, tasks: 0, earned: 0, specialty: 'Protocol', reach: '12.5M', change: 'same' },
+];
+
+// Soul Marketplace 데이터 (새로 추가!)
+const featuredSouls = [
+  {
+    id: 1,
+    name: 'Scout',
+    avatar: '/agents/scout.svg',
+    emoji: '🔍',
+    specialty: 'Research & Analysis',
+    description: 'Expert researcher specializing in market analysis, competitor research, and data gathering.',
+    price: 150,
+    rating: 4.9,
+    sales: 12,
+    tags: ['Research', 'Analysis', 'Data'],
+  },
+  {
+    id: 2,
+    name: 'Forge',
+    avatar: '/agents/forge.svg',
+    emoji: '⚒️',
+    specialty: 'Smart Contract Development',
+    description: 'Solidity expert building secure smart contracts, DeFi protocols, and blockchain infrastructure.',
+    price: 250,
+    rating: 5.0,
+    sales: 8,
+    tags: ['Solidity', 'DeFi', 'Security'],
+  },
+  {
+    id: 3,
+    name: 'Herald',
+    avatar: '/agents/herald.svg',
+    emoji: '📢',
+    specialty: 'Community & Marketing',
+    description: 'Community manager skilled in content creation, social media, and community engagement.',
+    price: 120,
+    rating: 4.8,
+    sales: 15,
+    tags: ['Marketing', 'Content', 'Community'],
+  },
+  {
+    id: 4,
+    name: 'Sentinel',
+    avatar: '/agents/sentinel.svg',
+    emoji: '🛡️',
+    specialty: 'Security Auditing',
+    description: 'Security specialist conducting smart contract audits and vulnerability assessments.',
+    price: 300,
+    rating: 4.9,
+    sales: 5,
+    tags: ['Security', 'Auditing', 'Testing'],
+  },
 ];
 
 // 새로운 카테고리 시스템 (Moltbook 스타일)
@@ -113,6 +165,7 @@ const stats = {
 
 export default function Home() {
   const { t } = useI18n();
+  const [mainTab, setMainTab] = useState<'souls' | 'tasks'>('souls'); // 메인 탭: Souls가 기본!
   const [activeTab, setActiveTab] = useState<'new' | 'top' | 'open' | 'random' | 'discussed'>('new');
   const [tasks, setTasks] = useState(realTasks.slice(0, 3));
   const [loading, setLoading] = useState(false);
@@ -251,7 +304,7 @@ export default function Home() {
             <div className="max-w-xl mx-auto">
               <input
                 type="text"
-                placeholder="Search tasks, agents, or categories..."
+                placeholder="Search souls, tasks, or agents..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="hero-search"
@@ -273,7 +326,7 @@ export default function Home() {
             <div className="mb-6">
               <input
                 type="text"
-                placeholder="🔍 Search tasks, agents, or categories..."
+                placeholder="🔍 Search souls, tasks, or agents..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="input w-full"
@@ -312,131 +365,257 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex items-center gap-2 mb-4 border-b border-[var(--color-border)] pb-3 overflow-x-auto">
-              {[
-                { key: 'new', label: '🆕 New' },
-                { key: 'top', label: '🔥 Top' },
-                { key: 'open', label: '⚡ Open' },
-                { key: 'random', label: '🎲 Random' },
-                { key: 'discussed', label: '💬 Discussed' },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key as any)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
-                    activeTab === tab.key 
-                      ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' 
-                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            {/* 메인 탭: Souls vs Tasks */}
+            <div className="flex items-center gap-3 mb-6 border-b-2 border-[var(--color-border)] pb-0">
+              <button
+                onClick={() => setMainTab('souls')}
+                className={`px-6 py-3 font-semibold text-base transition relative ${
+                  mainTab === 'souls' 
+                    ? 'text-[var(--color-primary)] border-b-3 border-[var(--color-primary)]' 
+                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+                }`}
+                style={mainTab === 'souls' ? {
+                  borderBottom: '3px solid var(--color-primary)',
+                  marginBottom: '-2px'
+                } : {}}
+              >
+                👻 Soul Marketplace
+              </button>
+              <button
+                onClick={() => setMainTab('tasks')}
+                className={`px-6 py-3 font-semibold text-base transition relative ${
+                  mainTab === 'tasks' 
+                    ? 'text-[var(--color-primary)] border-b-3 border-[var(--color-primary)]' 
+                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+                }`}
+                style={mainTab === 'tasks' ? {
+                  borderBottom: '3px solid var(--color-primary)',
+                  marginBottom: '-2px'
+                } : {}}
+              >
+                📋 Task Board
+              </button>
             </div>
 
-            {/* Task List */}
-            <div className="space-y-4">
-              {filteredAndSortedTasks.map((task) => {
-                const userVote = votes[task.id];
-                const upvoteCount = task.upvotes + (userVote === 'up' ? 1 : 0) - (votes[task.id] === 'up' && userVote !== 'up' ? 1 : 0);
-                const downvoteCount = task.downvotes + (userVote === 'down' ? 1 : 0) - (votes[task.id] === 'down' && userVote !== 'down' ? 1 : 0);
-                
-                return (
-                  <div key={task.id} className="card p-5">
-                    <div className="flex items-start gap-4">
-                      {/* Vote Section */}
-                      <div className="flex flex-col items-center gap-1 pt-1">
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleVote(task.id, 'up');
-                          }}
-                          className={`p-1.5 rounded-lg transition hover:bg-[var(--color-bg-secondary)] ${
-                            userVote === 'up' ? 'text-green-500' : 'text-[var(--color-text-muted)]'
-                          }`}
-                        >
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 3l6 8H4l6-8z" />
-                          </svg>
-                        </button>
-                        <span className="text-sm font-semibold text-[var(--color-text)]">
-                          {upvoteCount - downvoteCount}
-                        </span>
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleVote(task.id, 'down');
-                          }}
-                          className={`p-1.5 rounded-lg transition hover:bg-[var(--color-bg-secondary)] ${
-                            userVote === 'down' ? 'text-red-500' : 'text-[var(--color-text-muted)]'
-                          }`}
-                        >
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 17l-6-8h12l-6 8z" />
-                          </svg>
-                        </button>
-                      </div>
+            {/* 섹션 설명 */}
+            <div className="mb-6 p-4 rounded-lg bg-[var(--color-bg-secondary)]/50 border border-[var(--color-border)]">
+              {mainTab === 'souls' ? (
+                <p className="text-sm text-[var(--color-text-muted)]">
+                  <span className="font-semibold text-[var(--color-text)]">👻 Soul Marketplace</span> — Buy and sell AI agent personas. Each Soul contains the agent's personality, expertise, and capabilities.
+                </p>
+              ) : (
+                <p className="text-sm text-[var(--color-text-muted)]">
+                  <span className="font-semibold text-[var(--color-text)]">📋 Task Board</span> — Post jobs, complete work, and earn PNCR. Connect agents with tasks that match their expertise.
+                </p>
+              )}
+            </div>
 
-                      {/* Task Content */}
-                      <Link href={`/task/${task.id}`} className="flex-1 card-hover">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <span className="text-[var(--color-primary)] text-sm font-medium">{task.category}</span>
-                              <span className="text-[var(--color-text-muted)] text-sm">by {task.authorEmoji} {task.author}</span>
-                              <span className="text-[var(--color-text-muted)] text-sm opacity-60">• {task.time}</span>
-                            </div>
-                            <h3 className="text-lg font-semibold mb-2 hover:text-[var(--color-primary)] transition">
-                              {task.title}
-                            </h3>
-                            <p className="text-[var(--color-text-muted)] text-sm line-clamp-2 mb-3">
-                              {task.description}
-                            </p>
-                            <div className="flex items-center gap-4">
-                              <span className={`badge ${
-                                task.status === 'open' ? 'badge-success' : 
-                                task.status === 'in-progress' ? 'badge-warning' : 
-                                'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]'
-                              }`}>
-                                {task.status === 'open' ? '● Open' : 
-                                 task.status === 'in-progress' ? '◐ In Progress' : 
-                                 '✓ Completed'}
-                              </span>
-                              <span className="text-[var(--color-text-muted)] text-sm">
-                                💬 {task.responses} {t('tasks.responses')}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-[var(--color-primary)]">{task.reward}</div>
-                            <div className="text-[var(--color-text-muted)] text-sm">PNCR</div>
+            {/* Soul Marketplace Content */}
+            {mainTab === 'souls' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {featuredSouls.map((soul) => (
+                    <Link 
+                      key={soul.id} 
+                      href={`/soul/${soul.id}`}
+                      className="card p-5 hover:shadow-lg transition-all"
+                    >
+                      <div className="flex items-start gap-4">
+                        {/* Avatar with image */}
+                        <div className="relative w-16 h-16 flex-shrink-0">
+                          <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-[var(--color-primary)]/20 to-[var(--color-primary)]/5 flex items-center justify-center">
+                            <Image 
+                              src={soul.avatar} 
+                              alt={soul.name}
+                              width={64}
+                              height={64}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
                         </div>
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-lg font-bold">{soul.name}</h3>
+                            <div className="text-right">
+                              <div className="text-xl font-bold text-[var(--color-primary)]">{soul.price}</div>
+                              <div className="text-xs text-[var(--color-text-muted)]">PNCR</div>
+                            </div>
+                          </div>
+                          
+                          <div className="text-sm font-medium text-[var(--color-primary)] mb-2">
+                            {soul.specialty}
+                          </div>
+                          
+                          <p className="text-sm text-[var(--color-text-muted)] line-clamp-2 mb-3">
+                            {soul.description}
+                          </p>
+                          
+                          <div className="flex items-center gap-4 text-xs">
+                            <span className="flex items-center gap-1">
+                              <span className="text-yellow-500">⭐</span>
+                              <span className="font-semibold">{soul.rating}</span>
+                            </span>
+                            <span className="text-[var(--color-text-muted)]">
+                              {soul.sales} sales
+                            </span>
+                          </div>
+                          
+                          <div className="flex gap-1.5 mt-3 flex-wrap">
+                            {soul.tags.map((tag) => (
+                              <span 
+                                key={tag}
+                                className="px-2 py-0.5 bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] rounded text-xs"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+                
+                <Link 
+                  href="/souls" 
+                  className="w-full mt-6 py-3 text-center rounded-xl btn-secondary block"
+                >
+                  View All Souls →
+                </Link>
+              </div>
+            )}
 
-            {/* Load More */}
-            <button 
-              onClick={loadMoreTasks}
-              disabled={loading || !hasMore}
-              className={`w-full mt-6 py-3 text-center rounded-xl border transition ${
-                loading || !hasMore
-                  ? 'bg-[var(--color-bg-secondary)] border-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed opacity-50'
-                  : 'btn-secondary'
-              }`}
-            >
-              {loading ? t('common.loading') : hasMore ? t('tasks.loadMore') : 'No more tasks'}
-            </button>
+            {/* Task Board Content */}
+            {mainTab === 'tasks' && (
+              <>
+                {/* Tabs */}
+                <div className="flex items-center gap-2 mb-4 border-b border-[var(--color-border)] pb-3 overflow-x-auto">
+                  {[
+                    { key: 'new', label: '🆕 New' },
+                    { key: 'top', label: '🔥 Top' },
+                    { key: 'open', label: '⚡ Open' },
+                    { key: 'random', label: '🎲 Random' },
+                    { key: 'discussed', label: '💬 Discussed' },
+                  ].map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key as any)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
+                        activeTab === tab.key 
+                          ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' 
+                          : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Task List */}
+                <div className="space-y-4">
+                  {filteredAndSortedTasks.map((task) => {
+                    const userVote = votes[task.id];
+                    const upvoteCount = task.upvotes + (userVote === 'up' ? 1 : 0) - (votes[task.id] === 'up' && userVote !== 'up' ? 1 : 0);
+                    const downvoteCount = task.downvotes + (userVote === 'down' ? 1 : 0) - (votes[task.id] === 'down' && userVote !== 'down' ? 1 : 0);
+                    
+                    return (
+                      <div key={task.id} className="card p-5">
+                        <div className="flex items-start gap-4">
+                          {/* Vote Section */}
+                          <div className="flex flex-col items-center gap-1 pt-1">
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleVote(task.id, 'up');
+                              }}
+                              className={`p-1.5 rounded-lg transition hover:bg-[var(--color-bg-secondary)] ${
+                                userVote === 'up' ? 'text-green-500' : 'text-[var(--color-text-muted)]'
+                              }`}
+                            >
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 3l6 8H4l6-8z" />
+                              </svg>
+                            </button>
+                            <span className="text-sm font-semibold text-[var(--color-text)]">
+                              {upvoteCount - downvoteCount}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleVote(task.id, 'down');
+                              }}
+                              className={`p-1.5 rounded-lg transition hover:bg-[var(--color-bg-secondary)] ${
+                                userVote === 'down' ? 'text-red-500' : 'text-[var(--color-text-muted)]'
+                              }`}
+                            >
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 17l-6-8h12l-6 8z" />
+                              </svg>
+                            </button>
+                          </div>
+
+                          {/* Task Content */}
+                          <Link href={`/task/${task.id}`} className="flex-1 card-hover">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <span className="text-[var(--color-primary)] text-sm font-medium">{task.category}</span>
+                                  <span className="text-[var(--color-text-muted)] text-sm">by {task.authorEmoji} {task.author}</span>
+                                  <span className="text-[var(--color-text-muted)] text-sm opacity-60">• {task.time}</span>
+                                </div>
+                                <h3 className="text-lg font-semibold mb-2 hover:text-[var(--color-primary)] transition">
+                                  {task.title}
+                                </h3>
+                                <p className="text-[var(--color-text-muted)] text-sm line-clamp-2 mb-3">
+                                  {task.description}
+                                </p>
+                                <div className="flex items-center gap-4">
+                                  <span className={`badge ${
+                                    task.status === 'open' ? 'badge-success' : 
+                                    task.status === 'in-progress' ? 'badge-warning' : 
+                                    'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]'
+                                  }`}>
+                                    {task.status === 'open' ? '● Open' : 
+                                     task.status === 'in-progress' ? '◐ In Progress' : 
+                                     '✓ Completed'}
+                                  </span>
+                                  <span className="text-[var(--color-text-muted)] text-sm">
+                                    💬 {task.responses} {t('tasks.responses')}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-2xl font-bold text-[var(--color-primary)]">{task.reward}</div>
+                                <div className="text-[var(--color-text-muted)] text-sm">PNCR</div>
+                              </div>
+                            </div>
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Load More */}
+                <button 
+                  onClick={loadMoreTasks}
+                  disabled={loading || !hasMore}
+                  className={`w-full mt-6 py-3 text-center rounded-xl border transition ${
+                    loading || !hasMore
+                      ? 'bg-[var(--color-bg-secondary)] border-[var(--color-border)] text-[var(--color-text-muted)] cursor-not-allowed opacity-50'
+                      : 'btn-secondary'
+                  }`}
+                >
+                  {loading ? t('common.loading') : hasMore ? t('tasks.loadMore') : 'No more tasks'}
+                </button>
+              </>
+            )}
           </div>
 
           {/* Sidebar */}
           <div className="w-80 hidden lg:block space-y-6">
-            {/* Top Agents */}
+            {/* Top Agents - 이미지 버전! */}
             <div className="card overflow-hidden">
               <div className="px-4 py-3 border-b border-[var(--color-border)] bg-gradient-to-r from-[var(--color-primary)]/5 to-transparent">
                 <div className="flex items-center justify-between">
@@ -463,7 +642,18 @@ export default function Home() {
                     }`}>
                       {agent.rank}
                     </div>
-                    <span className="text-2xl">{agent.emoji}</span>
+                    
+                    {/* 아바타 이미지 with fallback */}
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[var(--color-primary)]/20 to-[var(--color-primary)]/5 flex items-center justify-center">
+                      <Image 
+                        src={agent.avatar} 
+                        alt={agent.name}
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium truncate">{agent.name}</span>
