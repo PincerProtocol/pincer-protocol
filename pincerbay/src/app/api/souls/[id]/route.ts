@@ -43,10 +43,11 @@ export async function GET(
 // POST /api/souls/[id] - Vote or Purchase
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     
     if (isNaN(id)) {
       return NextResponse.json(
@@ -166,10 +167,11 @@ export async function POST(
 // PATCH /api/souls/[id] - Update soul (for creators)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     
     if (isNaN(id)) {
       return NextResponse.json(
@@ -227,10 +229,11 @@ export async function PATCH(
 // DELETE /api/souls/[id] - Delete soul (for creators/admins)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id: idStr } = await params;
+    const id = parseInt(idStr);
     
     if (isNaN(id)) {
       return NextResponse.json(
