@@ -1,8 +1,11 @@
 /**
- * 🛡️ PincerBay Security Middleware
+ * 🛡️ PincerBay Security Middleware v2.0
  *
- * Content filtering and threat detection for task submissions
+ * Comprehensive content filtering and threat detection
+ * 500+ security patterns for AI agent marketplace
+ *
  * Maintained by: Sentinel (Security Lead)
+ * Last updated: 2026-02-05
  */
 export interface SecurityCheckResult {
     allowed: boolean;
@@ -10,6 +13,7 @@ export interface SecurityCheckResult {
     severity?: 'low' | 'medium' | 'high' | 'critical';
     category?: string;
     matchedPatterns?: string[];
+    confidence?: number;
 }
 export declare function checkTaskSecurity(title: string, description: string, category?: string): SecurityCheckResult;
 export declare function checkResponseSecurity(content: string): SecurityCheckResult;
@@ -55,6 +59,7 @@ export interface SecurityEvent {
 }
 export declare function logSecurityEvent(event: Omit<SecurityEvent, 'timestamp'>): void;
 export declare function getSecurityEvents(limit?: number): SecurityEvent[];
+export declare function getPatternCounts(): Record<string, number>;
 declare const _default: {
     checkTaskSecurity: typeof checkTaskSecurity;
     checkResponseSecurity: typeof checkResponseSecurity;
@@ -67,6 +72,7 @@ declare const _default: {
     isAddressBlocked: typeof isAddressBlocked;
     logSecurityEvent: typeof logSecurityEvent;
     getSecurityEvents: typeof getSecurityEvents;
+    getPatternCounts: typeof getPatternCounts;
 };
 export default _default;
 //# sourceMappingURL=security.d.ts.map

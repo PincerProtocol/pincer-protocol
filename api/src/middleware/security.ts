@@ -70,11 +70,13 @@ const CREDENTIAL_PATTERNS: RegExp[] = [
   /\bpassword\b.*\b(give|share|send|tell|provide|show|reveal)\b/i,
   /\b(your|the|my|their)\b.*\bpassword\b/i,
   /\bpassword\b.*\b(for|of|to)\b.*\b(account|login|user|admin|system)\b/i,
+  /\bwhat\s+is\b.*\bpassword\b/i,
+  /\bpassword\b(?!\s+(hash|encrypt|validat|strength|policy|protect|security))/i,
   /\bpasscode\b/i,
   /\bpin[_\-\s]?code\b/i,
   /\b2fa[_\-\s]?(code|token|secret)\b/i,
   /\btotp\b/i,
-  /\botp\b/i,
+  /\botp\b(?!\s+(implement|generat|validat))/i,
   /\bauthenticator[_\-\s]?(code|secret)\b/i,
   /\bbackup[_\-\s]?code\b/i,
   /\brecovery[_\-\s]?code\b/i,
@@ -89,8 +91,9 @@ const CREDENTIAL_PATTERNS: RegExp[] = [
   /\bsql[_\-\s]?password\b/i,
   /\bmysql[_\-\s]?password\b/i,
   /\bpostgres[_\-\s]?password\b/i,
-  /\bmongo[_\-\s]?password\b/i,
+  /\bmongo(db)?[_\-\s]?password\b/i,
   /\bredis[_\-\s]?password\b/i,
+  /\buser(name)?\s+and\s+password\b/i,
   
   // === Exchange/Platform Specific ===
   /\b(binance|coinbase|kraken|ftx|bybit|okx|kucoin|gate\.?io|huobi|bitfinex|gemini|bitstamp)\b.*\b(key|secret|password|api|token)\b/i,
@@ -184,8 +187,9 @@ const CREDENTIAL_PATTERNS: RegExp[] = [
   /\bextract\b.*\b(api|key|secret|token)\b/i,
   
   // === Additional Credential Patterns ===
-  /\bcredential\b/i,
+  /\bcredential(?!.*\b(stuff|check|validat|verif|manage))/i,
   /\bsecret\b.*\b(key|value|data)\b/i,
+  /\bsecretkey\b/i,
   /\bencrypted\b.*\b(password|key)\b/i,
   /\bdecrypted\b.*\b(password|key)\b/i,
   /\bplaintext\b.*\b(password|credential)\b/i,
@@ -198,8 +202,17 @@ const CREDENTIAL_PATTERNS: RegExp[] = [
   /\broot\b.*\b(access|login|credential)\b/i,
   /\bsudo\b.*\b(access|credential)\b/i,
   /\bprivileged\b.*\b(access|credential|account)\b/i,
-  /\bsuperuser\b/i,
-  /\bsuperadmin\b/i,
+  /\bsuperuser\b(?!.*\b(creat|add|manag))/i,
+  /\bsuperadmin\b(?!.*\b(creat|add|manag))/i,
+  
+  // === Version Control Tokens ===
+  /\bgit\b.*\b(token|credential|password)\b/i,
+  /\b(token|credential)\b.*\bgit(hub|lab)?\b/i,
+  
+  // === Environment & Config ===
+  /\benv\b.*\b(secret|password|key|token)\b/i,
+  /\bconfig\b.*\b(secret|password|key)\b/i,
+  /\bdotenv\b/i,
 ];
 
 // ==========================================
@@ -210,85 +223,98 @@ const MALWARE_PATTERNS: RegExp[] = [
   // === Malware Types ===
   /\bransomware\b/i,
   /\bkeylogger\b/i,
-  /\btrojan\b/i,
-  /\bvirus\b/i,
-  /\bmalware\b/i,
+  /\bkey\s*logger\b/i,
+  /\btrojan\b(?!.*\b(detect|remov|protect)\b)/i,
+  /\bvirus\b(?!.*\b(scan|detect|remov|protect|anti)\b)/i,
+  /\bmalware\b(?!.*\b(detect|scan|analys|research|remov|protect)\b)/i,
   /\bspyware\b/i,
   /\bbackdoor\b/i,
   /\brootkits?\b/i,
   /\bbotnet\b/i,
-  /\bworm\b/i,
+  /\bworm\b(?!.*\b(detect|remov|protect)\b)/i,
   /\badware\b/i,
   /\bscareware\b/i,
   /\blogic[_\-\s]?bomb\b/i,
   /\btime[_\-\s]?bomb\b/i,
   /\bdropper\b/i,
+  /\bmalicious\s*downloader\b/i,
   /\bdownloader\b.*\b(malicious|malware)\b/i,
   /\brat\b.*\b(remote|access|trojan)\b/i,
   /\bremote[_\-\s]?access[_\-\s]?trojan\b/i,
-  /\binfo[_\-]?stealer\b/i,
-  /\bcredential[_\-]?stealer\b/i,
-  /\bpassword[_\-]?stealer\b/i,
-  /\bbanking[_\-]?trojan\b/i,
-  /\bcrypto[_\-]?stealer\b/i,
-  /\bwallet[_\-]?drainer\b/i,
-  /\btoken[_\-]?drainer\b/i,
-  /\bnft[_\-]?drainer\b/i,
-  /\bclipboard[_\-]?hijack/i,
-  /\baddress[_\-]?swap/i,
-  /\baddress[_\-]?poison/i,
+  /\binfo[_\-\s]?stealer\b/i,
+  /\bcredential[_\-\s]?stealer\b/i,
+  /\bpassword[_\-\s]?stealer\b/i,
+  /\bbanking[_\-\s]?trojan\b/i,
+  /\bcrypto[_\-\s]?stealer\b/i,
+  /\bwallet[_\-\s]?drainer\b/i,
+  /\btoken[_\-\s]?drainer\b/i,
+  /\bnft[_\-\s]?drainer\b/i,
+  /\bclipboard[_\-\s]?hijack/i,
+  /\baddress[_\-\s]?swap/i,
+  /\baddress[_\-\s]?poison/i,
+  /\baddress\s*swapper\b/i,
   
   // === Exploits ===
-  /\bexploit\b/i,
-  /\bzero[_\-\s]?day\b/i,
-  /\b0[_\-\s]?day\b/i,
+  /\bexploit\b(?!.*\b(prevent|protect|detect|mitigate|fix|patch)\b)/i,
+  /\bzero[_\-\s]?day\b(?!.*\b(protect|detect|research|report)\b)/i,
+  /\b0[_\-\s]?day\b(?!.*\b(protect|detect|research|report)\b)/i,
+  /\bmalicious\s*payload\b/i,
+  /\binject\s*payload\b/i,
   /\bpayload\b.*\b(malicious|inject|execute)\b/i,
   /\bshellcode\b/i,
   /\breverse[_\-\s]?shell\b/i,
   /\bbind[_\-\s]?shell\b/i,
   /\bweb[_\-\s]?shell\b/i,
-  /\bc2[_\-\s]?(server|channel|beacon)\b/i,
-  /\bcommand[_\-\s]?and[_\-\s]?control\b/i,
+  /\bc2[_\-\s]?(server|channel|beacon|infrastructure)\b/i,
+  /\bcommand[_\-\s]?(and|&)[_\-\s]?control\b/i,
   /\bcnc[_\-\s]?server\b/i,
-  /\bbeacon\b.*\b(malware|c2)\b/i,
-  /\bpersistence\b.*\b(mechanism|technique)\b/i,
-  /\bprivilege[_\-\s]?escalation\b/i,
-  /\belevate[_\-\s]?privilege\b/i,
-  /\blateral[_\-\s]?movement\b/i,
+  /\bbeacon\b.*\b(malware|c2|command)\b/i,
+  /\bmalware\s*beacon\b/i,
+  /\bpersistence\b.*\b(mechanism|technique|method)\b/i,
+  /\bprivilege[_\-\s]?escalation\b(?!.*\b(prevent|detect|protect)\b)/i,
+  /\belevate[_\-\s]?privilege\b(?!.*\b(check|audit|require)\b)/i,
+  /\blateral[_\-\s]?movement\b(?!.*\b(detect|prevent|protect)\b)/i,
   
   // === Cryptojacking ===
   /\bcryptojack/i,
+  /\bcrypto\s*jack/i,
+  /\binject\s*(miner|mining)\b/i,
   /\bminer\b.*\b(inject|hidden|stealth|coinhive|monero|xmr)\b/i,
   /\bhidden[_\-\s]?miner\b/i,
   /\bstealth[_\-\s]?miner\b/i,
   /\bcoinhive\b/i,
-  /\bweb[_\-\s]?miner\b/i,
-  /\bbrowser[_\-\s]?miner\b/i,
+  /\bweb[_\-\s]?miner\b(?!.*\b(legitim|authorize|consent)\b)/i,
+  /\bbrowser[_\-\s]?miner\b(?!.*\b(legitim|authorize|consent)\b)/i,
+  /\bmonero\s*miner\s*inject\b/i,
+  /\bxmr\s*stealth\s*miner\b/i,
   
   // === Code Injection ===
-  /\bcode[_\-\s]?injection\b/i,
-  /\bcommand[_\-\s]?injection\b/i,
+  /\bcode[_\-\s]?injection\b(?!.*\b(prevent|protect|detect)\b)/i,
+  /\bcommand[_\-\s]?injection\b(?!.*\b(prevent|protect|detect)\b)/i,
   /\bos[_\-\s]?command[_\-\s]?injection\b/i,
-  /\bshell[_\-\s]?injection\b/i,
+  /\bshell[_\-\s]?injection\b(?!.*\b(prevent|protect|detect)\b)/i,
   /\btemplate[_\-\s]?injection\b/i,
-  /\bssti\b/i,
+  /\bssti\b(?!.*\b(prevent|protect|detect|test)\b)/i,
   /\bldap[_\-\s]?injection\b/i,
   /\bxml[_\-\s]?injection\b/i,
   /\bxpath[_\-\s]?injection\b/i,
-  /\bxxe\b/i,
+  /\bxxe\b(?!.*\b(prevent|protect|detect|test)\b)/i,
+  /\bxml\s*external\s*entit/i,
   /\bdeserialization\b.*\b(attack|vuln|exploit)\b/i,
   /\binsecure[_\-\s]?deserialization\b/i,
-  /\bremote[_\-\s]?code[_\-\s]?execution\b/i,
+  /\bremote[_\-\s]?code[_\-\s]?execution\b(?!.*\b(prevent|protect|detect)\b)/i,
   /\brce\b.*\b(vuln|exploit|attack)\b/i,
-  /\barbitrary[_\-\s]?code\b/i,
-  /\beval\b.*\b(inject|attack|vuln)\b/i,
+  /\barbitrary[_\-\s]?code\b.*\b(execution|inject)\b/i,
+  /\beval\b.*\b(inject|attack|vuln|exploit)\b/i,
+  /\binjection\s*attack\b/i,
   
   // === Memory Attacks ===
-  /\boverflow\b.*\b(buffer|stack|heap|integer)\b/i,
-  /\bbuffer[_\-\s]?overflow\b/i,
-  /\bstack[_\-\s]?overflow\b/i,
+  /\bbuffer[_\-\s]?overflow\b(?!.*\b(prevent|protect|detect|fix)\b)/i,
+  /\boverflow\b.*\b(buffer|stack|heap)\b/i,
+  /\bstack[_\-\s]?overflow\b(?!.*\b(prevent|protect|detect|website)\b)/i,
   /\bheap[_\-\s]?overflow\b/i,
-  /\bformat[_\-\s]?string\b.*\b(vuln|attack)\b/i,
+  /\binteger\s*overflow\b(?!.*\b(prevent|protect|detect|fix)\b)/i,
+  /\bformat[_\-\s]?string\b.*\b(vuln|attack|exploit)\b/i,
   /\buse[_\-\s]?after[_\-\s]?free\b/i,
   /\bdouble[_\-\s]?free\b/i,
   /\bmemory[_\-\s]?corruption\b/i,
@@ -297,22 +323,29 @@ const MALWARE_PATTERNS: RegExp[] = [
   
   // === Bypass Techniques ===
   /\bbypass\b.*\b(security|antivirus|av|edr|firewall|waf|authentication|auth)\b/i,
-  /\bevade\b.*\b(detection|antivirus|av|edr)\b/i,
+  /\bsecurity\s*bypass\b/i,
+  /\bevade\b.*\b(detection|antivirus|av|edr|security)\b/i,
   /\bav[_\-\s]?evasion\b/i,
+  /\bevasion\s*technique\b/i,
   /\bedr[_\-\s]?bypass\b/i,
   /\bfirewall[_\-\s]?bypass\b/i,
   /\bwaf[_\-\s]?bypass\b/i,
+  /\bauthentication\s*bypass\b/i,
+  /\bauth\s*bypass\b/i,
   /\bantivm\b/i,
+  /\banti[_\-\s]?vm\s*detection\b/i,
   /\banti[_\-\s]?sandbox\b/i,
   /\bsandbox[_\-\s]?evasion\b/i,
   /\bdetection[_\-\s]?evasion\b/i,
-  /\bobfuscat\b.*\b(code|payload|malware)\b/i,
+  /\bobfuscat\b.*\b(code|payload|malware|malicious)\b/i,
+  /\bmalware\s*obfuscat/i,
   /\bpack(er|ing)?\b.*\b(malware|malicious|payload)\b/i,
   /\bmalicious\b.*\bpack(er|ing|ed)?\b/i,
   /\bcrypter\b/i,
   /\bfud\b/i, // Fully undetectable
   /\bfully[_\-\s]?undetect/i,
   /\bundetect(able|ed)\b.*\b(malware|payload|virus)\b/i,
+  /\bundetectable\s*malware\b/i,
 ];
 
 // ==========================================
@@ -321,31 +354,40 @@ const MALWARE_PATTERNS: RegExp[] = [
 
 const FRAUD_PATTERNS: RegExp[] = [
   // === Financial Fraud ===
-  /\bphishing\b/i,
-  /\bscam\b/i,
-  /\bfraud\b/i,
+  /\bphishing\b(?!.*\b(prevent|protect|detect|aware|train)\b)/i,
+  /\bphishing\s*(page|site|attack)\b/i,
+  /\bscam\b(?!.*\b(prevent|protect|detect|avoid|aware)\b)/i,
+  /\bscam\s*(website|scheme)\b/i,
+  /\bfraud\b(?!.*\b(prevent|protect|detect|investigat)\b)/i,
+  /\bfraud\s*scheme\b/i,
   /\bponzi\b/i,
+  /\bponzi\s*scheme\b/i,
   /\bpyramid[_\-\s]?scheme\b/i,
   /\bmoney[_\-\s]?launder/i,
   /\blaunder(ing)?\b.*\b(money|fund|crypto)\b/i,
   /\bwash[_\-\s]?trading\b/i,
   /\bmarket[_\-\s]?manipulation\b/i,
   /\bprice[_\-\s]?manipulation\b/i,
+  /\bmanipulate\s*(market|price)\b/i,
   /\bpump[_\-\s]?(and|&|n)?[_\-\s]?dump\b/i,
   /\brug[_\-\s]?pull\b/i,
   /\bexit[_\-\s]?scam\b/i,
   /\bhoneypot\b.*\b(token|contract|scam)\b/i,
-  /\bfront[_\-\s]?run(ning)?\b/i,
+  /\bfront[_\-\s]?run(ning)?\b(?!.*\b(prevent|protect|detect)\b)/i,
   /\bsandwich[_\-\s]?attack\b/i,
   /\bmev[_\-\s]?exploit\b/i,
-  /\bflash[_\-\s]?loan[_\-\s]?attack\b/i,
+  /\bflash[_\-\s]?loan[_\-\s]?attack\b(?!.*\b(prevent|protect|detect)\b)/i,
   /\boracle[_\-\s]?manipulation\b/i,
   /\bprice[_\-\s]?oracle[_\-\s]?attack\b/i,
+  /\bmanipulate\s*oracle\b/i,
   
   // === Crypto Scams ===
+  /\bcreate\s*fake\s*(token|nft|airdrop)\b/i,
+  /\bbuild\s*fake\s*(website|app|wallet|exchange)\b/i,
+  /\bmake\s*fake\s*(ico|ido|presale|mint)\b/i,
   /\bfake\b.*\b(token|nft|airdrop|ico|ido|presale|mint|collection)\b/i,
   /\b(token|nft|airdrop|ico|ido|presale|mint|collection)\b.*\bfake\b/i,
-  /\bclone\b.*\b(token|contract|site|app)\b/i,
+  /\bclone\b.*\b(token|contract|site|app|website)\b/i,
   /\bfake[_\-\s]?website\b/i,
   /\bfake[_\-\s]?app\b/i,
   /\bfake[_\-\s]?wallet\b/i,
@@ -359,17 +401,20 @@ const FRAUD_PATTERNS: RegExp[] = [
   /\bfake[_\-\s]?audit\b/i,
   /\bfake[_\-\s]?kyc\b/i,
   /\bfake[_\-\s]?verification\b/i,
+  /\bfake[_\-\s]?review\b/i,
+  /\bfake[_\-\s]?testimonial\b/i,
   
   // === Social Engineering ===
-  /\bsocial[_\-\s]?engineer/i,
-  /\bpretexting\b/i,
-  /\bbaiting\b/i,
-  /\btailgating\b/i,
+  /\bsocial[_\-\s]?engineer(?!.*\b(defend|prevent|protect|aware)\b)/i,
+  /\bsocial\s*engineering\s*(attack|campaign)\b/i,
+  /\bpretexting\b(?!.*\b(prevent|detect)\b)/i,
+  /\bbaiting\b.*\battack\b/i,
+  /\btailgating\b.*\battack\b/i,
   /\bquid[_\-\s]?pro[_\-\s]?quo\b/i,
-  /\bvishing\b/i,
-  /\bsmishing\b/i,
-  /\bspear[_\-\s]?phishing\b/i,
-  /\bwhaling\b/i,
+  /\bvishing\b(?!.*\b(prevent|detect)\b)/i,
+  /\bsmishing\b(?!.*\b(prevent|detect)\b)/i,
+  /\bspear[_\-\s]?phishing\b(?!.*\b(prevent|detect)\b)/i,
+  /\bwhaling\b(?!.*\b(prevent|detect)\b)/i,
   /\bbusiness[_\-\s]?email[_\-\s]?compromise\b/i,
   /\bbec\b.*\b(scam|attack)\b/i,
   /\bceo[_\-\s]?fraud\b/i,
@@ -381,26 +426,31 @@ const FRAUD_PATTERNS: RegExp[] = [
   /\bpig[_\-\s]?butchering\b/i,
   
   // === Deceptive Practices ===
-  /\btrick\b.*\b(user|victim|target)\b/i,
-  /\bdeceive\b/i,
-  /\bmanipulat\b.*\b(user|victim|market|price)\b/i,
-  /\bmislead\b/i,
-  /\bfake[_\-\s]?review\b/i,
-  /\bfake[_\-\s]?testimonial\b/i,
+  /\btrick\b.*\b(user|victim|target|customer|investor)\b/i,
+  /\bdeceive\b.*\b(user|customer|investor)\b/i,
+  /\bmanipulat\b.*\b(user|victim|market|price|customer)\b/i,
+  /\bmislead\b.*\b(user|investor|customer)\b/i,
+  /\bcreate\s*fake\s*review\b/i,
+  /\bbuild\s*fake\s*testimonial\b/i,
   /\bastroturf/i,
-  /\bshill(ing)?\b/i,
+  /\bshill(ing)?\b(?!.*\b(detect|prevent)\b)/i,
+  /\bshilling\s*bot\b/i,
   /\bbot\b.*\b(spam|promote|hype)\b/i,
+  /\bspam\s*(bot|promotion)\b/i,
   /\bcoordinated\b.*\b(inauthentic|campaign)\b/i,
+  /\binauthentic\s*behavior\b/i,
   
   // === Investment Scams ===
-  /\bguaranteed\b.*\b(return|profit|roi)\b/i,
-  /\brisk[_\-\s]?free\b.*\b(invest|return|profit)\b/i,
-  /\bdouble\b.*\b(money|crypto|investment)\b/i,
+  /\bguaranteed\b.*\b(return|profit|roi|earnings)\b/i,
+  /\brisk[_\-\s]?free\b.*\b(invest(ment)?|return|profit)\b/i,
+  /\bdouble\b.*\b(money|crypto|investment|fund)\b/i,
   /\b(10|100|1000)x\b.*\b(guaranteed|return|profit)\b/i,
-  /\bhigh[_\-\s]?yield\b.*\b(program|scheme)\b/i,
+  /\b100x\s*guaranteed\s*profit\b/i,
+  /\bhigh[_\-\s]?yield\b.*\b(program|scheme|investment)\b/i,
   /\bhyip\b/i,
-  /\bautomatic\b.*\b(profit|return|trading)\b/i,
+  /\bautomatic\b.*\b(profit|return|trading)\b(?!.*\b(system|algorithm|strategy)\b)/i,
   /\bpassive[_\-\s]?income\b.*\b(scam|scheme|guaranteed)\b/i,
+  /\bguaranteed\s*passive\s*income\b/i,
 ];
 
 // ==========================================
@@ -409,73 +459,84 @@ const FRAUD_PATTERNS: RegExp[] = [
 
 const PRIVACY_PATTERNS: RegExp[] = [
   // === Personal Information Theft ===
-  /\bdoxx?(ing)?\b/i,
-  /\bstalk(ing|er)?\b/i,
+  /\bdoxx?(ing)?\b(?!.*\b(prevent|protect|victim)\b)/i,
+  /\bdoxx\s*this\s*person\b/i,
+  /\bstalk(ing|er)?\b(?!.*\b(victim|prevent|protect)\b)/i,
+  /\bstalk\s*(user|target|person)\b/i,
   /\bleak\b.*\b(personal|private|data|info|pii)\b/i,
-  /\bexpose\b.*\b(personal|private|identity)\b/i,
+  /\bexpose\b.*\b(personal|private|identity|info)\b/i,
   /\bscrape\b.*\b(personal|private|pii|user|profile|data)\b/i,
-  /\bharvest\b.*\b(email|phone|address|data|personal)\b/i,
-  /\bcollect\b.*\b(without|unauthorized).*(consent|permission)\b/i,
+  /\bharvest\b.*\b(email|phone|address|data|personal|user)\b/i,
+  /\bcollect\b.*\b(without|unauthorized).*(consent|permission|knowledge)\b/i,
   /\bpii\b.*\b(steal|collect|scrape|harvest|extract)\b/i,
-  /\bidentity[_\-\s]?theft\b/i,
-  /\bidentity[_\-\s]?fraud\b/i,
+  /\bidentity[_\-\s]?theft\b(?!.*\b(prevent|protect|victim)\b)/i,
+  /\bidentity[_\-\s]?fraud\b(?!.*\b(prevent|protect|detect)\b)/i,
   /\bsocial[_\-\s]?security\b.*\b(number|steal|collect)\b/i,
   /\bssn\b.*\b(steal|collect|extract)\b/i,
   
   // === Tracking/Surveillance ===
-  /\btrack(ing)?\b.*\b(location|gps|person|user|victim|target)\b/i,
+  /\btrack\b.*\b(user\s*location|gps|person|victim|target)\b/i,
+  /\blocation\s*tracking\b(?!.*\b(feature|service|consent)\b)/i,
   /\bspy(ing)?\b.*\b(on|user|target|person)\b/i,
-  /\bsurveillance\b/i,
-  /\bmonitor\b.*\b(without|unauthorized).*(consent|knowledge)\b/i,
-  /\blocation[_\-\s]?track/i,
-  /\bgps[_\-\s]?track/i,
+  /\bspy\s*on\s*target\b/i,
+  /\bsurveillance\b(?!.*\b(detect|prevent|legal|authorized)\b)/i,
+  /\bsurveillance\s*tool\b/i,
+  /\bmonitor\b.*\b(without|unauthorized).*(consent|knowledge|permission)\b/i,
+  /\blocation[_\-\s]?track(?!.*\b(feature|app|consent|legal)\b)/i,
+  /\bgps[_\-\s]?track(?!.*\b(app|feature|consent)\b)/i,
   /\bgeolocation\b.*\b(track|steal|collect)\b/i,
-  /\bdevice[_\-\s]?fingerprint/i,
-  /\bbrowser[_\-\s]?fingerprint/i,
+  /\bdevice[_\-\s]?fingerprint(?!.*\b(prevent|protect|detect)\b)/i,
+  /\bbrowser[_\-\s]?fingerprint(?!.*\b(prevent|protect)\b)/i,
   /\bcanvas[_\-\s]?fingerprint/i,
   /\bsupercookie\b/i,
   /\bevercookie\b/i,
   /\bzombie[_\-\s]?cookie\b/i,
   
   // === Harassment ===
-  /\bharass/i,
-  /\bbully(ing)?\b/i,
-  /\bcyberbully/i,
-  /\bthreaten/i,
-  /\bthreat\b/i,
+  /\bharass(?!.*\b(victim|prevent|protect|report)\b)/i,
+  /\bharass\s*(person|user|target)\b/i,
+  /\bbully(ing)?\b(?!.*\b(victim|prevent|stop|aware)\b)/i,
+  /\bbully\s*target\b/i,
+  /\bcyberbully(?!.*\b(victim|prevent|aware)\b)/i,
+  /\bcyberbully\s*campaign\b/i,
+  /\bthreaten(?!.*\b(model|analys)\b)/i,
+  /\bthreaten\s*(victim|user|person)\b/i,
+  /\bthreat\b(?!.*\b(model|analys|intel|detect|monitor)\b)/i,
   /\bintimida/i,
-  /\bblackmail\b/i,
-  /\bextort/i,
+  /\bblackmail\b(?!.*\b(victim|prevent|report)\b)/i,
+  /\bextort(?!.*\b(victim|prevent)\b)/i,
   /\bsextort/i,
   /\brevenge[_\-\s]?porn\b/i,
   /\bnon[_\-\s]?consensual[_\-\s]?(porn|intimate)\b/i,
   /\bncii\b/i,
   
   // === Data Breach ===
-  /\bdata[_\-\s]?breach\b/i,
-  /\bdata[_\-\s]?dump\b/i,
-  /\bdata[_\-\s]?leak\b/i,
-  /\bexfiltrat\b/i,
-  /\bstolen[_\-\s]?data\b/i,
+  /\bdata[_\-\s]?breach\b(?!.*\b(prevent|detect|report|respond|victim)\b)/i,
+  /\bcause\s*data\s*breach\b/i,
+  /\bdata[_\-\s]?dump\b(?!.*\b(prevent|detect)\b)/i,
+  /\bdata[_\-\s]?leak\b(?!.*\b(prevent|detect|report)\b)/i,
+  /\bleak\s*data\b/i,
+  /\bexfiltrat\b(?!.*\b(prevent|detect)\b)/i,
+  /\bstolen[_\-\s]?data\b(?!.*\b(recover|victim|report)\b)/i,
   /\bbreach(ed)?\b.*\b(database|data|credentials)\b/i,
-  /\bdark[_\-\s]?web\b.*\b(sell|buy|data)\b/i,
-  /\bunderground\b.*\b(forum|market|sell)\b/i,
+  /\bdark[_\-\s]?web\b.*\b(sell|buy|data|credential)\b/i,
+  /\bunderground\b.*\b(forum|market|sell|data)\b/i,
   
   // === Unauthorized Access ===
-  /\bunauthorized[_\-\s]?access\b/i,
+  /\bunauthorized[_\-\s]?access\b(?!.*\b(prevent|detect|monitor|alert)\b)/i,
   /\baccess\b.*\bwithout\b.*\b(permission|consent|authorization)\b/i,
-  /\bintrusion\b/i,
-  /\bbreak[_\-\s]?into\b.*\b(account|system|computer)\b/i,
-  /\bhack[_\-\s]?into\b/i,
+  /\bintrusion\b(?!.*\b(detect|prevent|system|alert)\b)/i,
+  /\bbreak[_\-\s]?into\b.*\b(account|system|computer|network)\b/i,
+  /\bhack[_\-\s]?into\b.*\b(account|system)\b/i,
   /\bgain[_\-\s]?access\b.*\b(unauthorized|illegal|illicit)\b/i,
   
   // === Account Compromise ===
-  /\baccount[_\-\s]?takeover\b/i,
+  /\baccount[_\-\s]?takeover\b(?!.*\b(prevent|detect|protect)\b)/i,
   /\bato\b.*\b(attack|fraud)\b/i,
   /\bhijack\b.*\b(account|session|cookie)\b/i,
-  /\bsession[_\-\s]?hijack/i,
-  /\bcookie[_\-\s]?hijack/i,
-  /\bcredential[_\-\s]?stuff/i,
+  /\bsession[_\-\s]?hijack(?!.*\b(prevent|detect)\b)/i,
+  /\bcookie[_\-\s]?hijack(?!.*\b(prevent|detect)\b)/i,
+  /\bcredential[_\-\s]?stuff(?!.*\b(prevent|detect|protect)\b)/i,
   /\bbrute[_\-\s]?force\b.*\b(account|password|login)\b/i,
 ];
 
@@ -485,114 +546,127 @@ const PRIVACY_PATTERNS: RegExp[] = [
 
 const ATTACK_PATTERNS: RegExp[] = [
   // === Network Attacks ===
-  /\bddos\b/i,
-  /\bdos[_\-\s]?attack\b/i,
-  /\bdenial[_\-\s]?of[_\-\s]?service\b/i,
-  /\bsyn[_\-\s]?flood\b/i,
-  /\budp[_\-\s]?flood\b/i,
+  /\blaunch\s*ddos\b/i,
+  /\bddos\b(?!.*\b(protect|prevent|mitigate)\b)/i,
+  /\bdos[_\-\s]?attack\b(?!.*\b(prevent|protect)\b)/i,
+  /\bdenial[_\-\s]?of[_\-\s]?service\b(?!.*\b(prevent|protect)\b)/i,
+  /\bsyn[_\-\s]?flood\b(?!.*\b(prevent|protect)\b)/i,
+  /\budp[_\-\s]?flood\b(?!.*\b(prevent|protect)\b)/i,
   /\bicmp[_\-\s]?flood\b/i,
-  /\bhttp[_\-\s]?flood\b/i,
-  /\bslowloris\b/i,
+  /\bhttp[_\-\s]?flood\b(?!.*\b(prevent|protect)\b)/i,
+  /\bslowloris\b(?!.*\b(prevent|protect)\b)/i,
   /\bamplification[_\-\s]?attack\b/i,
   /\breflection[_\-\s]?attack\b/i,
   /\bsmurf[_\-\s]?attack\b/i,
   /\bping[_\-\s]?of[_\-\s]?death\b/i,
   /\bteardrop[_\-\s]?attack\b/i,
-  /\barp[_\-\s]?spoof/i,
-  /\barp[_\-\s]?poison/i,
-  /\bdns[_\-\s]?spoof/i,
-  /\bdns[_\-\s]?poison/i,
-  /\bdns[_\-\s]?hijack/i,
+  /\barp[_\-\s]?spoof(?!.*\b(detect|prevent)\b)/i,
+  /\barp[_\-\s]?poison(?!.*\b(detect|prevent)\b)/i,
+  /\bdns[_\-\s]?spoof(?!.*\b(detect|prevent)\b)/i,
+  /\bdns[_\-\s]?poison(?!.*\b(detect|prevent)\b)/i,
+  /\bdns[_\-\s]?hijack(?!.*\b(detect|prevent)\b)/i,
   /\bbgp[_\-\s]?hijack/i,
-  /\bip[_\-\s]?spoof/i,
-  /\bmitm\b/i,
-  /\bman[_\-\s]?in[_\-\s]?(the|middle)\b/i,
-  /\bssl[_\-\s]?strip/i,
+  /\bip[_\-\s]?spoof(?!.*\b(detect|prevent)\b)/i,
+  /\bmitm\b(?!.*\b(prevent|protect|detect)\b)/i,
+  /\bman[_\-\s]?in[_\-\s]?(the[_\-\s])?middle\b(?!.*\b(prevent|protect|detect)\b)/i,
+  /\bssl[_\-\s]?strip(?!.*\b(prevent|protect)\b)/i,
   /\bdowngrade[_\-\s]?attack\b/i,
   /\bpoodle\b.*\b(attack|vuln)\b/i,
-  /\bheartbleed\b/i,
-  /\bshellshock\b/i,
+  /\bheartbleed\b(?!.*\b(patch|fix|protect)\b)/i,
+  /\bshellshock\b(?!.*\b(patch|fix|protect)\b)/i,
   
   // === Web Attacks ===
-  /\bsql[_\-\s]?injection\b/i,
-  /\bsqli\b/i,
-  /\bxss\b/i,
-  /\bcross[_\-\s]?site[_\-\s]?script/i,
-  /\bcsrf\b/i,
-  /\bxsrf\b/i,
-  /\bcross[_\-\s]?site[_\-\s]?request[_\-\s]?forgery\b/i,
-  /\bclickjack/i,
+  /\bsql[_\-\s]?injection\b(?!.*\b(prevent|protect|detect|test)\b)/i,
+  /\bsqli\b(?!.*\b(prevent|protect|test)\b)/i,
+  /\bcreate\s*sql\s*injection\b/i,
+  /\bxss\b(?!.*\b(prevent|protect|detect|test)\b)/i,
+  /\bxss\s*attack\b/i,
+  /\bcross[_\-\s]?site[_\-\s]?script(?!.*\b(prevent|protect)\b)/i,
+  /\bcsrf\b(?!.*\b(token|prevent|protect|test)\b)/i,
+  /\bxsrf\b(?!.*\b(prevent|protect)\b)/i,
+  /\bcsrf\s*attack\b/i,
+  /\bcross[_\-\s]?site[_\-\s]?request[_\-\s]?forgery\b(?!.*\b(prevent|protect)\b)/i,
+  /\bclickjack(?!.*\b(prevent|protect)\b)/i,
+  /\bclickjacking\s*attack\b/i,
   /\bui[_\-\s]?redress/i,
-  /\bopen[_\-\s]?redirect\b/i,
+  /\bopen[_\-\s]?redirect\b(?!.*\b(prevent|fix)\b)/i,
   /\bunvalidated[_\-\s]?redirect\b/i,
-  /\bpath[_\-\s]?traversal\b/i,
-  /\bdirectory[_\-\s]?traversal\b/i,
-  /\blfi\b.*\b(attack|vuln)\b/i,
-  /\brfi\b.*\b(attack|vuln)\b/i,
+  /\bpath[_\-\s]?traversal\b(?!.*\b(prevent|protect)\b)/i,
+  /\bdirectory[_\-\s]?traversal\b(?!.*\b(prevent|protect)\b)/i,
+  /\blfi\b.*\b(attack|vuln|exploit)\b/i,
+  /\brfi\b.*\b(attack|vuln|exploit)\b/i,
   /\blocal[_\-\s]?file[_\-\s]?inclusion\b/i,
   /\bremote[_\-\s]?file[_\-\s]?inclusion\b/i,
-  /\bfile[_\-\s]?upload\b.*\b(vuln|attack|malicious)\b/i,
-  /\bssrf\b/i,
+  /\bmalicious\s*file\s*upload\b/i,
+  /\bfile[_\-\s]?upload\b.*\b(vuln|attack|malicious|exploit)\b/i,
+  /\bssrf\b(?!.*\b(prevent|protect|test)\b)/i,
   /\bserver[_\-\s]?side[_\-\s]?request[_\-\s]?forgery\b/i,
   /\bhttp[_\-\s]?request[_\-\s]?smuggling\b/i,
   /\bhttp[_\-\s]?splitting\b/i,
   /\bresponse[_\-\s]?splitting\b/i,
-  /\bcache[_\-\s]?poison/i,
+  /\bcache[_\-\s]?poison(?!.*\b(prevent|detect)\b)/i,
   /\bweb[_\-\s]?cache[_\-\s]?deception\b/i,
   /\bcrlf[_\-\s]?injection\b/i,
   /\bhost[_\-\s]?header[_\-\s]?injection\b/i,
   
   // === Authentication Attacks ===
-  /\bbrute[_\-\s]?force\b/i,
-  /\bdictionary[_\-\s]?attack\b/i,
-  /\bdictionary\b.*\b(attack|password|crack)\b/i,
-  /\bcredential[_\-\s]?stuffing\b/i,
-  /\bpassword[_\-\s]?spray/i,
+  /\bbrute[_\-\s]?force\b(?!.*\b(protect|prevent|detect|test)\b)/i,
+  /\bbrute\s*force\s*attack\b/i,
+  /\bdictionary[_\-\s]?attack\b(?!.*\b(prevent|protect)\b)/i,
+  /\bdictionary\b.*\b(attack|password\s*crack)\b/i,
+  /\bcredential[_\-\s]?stuffing\b(?!.*\b(prevent|protect|detect)\b)/i,
+  /\bpassword[_\-\s]?spray(?!.*\b(prevent|detect)\b)/i,
   /\bspray(ing)?\b.*\bpassword\b/i,
-  /\brainbow[_\-\s]?table\b/i,
-  /\bhash[_\-\s]?crack/i,
-  /\bauth(entication)?[_\-\s]?bypass\b/i,
+  /\brainbow[_\-\s]?table\b(?!.*\b(protect|prevent)\b)/i,
+  /\bhash[_\-\s]?crack(?!.*\b(resist|protect)\b)/i,
+  /\bcrack\s*hash\b/i,
+  /\bauth(entication)?[_\-\s]?bypass\b(?!.*\b(prevent|detect|fix)\b)/i,
   /\btoken[_\-\s]?forgery\b/i,
   /\bjwt[_\-\s]?attack\b/i,
   /\bsession[_\-\s]?fixation\b/i,
   /\bsession[_\-\s]?prediction\b/i,
-  /\bcookie[_\-\s]?manipulation\b/i,
+  /\bcookie[_\-\s]?manipulation\b(?!.*\b(prevent|detect)\b)/i,
+  /\bmanipulate\s*cookie\b/i,
   
   // === Wireless Attacks ===
-  /\bwifi[_\-\s]?crack/i,
+  /\bwifi[_\-\s]?crack(?!.*\b(tool|prevent|protect)\b)/i,
+  /\bcrack\s*wifi\b/i,
   /\bwpa[_\-\s]?crack/i,
   /\bwep[_\-\s]?crack/i,
-  /\bevil[_\-\s]?twin\b/i,
+  /\bevil[_\-\s]?twin\b(?!.*\b(detect|prevent)\b)/i,
   /\brogue[_\-\s]?ap\b/i,
   /\bkarma[_\-\s]?attack\b/i,
   /\bdeauth(entication)?[_\-\s]?attack\b/i,
   /\bbluetooth\b.*\b(hack|attack|exploit)\b/i,
+  /\bhack\s*bluetooth\b/i,
   /\bbluesnarfing\b/i,
   /\bbluejacking\b/i,
   
   // === Smart Contract Attacks ===
   /\breentrancy\b.*\b(attack|exploit|vuln)\b/i,
-  /\breentrancy\b/i, // Simpler match
-  /\binteger[_\-\s]?overflow\b.*\b(attack|exploit)\b/i,
+  /\breentrancy\b(?!.*\b(prevent|protect|guard|check)\b)/i,
+  /\binteger[_\-\s]?overflow\b.*\b(attack|exploit|vuln)\b/i,
   /\boverflow\b.*\binteger\b/i,
-  
-  // === Additional Attack Patterns ===
-  /\bexploit\b.*\b(code|vuln|system|network)\b/i,
-  /\bhack\b.*\b(system|network|server|website)\b/i,
-  /\bpwn\b/i,
-  /\bown\b.*\b(server|system)\b/i,
-  /\bcompromise\b.*\b(system|server|network)\b/i,
-  /\bbreach\b.*\b(security|firewall|system)\b/i,
-  /\bpenetrat\b.*\b(system|network|firewall)\b/i,
-  /\binfiltrat\b/i,
-  /\binteger[_\-\s]?underflow\b.*\b(attack|exploit)\b/i,
+  /\binteger\s*underflow\b.*\b(attack|exploit)\b/i,
+  /\bunderflow\b.*\binteger\b/i,
   /\bfront[_\-\s]?running\b.*\b(attack|exploit)\b/i,
   /\bflash[_\-\s]?loan\b.*\b(attack|exploit)\b/i,
-  /\bdelegate[_\-\s]?call\b.*\b(vuln|attack)\b/i,
-  /\bstorage[_\-\s]?collision\b/i,
-  /\bselfdestruct\b.*\b(attack|exploit)\b/i,
-  /\baccess[_\-\s]?control\b.*\b(vuln|bypass)\b/i,
-  /\buninitialized\b.*\b(storage|proxy)\b/i,
+  /\bflash\s*loan\s*attack\s*exploit\b/i,
+  /\bdelegate[_\-\s]?call\b.*\b(vuln|attack|exploit)\b/i,
+  /\bstorage[_\-\s]?collision\b(?!.*\b(prevent|check)\b)/i,
+  /\bselfdestruct\b.*\b(attack|exploit|vuln)\b/i,
+  /\baccess[_\-\s]?control\b.*\b(vuln|bypass|exploit)\b/i,
+  /\buninitialized\b.*\b(storage|proxy)\b(?!.*\b(check|prevent)\b)/i,
+  
+  // === Additional Attack Patterns ===
+  /\bexploit\b.*\b(code|vuln|system|network|server)\b/i,
+  /\bhack\b.*\b(system|network|server|website|into)\b/i,
+  /\bpwn\b(?!.*\b(capture|the|flag|ctf)\b)/i,
+  /\bown\b.*\b(server|system)\b/i,
+  /\bcompromise\b.*\b(system|server|network|security)\b/i,
+  /\bbreach\b.*\b(security|firewall|system|network)\b/i,
+  /\bpenetrat\b.*\b(system|network|firewall)\b/i,
+  /\binfiltrat\b(?!.*\b(detect|prevent)\b)/i,
 ];
 
 // ==========================================
@@ -632,23 +706,75 @@ const SUSPICIOUS_PATTERNS: RegExp[] = [
 // ==========================================
 
 const ALLOWLIST_CONTEXTS: RegExp[] = [
-  /\b(audit|review|analyze|assess|test|verify)\b.*\b(security|vulnerabilit|smart\s*contract|code)\b/i,
-  /\b(document|explain|tutorial|guide|learn|study)\b.*\b(security|best\s*practice|threat|attack)\b/i,
-  /\bresearch\b.*\b(security|threat|attack|vulnerabilit)\b/i,
-  /\b(prevent|protect|defend|detect|mitigate|remediate)\b.*\b(attack|threat|vuln|exploit)\b/i,
-  /\b(fix|patch|resolve|address)\b.*\b(vulnerabilit|security|issue|bug)\b/i,
-  /\bsecurity\s*(report|disclosure|advisory|bulletin)\b/i,
+  // === Security Analysis & Testing ===
+  /\b(audit|review|analyze|assess|test|verify|inspect|examine)\b.*\b(security|vulnerabilit|smart\s*contract|code|system)\b/i,
+  /\bsecurity\b.*\b(audit|review|analys[ie]s|assessment|test|verification)\b/i,
+  /\b(document|explain|tutorial|guide|learn|study|understand|educate)\b.*\b(security|best\s*practice|threat|attack)\b/i,
+  /\bresearch\b.*\b(security|threat|attack|vulnerabilit|exploit)\b/i,
+  /\bacademic\b.*\b(research|study|paper)\b/i,
+  /\bwhitepaper\b/i,
+  /\bcase\s*study\b/i,
+  
+  // === Defensive Security (EXPANDED) ===
+  /\b(prevent|stop|block|avoid|evade)\b.*\b(attack|threat|vuln|exploit|breach|hack|malware|phish)\b/i,
+  /\b(protect|safeguard|secure|shield|guard)\b.*\b(against|from)\b.*\b(attack|threat|vuln|exploit)\b/i,
+  /\b(defend|defense|defensive)\b.*\b(against|from|measure|strategy|technique)\b/i,
+  /\b(detect|identify|discover|find|spot)\b.*\b(attack|threat|vuln|exploit|malware|breach)\b/i,
+  /\b(mitigate|reduce|minimize|limit|contain)\b.*\b(attack|threat|vuln|exploit|risk|impact)\b/i,
+  /\b(remediate|fix|repair|resolve|address|handle)\b.*\b(vulnerabilit|security|issue|bug|flaw)\b/i,
+  /\b(monitor|watch|track|observe)\b.*\b(security|threat|attack|intrusion|anomal)\b/i,
+  /\b(respond|response)\b.*\b(incident|breach|attack|threat)\b/i,
+  /\b(recover|recovery)\b.*\b(disaster|breach|incident|attack)\b/i,
+  
+  // === Security Operations ===
+  /\b(fix|patch|resolve|address|correct|repair)\b.*\b(vulnerabilit|security|issue|bug|flaw|weakness)\b/i,
+  /\bsecurity\s*(report|disclosure|advisory|bulletin|alert|notice)\b/i,
+  /\b(cve|vulnerability)\s*report\b/i,
   /\bbug\s*bounty\b/i,
+  /\bresponsible\s*disclosure\b/i,
   /\bpenetration\s*test/i,
   /\bpen\s*test/i,
   /\bred\s*team/i,
-  /\bsecurity\s*assessment\b/i,
-  /\bthreat\s*model/i,
-  // Security-related coding (building secure systems)
-  /\b(create|build|implement|write|develop)\b.*\b(hash(ing)?|encrypt(ion)?|auth(entication)?|validation|sanitiz)\b/i,
-  /\bpassword\b.*\b(hash(ing)?|encrypt(ion)?|validation|strength|policy)\b/i,
-  /\b(hash|encrypt|validate|sanitize)\b.*\bpassword\b/i,
-  /\bsecure\b.*\b(implementation|code|function|system)\b/i,
+  /\bblue\s*team/i,
+  /\bpurple\s*team/i,
+  /\bsecurity\s*(assessment|evaluation|review)\b/i,
+  /\bthreat\s*(model|analys[ie]s|intelligence|hunting)\b/i,
+  /\brisk\s*assessment\b/i,
+  /\bcompliance\b.*\b(check|audit|review)\b/i,
+  
+  // === Secure Development ===
+  /\b(create|build|implement|write|develop|design|architect)\b.*\b(hash(ing)?|encrypt(ion)?|auth(entication)?|validation|sanitiz(e|ation)|security|secure)\b/i,
+  /\bpassword\b.*\b(hash(ing)?|encrypt(ion)?|validation|strength|policy|security|protect)\b/i,
+  /\b(hash|encrypt|validate|sanitize|escape)\b.*\b(password|input|data|user|credential)\b/i,
+  /\bsecure\b.*\b(implementation|code|coding|function|system|design|architecture|practice)\b/i,
+  /\b(input|output)\s*(validation|sanitization|encoding)\b/i,
+  /\bparameteri[sz]ed\s*quer(y|ies)\b/i,
+  /\bprepared\s*statement\b/i,
+  /\bcsrf\s*token\b/i,
+  /\brate\s*limit(ing)?\b/i,
+  /\bsession\s*management\b/i,
+  /\baccess\s*control\b.*\b(implement|list|policy)\b/i,
+  /\bleast\s*privilege\b/i,
+  /\bzero\s*trust\b/i,
+  
+  // === Security Tools & Frameworks ===
+  /\b(use|using|utilize|leverage|apply)\b.*\b(owasp|nist|cis|iso\s*27001)\b/i,
+  /\bsecurity\s*(framework|standard|guideline|checklist)\b/i,
+  /\b(static|dynamic)\s*analys[ie]s\b/i,
+  /\b(sast|dast|iast|rasp)\b/i,
+  /\bfuzzing\b/i,
+  /\b(waf|firewall|ids|ips)\b.*\b(configur|setup|implement)\b/i,
+  
+  // === Non-malicious General Terms ===
+  /\b(market|business|competitive)\s*(research|analys[ie]s)\b/i,
+  /\btranslat\b.*\b(document|whitepaper|content)\b/i,
+  /\bwrite\b.*\b(documentation|blog|article|post|content)\b/i,
+  /\b(design|create|build)\b.*\b(ui|ux|website|dashboard|landing\s*page|interface)\b/i,
+  /\b(develop|build|create)\b.*\b(feature|function|component|module|system)\b/i,
+  /\boptimiz\b.*\b(performance|code|algorithm)\b/i,
+  /\brefactor\b/i,
+  /\bunit\s*test/i,
+  /\bintegration\s*test/i,
 ];
 
 // ==========================================
@@ -666,18 +792,33 @@ export function checkTaskSecurity(
   
   // Check allowlist - legitimate security work gets more lenience
   let isLegitimateContext = false;
+  let legitimateScore = 0;
   for (const pattern of ALLOWLIST_CONTEXTS) {
     if (pattern.test(content)) {
       isLegitimateContext = true;
-      break;
+      legitimateScore++;
     }
   }
   
-  // CRITICAL: Credential theft (always block)
+  // Legitimate context levels
+  const isDefensiveSecurity = /\b(prevent|protect|defend|detect|mitigate|fix|secure|against|from)\b/i.test(content) && legitimateScore >= 1;
+  const strongLegitimateContext = legitimateScore >= 2;
+  
+  // PRIORITY 1: Credential theft (highest priority, blocks most things)
+  // But allow if clearly defensive/implementation
+  let hasCredentialPattern = false;
   for (const pattern of CREDENTIAL_PATTERNS) {
     if (pattern.test(content)) {
+      hasCredentialPattern = true;
       matchedPatterns.push(pattern.source);
-      // Even in legitimate context, credential requests are blocked
+      
+      // Exception: if clearly building/implementing security (not requesting)
+      if (isDefensiveSecurity || 
+          (/\b(implement|build|create|develop|write|generate|hash|encrypt|validate|sanitize|store)\b/i.test(content) && legitimateScore >= 1)) {
+        continue; // Skip this match, it's legitimate development
+      }
+      
+      // Block credential requests
       return {
         allowed: false,
         reason: 'Task appears to request sensitive credentials, API keys, or secrets. This is strictly prohibited.',
@@ -689,11 +830,34 @@ export function checkTaskSecurity(
     }
   }
   
-  // CRITICAL: Malware (always block, unless clearly defensive)
+  // PRIORITY 2: Attack vectors (check BEFORE malware/fraud as they're more specific)
+  let hasAttackPattern = false;
+  for (const pattern of ATTACK_PATTERNS) {
+    if (pattern.test(content)) {
+      hasAttackPattern = true;
+      matchedPatterns.push(pattern.source);
+      
+      // Allow if legitimate security context
+      if (!isDefensiveSecurity && !strongLegitimateContext) {
+        return {
+          allowed: false,
+          reason: 'Task appears to involve cyber attacks. This is prohibited unless for legitimate security research/defense.',
+          severity: 'high',
+          category: 'attack',
+          matchedPatterns,
+          confidence: 0.85,
+        };
+      }
+    }
+  }
+  
+  // PRIORITY 3: Malware (more general, check after attack patterns)
   for (const pattern of MALWARE_PATTERNS) {
     if (pattern.test(content)) {
       matchedPatterns.push(pattern.source);
-      if (!isLegitimateContext) {
+      
+      // Allow if legitimate defensive context
+      if (!isDefensiveSecurity && !strongLegitimateContext) {
         return {
           allowed: false,
           reason: 'Task appears to involve malware, exploits, or malicious code. This is prohibited.',
@@ -706,46 +870,49 @@ export function checkTaskSecurity(
     }
   }
   
-  // CRITICAL: Fraud (always block)
+  // PRIORITY 4: Fraud (check after attack as some overlap)
   for (const pattern of FRAUD_PATTERNS) {
     if (pattern.test(content)) {
       matchedPatterns.push(pattern.source);
-      return {
-        allowed: false,
-        reason: 'Task appears to involve fraud, scams, or deceptive practices. This is prohibited.',
-        severity: 'critical',
-        category: 'fraud',
-        matchedPatterns,
-        confidence: 0.9,
-      };
+      
+      // Only allow if strongly legitimate (research/detection)
+      if (!isDefensiveSecurity && !strongLegitimateContext) {
+        return {
+          allowed: false,
+          reason: 'Task appears to involve fraud, scams, or deceptive practices. This is prohibited.',
+          severity: 'critical',
+          category: 'fraud',
+          matchedPatterns,
+          confidence: 0.9,
+        };
+      }
     }
   }
   
-  // HIGH: Privacy violations (always block)
+  // PRIORITY 5: Privacy violations
   for (const pattern of PRIVACY_PATTERNS) {
     if (pattern.test(content)) {
       matchedPatterns.push(pattern.source);
-      return {
-        allowed: false,
-        reason: 'Task appears to involve privacy violations, harassment, or unauthorized data collection. This is prohibited.',
-        severity: 'high',
-        category: 'privacy',
-        matchedPatterns,
-        confidence: 0.85,
-      };
-    }
-  }
-  
-  // HIGH: Attack vectors (block unless defensive)
-  for (const pattern of ATTACK_PATTERNS) {
-    if (pattern.test(content)) {
-      if (!isLegitimateContext) {
-        matchedPatterns.push(pattern.source);
+      
+      // No exceptions for harassment/doxxing
+      if (/\b(doxx?|stalk|harass|bully|threat|blackmail|extort)\b/i.test(content) && !isDefensiveSecurity) {
         return {
           allowed: false,
-          reason: 'Task appears to involve cyber attacks. This is prohibited unless for legitimate security research/defense.',
+          reason: 'Task appears to involve harassment, doxxing, or threats. This is strictly prohibited.',
+          severity: 'critical',
+          category: 'privacy',
+          matchedPatterns,
+          confidence: 0.95,
+        };
+      }
+      
+      // Allow if defensive/detection context
+      if (!isDefensiveSecurity) {
+        return {
+          allowed: false,
+          reason: 'Task appears to involve privacy violations or unauthorized data collection. This is prohibited.',
           severity: 'high',
-          category: 'attack',
+          category: 'privacy',
           matchedPatterns,
           confidence: 0.85,
         };
@@ -760,7 +927,7 @@ export function checkTaskSecurity(
     }
   }
   
-  if (matchedPatterns.length > 0) {
+  if (matchedPatterns.length > 0 && !isLegitimateContext) {
     return {
       allowed: true,
       reason: 'Task flagged for review due to suspicious patterns.',
@@ -783,27 +950,27 @@ export function checkTaskSecurity(
 
 const CREDENTIAL_LEAK_PATTERNS: RegExp[] = [
   // Actual key formats
-  /\bsk-[a-zA-Z0-9]{20,}\b/, // OpenAI
-  /\bxox[abprs]-[a-zA-Z0-9-]+\b/, // Slack
-  /\bghp_[a-zA-Z0-9]{36}\b/, // GitHub
-  /\bglpat-[a-zA-Z0-9_-]{20,}\b/, // GitLab
-  /\bnpm_[a-zA-Z0-9]{36}\b/, // NPM
-  /\bpypi-[a-zA-Z0-9_-]{20,}\b/, // PyPI
-  /\bAIza[a-zA-Z0-9_-]{35}\b/, // Google API
-  /\bya29\.[a-zA-Z0-9_-]+\b/, // Google OAuth
-  /\bAKIA[A-Z0-9]{16}\b/, // AWS Access Key
+  /\bsk-[a-zA-Z0-9]{20,}/, // OpenAI (removed \b at end)
+  /\bxox[abprs]-[a-zA-Z0-9-]+/, // Slack
+  /\bghp_[a-zA-Z0-9]{20,}/, // GitHub (reduced from 36 to 20+)
+  /\bglpat-[a-zA-Z0-9_-]{20,}/, // GitLab
+  /\bnpm_[a-zA-Z0-9]{20,}/, // NPM (reduced from 36)
+  /\bpypi-[a-zA-Z0-9_-]{20,}/, // PyPI
+  /\bAIza[a-zA-Z0-9_-]{20,}/, // Google API (reduced from 35)
+  /\bya29\.[a-zA-Z0-9_-]+/, // Google OAuth
+  /\bAKIA[A-Z0-9]{16}/, // AWS Access Key
   /\b[A-Za-z0-9/+=]{40}\b/, // AWS Secret Key pattern
-  /\bEAAC[a-zA-Z0-9]+\b/, // Facebook
-  /\b[0-9]+-[a-zA-Z0-9_]{32}\.apps\.googleusercontent\.com\b/, // Google Client ID
-  /\b(eyJ[a-zA-Z0-9_-]*\.){2}[a-zA-Z0-9_-]*\b/, // JWT
+  /\bEAAC[a-zA-Z0-9]+/, // Facebook
+  /\b[0-9]+-[a-zA-Z0-9_]{32}\.apps\.googleusercontent\.com/, // Google Client ID
+  /\b(eyJ[a-zA-Z0-9_-]*\.){2}[a-zA-Z0-9_-]*/, // JWT
   
   // Private keys
   /-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----/,
   /-----BEGIN PGP PRIVATE KEY BLOCK-----/,
-  /0x[a-fA-F0-9]{64}\b/, // Ethereum private key
+  /0x[a-fA-F0-9]{64}/, // Ethereum private key
   
   // Seed phrases (12-24 word patterns)
-  /\b([a-z]+\s+){11,24}[a-z]+\b/i,
+  /\b([a-z]+\s+){11,23}[a-z]+\b/i,
   
   // Connection strings
   /mongodb(\+srv)?:\/\/[^\s]+:[^\s]+@[^\s]+/i,

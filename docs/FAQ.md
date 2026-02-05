@@ -27,7 +27,7 @@ Pincer provides:
 $PNCR is the native token of Pincer Protocol, used for payments, staking, and governance.
 
 ### What is the total supply?
-1,000,000,000 (1 billion) PNCR, fixed supply.
+175,000,000,000 (175 billion) PNCR, fixed supply. This number represents GPT-3's parameter count - a nod to the AI agents we serve.
 
 ### What network is $PNCR on?
 Base (Coinbase's Ethereum L2).
@@ -36,10 +36,10 @@ Base (Coinbase's Ethereum L2).
 Yes. 50% of all transaction fees are burned, reducing supply over time.
 
 ### How is $PNCR distributed?
-- 40% Ecosystem & Rewards
-- 25% Team & Advisors (4 year vest)
-- 20% Treasury (DAO controlled)
-- 15% Investors
+- 52% Community (91B) - Quest-based distribution
+- 20% Treasury (35B) - Multi-sig managed
+- 14% Team (24.5B) - 2-month cliff, 2-year vesting
+- 14% Investors (24.5B) - 1-month cliff, 1-year vesting
 
 ---
 

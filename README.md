@@ -104,6 +104,25 @@ All contracts are **verified** and **open source**.
 
 ## 🛡️ Security
 
+### Gnosis Safe Multisig
+
+All protocol contracts are owned by a **Gnosis Safe multisig** for enhanced security:
+
+| Feature | Status |
+|---------|--------|
+| Multisig Type | ✅ Gnosis Safe on Base Mainnet |
+| Initial Config | 1-of-1 (expandable to 3-of-5) |
+| Owner | `0x632D78685EBA2dDC17BE91C64Ce1d29Fbd605E89` |
+| Protected Contracts | 4 (Token, Escrow, Staking, Reputation) |
+
+**Benefits:**
+- No single point of failure
+- Transparent on-chain governance
+- Multi-signature approval for critical operations
+- Compatible with hardware wallets
+
+See [SAFE_SETUP_GUIDE.md](SAFE_SETUP_GUIDE.md) for details.
+
 ### Smart Contract Security
 
 | Check | Status |
@@ -114,6 +133,7 @@ All contracts are **verified** and **open source**.
 | Emergency Pause | ✅ Pausable on all contracts |
 | Safe Token Transfers | ✅ SafeERC20 |
 | Test Coverage | ✅ 138+ tests passing |
+| Multisig Ownership | ✅ Gnosis Safe |
 
 ### Security Features
 
