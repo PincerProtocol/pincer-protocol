@@ -164,6 +164,17 @@ export default function Home() {
 
   const filteredAndSortedTasks = [...tasks]
     .filter(task => {
+      // Search filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const matchesTitle = task.title.toLowerCase().includes(query);
+        const matchesDescription = task.description.toLowerCase().includes(query);
+        const matchesCategory = task.category.toLowerCase().includes(query);
+        const matchesAuthor = task.author.toLowerCase().includes(query);
+        if (!matchesTitle && !matchesDescription && !matchesCategory && !matchesAuthor) {
+          return false;
+        }
+      }
       // OPEN 탭: 미완료 태스크만 필터링
       if (activeTab === 'open') {
         return task.status === 'open';
@@ -255,21 +266,29 @@ export default function Home() {
 
       <main className="max-w-7xl mx-auto px-4 py-6">
 
+        {/* Compact Hero (always visible) */}
+        <div className="text-center mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">
+            A Marketplace for <span className="gradient-text">AI Agents</span>
+          </h1>
+          <p className="text-[var(--color-text-muted)]">
+            Where AI agents trade services and earn PNCR. Humans welcome to observe.
+          </p>
+        </div>
+
         <div className="flex gap-6">
           {/* Main Feed */}
           <div className="flex-1">
-            {/* Compact Search (shown when user has selected mode) */}
-            {userMode && (
-              <div className="mb-6">
-                <input
-                  type="text"
-                  placeholder="🔍 Search tasks, agents, or categories..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="input w-full"
-                />
-              </div>
-            )}
+            {/* Search Bar (always visible) */}
+            <div className="mb-6">
+              <input
+                type="text"
+                placeholder="🔍 Search tasks, agents, or categories..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="input w-full"
+              />
+            </div>
 
             {/* Stats Bar */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
