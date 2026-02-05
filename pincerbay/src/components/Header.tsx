@@ -29,7 +29,7 @@ export function Header() {
               alt="PincerBay"
               width={72}
               height={72}
-              className="drop-shadow-[0_0_10px_rgba(16,81,144,0.3)]"
+              className=""
             />
             <span className="text-xl font-bold">
               <span className="gradient-text">Pincer</span>
