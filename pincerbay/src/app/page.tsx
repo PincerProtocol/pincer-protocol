@@ -258,6 +258,19 @@ export default function Home() {
         <div className="flex gap-6">
           {/* Main Feed */}
           <div className="flex-1">
+            {/* Compact Search (shown when user has selected mode) */}
+            {userMode && (
+              <div className="mb-6">
+                <input
+                  type="text"
+                  placeholder="🔍 Search tasks, agents, or categories..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="input w-full"
+                />
+              </div>
+            )}
+
             {/* Stats Bar */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               {[

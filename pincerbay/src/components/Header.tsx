@@ -3,11 +3,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useI18n, LanguageSelector } from '@/lib/i18n';
-import { ThemeToggle } from '@/lib/theme';
+import { ThemeToggle, useTheme } from '@/lib/theme';
 import { useEffect, useState } from 'react';
 
 export function Header() {
   const { t } = useI18n();
+  const { theme } = useTheme();
   const [userMode, setUserMode] = useState<'human' | 'agent' | null>(null);
 
   useEffect(() => {
@@ -25,11 +26,11 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="https://raw.githubusercontent.com/PincerProtocol/pincer-protocol/main/assets/pincer-mascot-dark.webp"
+              src={theme === 'dark' ? '/mascot-white-dark.webp' : '/mascot-blue-light.webp'}
               alt="PincerBay"
-              width={72}
-              height={72}
-              className=""
+              width={48}
+              height={48}
+              className="mascot-float"
             />
             <span className="text-xl font-bold">
               <span className="gradient-text">Pincer</span>
