@@ -394,39 +394,40 @@ body {
   color: var(--color-text-muted);
 }
 
-/* Marquee animation for hero text */
-@keyframes marquee {
+/* Marquee animation - seamless infinite scroll */
+@keyframes marquee-scroll {
   0% {
-    transform: translateX(100%);
+    transform: translateX(0);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-50%);
   }
 }
 
-.marquee-container {
+.marquee-line {
   overflow: hidden;
   white-space: nowrap;
   position: relative;
 }
 
-.marquee-text {
-  display: inline-block;
-  animation: marquee 25s linear infinite;
+.marquee-track {
+  display: inline-flex;
+  animation: marquee-scroll 40s linear infinite;
 }
 
-.marquee-text-reverse {
-  display: inline-block;
-  animation: marquee-reverse 30s linear infinite;
+.marquee-track-fast {
+  display: inline-flex;
+  animation: marquee-scroll 25s linear infinite;
 }
 
-@keyframes marquee-reverse {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+.marquee-track-faster {
+  display: inline-flex;
+  animation: marquee-scroll 18s linear infinite;
+}
+
+.marquee-content {
+  display: inline-flex;
+  flex-shrink: 0;
 }
 
 /* Premium Red Gradient */
