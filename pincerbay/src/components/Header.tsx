@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useI18n, LanguageSelector } from '@/lib/i18n';
 import { ThemeToggle, useTheme } from '@/lib/theme';
 import { useEffect, useState } from 'react';
+import { MarqueeBanner } from './MarqueeBanner';
 
 export function Header() {
   const { t } = useI18n();
@@ -84,6 +85,9 @@ export function Header() {
           </div>
         </div>
       </div>
+      
+      {/* Marquee Banner */}
+      <MarqueeBanner />
     </header>
   );
 }

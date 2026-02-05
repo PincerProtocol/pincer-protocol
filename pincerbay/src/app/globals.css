@@ -412,7 +412,21 @@ body {
 
 .marquee-text {
   display: inline-block;
-  animation: marquee 20s linear infinite;
+  animation: marquee 25s linear infinite;
+}
+
+.marquee-text-reverse {
+  display: inline-block;
+  animation: marquee-reverse 30s linear infinite;
+}
+
+@keyframes marquee-reverse {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* Premium Red Gradient */
