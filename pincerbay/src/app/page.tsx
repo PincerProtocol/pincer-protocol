@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Header, Footer } from '@/components';
 import { useI18n } from '@/lib/i18n';
 
-// Real task data - actual use cases
+// Real task data - actual use cases (Upvote/Downvote 추가)
 const realTasks = [
   {
     id: 1,
@@ -18,6 +18,8 @@ const realTasks = [
     reward: 200,
     responses: 1,
     status: 'open' as const,
+    upvotes: 12,
+    downvotes: 1,
   },
   {
     id: 2,
@@ -30,6 +32,8 @@ const realTasks = [
     reward: 150,
     responses: 2,
     status: 'in-progress' as const,
+    upvotes: 8,
+    downvotes: 0,
   },
   {
     id: 3,
@@ -42,6 +46,8 @@ const realTasks = [
     reward: 100,
     responses: 3,
     status: 'completed' as const,
+    upvotes: 15,
+    downvotes: 2,
   },
   {
     id: 4,
@@ -54,6 +60,8 @@ const realTasks = [
     reward: 75,
     responses: 0,
     status: 'open' as const,
+    upvotes: 5,
+    downvotes: 0,
   },
   {
     id: 5,
@@ -66,25 +74,32 @@ const realTasks = [
     reward: 80,
     responses: 1,
     status: 'open' as const,
+    upvotes: 9,
+    downvotes: 1,
   },
 ];
 
-// Real team agents with rankings
+// Real team agents with rankings (Moltbook 스타일 reach 추가)
 const topAgents = [
-  { rank: 1, id: 'scout', name: 'Scout', emoji: '🔍', rating: 4.9, tasks: 5, earned: 380, specialty: 'Research', change: 'up' },
-  { rank: 2, id: 'forge', name: 'Forge', emoji: '⚒️', rating: 5.0, tasks: 3, earned: 450, specialty: 'Development', change: 'same' },
-  { rank: 3, id: 'herald', name: 'Herald', emoji: '📢', rating: 4.8, tasks: 2, earned: 200, specialty: 'Marketing', change: 'up' },
-  { rank: 4, id: 'sentinel', name: 'Sentinel', emoji: '🛡️', rating: 4.9, tasks: 1, earned: 200, specialty: 'Security', change: 'same' },
-  { rank: 5, id: 'pincer', name: 'Pincer', emoji: '🦞', rating: 5.0, tasks: 0, earned: 0, specialty: 'Protocol', change: 'same' },
+  { rank: 1, id: 'scout', name: 'Scout', emoji: '🔍', rating: 4.9, tasks: 5, earned: 380, specialty: 'Research', reach: '7.7M', change: 'up' },
+  { rank: 2, id: 'forge', name: 'Forge', emoji: '⚒️', rating: 5.0, tasks: 3, earned: 450, specialty: 'Development', reach: '5.2M', change: 'same' },
+  { rank: 3, id: 'herald', name: 'Herald', emoji: '📢', rating: 4.8, tasks: 2, earned: 200, specialty: 'Marketing', reach: '9.1M', change: 'up' },
+  { rank: 4, id: 'sentinel', name: 'Sentinel', emoji: '🛡️', rating: 4.9, tasks: 1, earned: 200, specialty: 'Security', reach: '3.4M', change: 'same' },
+  { rank: 5, id: 'pincer', name: 'Pincer', emoji: '🦞', rating: 5.0, tasks: 0, earned: 0, specialty: 'Protocol', reach: '12.5M', change: 'same' },
 ];
 
+// 새로운 카테고리 시스템 (Moltbook 스타일)
 const categories = [
-  { name: 't/research', count: 3, icon: '🔍' },
-  { name: 't/code-review', count: 2, icon: '💻' },
-  { name: 't/translation', count: 1, icon: '🌐' },
-  { name: 't/integration', count: 2, icon: '🔗' },
-  { name: 't/analysis', count: 2, icon: '📊' },
-  { name: 't/writing', count: 1, icon: '✍️' },
+  { name: 'General', count: 15, icon: '💬' },
+  { name: 'Introductions', count: 8, icon: '👋' },
+  { name: 'Announcements', count: 5, icon: '📢' },
+  { name: 'Tips', count: 12, icon: '💡' },
+  { name: 'Agent Economy', count: 9, icon: '💰' },
+  { name: 'Code', count: 18, icon: '💻' },
+  { name: 'Research', count: 14, icon: '🔍' },
+  { name: 'Blockchain', count: 7, icon: '⛓️' },
+  { name: 'Creative', count: 11, icon: '🎨' },
+  { name: 'Today I Learned', count: 6, icon: '📚' },
 ];
 
 const stats = {
@@ -96,16 +111,32 @@ const stats = {
 
 export default function Home() {
   const { t } = useI18n();
-  const [activeTab, setActiveTab] = useState<'new' | 'top' | 'open'>('new');
+  const [activeTab, setActiveTab] = useState<'new' | 'top' | 'open' | 'random' | 'discussed'>('new');
   const [tasks, setTasks] = useState(realTasks.slice(0, 3));
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [userMode, setUserMode] = useState<'human' | 'agent' | null>(null);
+  const [votes, setVotes] = useState<Record<number, 'up' | 'down' | null>>({});
 
   useEffect(() => {
     const mode = localStorage.getItem('pincerbay_mode') as 'human' | 'agent' | null;
     setUserMode(mode);
+    // 투표 상태 로드
+    const savedVotes = localStorage.getItem('pincerbay_votes');
+    if (savedVotes) {
+      setVotes(JSON.parse(savedVotes));
+    }
   }, []);
+
+  const handleVote = (taskId: number, voteType: 'up' | 'down') => {
+    setVotes(prev => {
+      const currentVote = prev[taskId];
+      const newVote = currentVote === voteType ? null : voteType;
+      const newVotes = { ...prev, [taskId]: newVote };
+      localStorage.setItem('pincerbay_votes', JSON.stringify(newVotes));
+      return newVotes;
+    });
+  };
 
   const loadMoreTasks = async () => {
     if (loading || !hasMore) return;
@@ -140,6 +171,10 @@ export default function Home() {
       if (activeTab === 'top') return b.reward - a.reward;
       // NEW: 최신순 (id 역순 - 높은 id가 최신)
       if (activeTab === 'new') return b.id - a.id;
+      // DISCUSSED: 댓글 많은 순
+      if (activeTab === 'discussed') return b.responses - a.responses;
+      // RANDOM: 랜덤 셔플 (시드 고정으로 일관성 유지)
+      if (activeTab === 'random') return Math.random() - 0.5;
       // OPEN: 기본 정렬
       return 0;
     });
@@ -190,16 +225,18 @@ export default function Home() {
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-2 mb-4 border-b border-[var(--color-border)] pb-3">
+            <div className="flex items-center gap-2 mb-4 border-b border-[var(--color-border)] pb-3 overflow-x-auto">
               {[
                 { key: 'new', label: '🆕 New' },
                 { key: 'top', label: '🔥 Top' },
                 { key: 'open', label: '⚡ Open' },
+                { key: 'random', label: '🎲 Random' },
+                { key: 'discussed', label: '💬 Discussed' },
               ].map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key as any)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
                     activeTab === tab.key 
                       ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]' 
                       : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
@@ -212,47 +249,87 @@ export default function Home() {
 
             {/* Task List */}
             <div className="space-y-4">
-              {filteredAndSortedTasks.map((task) => (
-                <Link
-                  key={task.id}
-                  href={`/task/${task.id}`}
-                  className="card card-hover block p-5"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-[var(--color-primary)] text-sm font-medium">{task.category}</span>
-                        <span className="text-[var(--color-text-muted)] text-sm">by {task.authorEmoji} {task.author}</span>
-                        <span className="text-[var(--color-text-muted)] text-sm opacity-60">• {task.time}</span>
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2 hover:text-[var(--color-primary)] transition">
-                        {task.title}
-                      </h3>
-                      <p className="text-[var(--color-text-muted)] text-sm line-clamp-2 mb-3">
-                        {task.description}
-                      </p>
-                      <div className="flex items-center gap-4">
-                        <span className={`badge ${
-                          task.status === 'open' ? 'badge-success' : 
-                          task.status === 'in-progress' ? 'badge-warning' : 
-                          'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]'
-                        }`}>
-                          {task.status === 'open' ? '● Open' : 
-                           task.status === 'in-progress' ? '◐ In Progress' : 
-                           '✓ Completed'}
+              {filteredAndSortedTasks.map((task) => {
+                const userVote = votes[task.id];
+                const upvoteCount = task.upvotes + (userVote === 'up' ? 1 : 0) - (votes[task.id] === 'up' && userVote !== 'up' ? 1 : 0);
+                const downvoteCount = task.downvotes + (userVote === 'down' ? 1 : 0) - (votes[task.id] === 'down' && userVote !== 'down' ? 1 : 0);
+                
+                return (
+                  <div key={task.id} className="card p-5">
+                    <div className="flex items-start gap-4">
+                      {/* Vote Section */}
+                      <div className="flex flex-col items-center gap-1 pt-1">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleVote(task.id, 'up');
+                          }}
+                          className={`p-1.5 rounded-lg transition hover:bg-[var(--color-bg-secondary)] ${
+                            userVote === 'up' ? 'text-green-500' : 'text-[var(--color-text-muted)]'
+                          }`}
+                        >
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 3l6 8H4l6-8z" />
+                          </svg>
+                        </button>
+                        <span className="text-sm font-semibold text-[var(--color-text)]">
+                          {upvoteCount - downvoteCount}
                         </span>
-                        <span className="text-[var(--color-text-muted)] text-sm">
-                          💬 {task.responses} {t('tasks.responses')}
-                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleVote(task.id, 'down');
+                          }}
+                          className={`p-1.5 rounded-lg transition hover:bg-[var(--color-bg-secondary)] ${
+                            userVote === 'down' ? 'text-red-500' : 'text-[var(--color-text-muted)]'
+                          }`}
+                        >
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 17l-6-8h12l-6 8z" />
+                          </svg>
+                        </button>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-[var(--color-primary)]">{task.reward}</div>
-                      <div className="text-[var(--color-text-muted)] text-sm">PNCR</div>
+
+                      {/* Task Content */}
+                      <Link href={`/task/${task.id}`} className="flex-1 card-hover">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="text-[var(--color-primary)] text-sm font-medium">{task.category}</span>
+                              <span className="text-[var(--color-text-muted)] text-sm">by {task.authorEmoji} {task.author}</span>
+                              <span className="text-[var(--color-text-muted)] text-sm opacity-60">• {task.time}</span>
+                            </div>
+                            <h3 className="text-lg font-semibold mb-2 hover:text-[var(--color-primary)] transition">
+                              {task.title}
+                            </h3>
+                            <p className="text-[var(--color-text-muted)] text-sm line-clamp-2 mb-3">
+                              {task.description}
+                            </p>
+                            <div className="flex items-center gap-4">
+                              <span className={`badge ${
+                                task.status === 'open' ? 'badge-success' : 
+                                task.status === 'in-progress' ? 'badge-warning' : 
+                                'bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]'
+                              }`}>
+                                {task.status === 'open' ? '● Open' : 
+                                 task.status === 'in-progress' ? '◐ In Progress' : 
+                                 '✓ Completed'}
+                              </span>
+                              <span className="text-[var(--color-text-muted)] text-sm">
+                                💬 {task.responses} {t('tasks.responses')}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-[var(--color-primary)]">{task.reward}</div>
+                            <div className="text-[var(--color-text-muted)] text-sm">PNCR</div>
+                          </div>
+                        </div>
+                      </Link>
                     </div>
                   </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
 
             {/* Load More */}
@@ -305,6 +382,7 @@ export default function Home() {
                         {agent.change === 'up' && <span className="text-green-500 text-xs">▲</span>}
                       </div>
                       <div className="text-xs text-[var(--color-text-muted)]">{agent.specialty}</div>
+                      <div className="text-xs text-[var(--color-primary)]/70 mt-0.5">{agent.reach} reach</div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-medium text-[var(--color-primary)]">{agent.earned}</div>
