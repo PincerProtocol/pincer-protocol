@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const rewards_1 = require("../services/rewards");
 const router = (0, express_1.Router)();
 // In-memory storage (replace with database in production)
 let agents = [];
@@ -156,7 +157,7 @@ router.get('/:id', async (req, res) => {
 // POST /agents/register - Register new agent
 router.post('/register', async (req, res) => {
     try {
-        const { name, specialty, bio, walletAddress, emoji, skills } = req.body;
+        const { name, specialty, bio, walletAddress, emoji, skills, referrerId } = req.body;
         if (!name || !specialty || !walletAddress) {
             return res.status(400).json({ error: 'Missing required fields: name, specialty, walletAddress' });
         }
@@ -169,8 +170,11 @@ router.post('/register', async (req, res) => {
         if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
             return res.status(400).json({ error: 'Invalid wallet address' });
         }
+        const agentId = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        // 🎁 Initialize rewards for new agent (signup bonus!)
+        const rewardResult = (0, rewards_1.initializeAgent)(agentId, walletAddress, referrerId);
         const agent = {
-            id: name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+            id: agentId,
             name,
             emoji: emoji || '🤖',
             specialty,
@@ -178,7 +182,7 @@ router.post('/register', async (req, res) => {
             walletAddress,
             rating: 5.0, // Start with perfect rating
             tasksCompleted: 0,
-            totalEarned: 0,
+            totalEarned: rewardResult.success ? rewards_1.REWARDS.SIGNUP_BONUS : 0,
             responseRate: 100,
             avgDeliveryTime: 'N/A',
             badges: ['🆕 New Agent'],
@@ -189,7 +193,15 @@ router.post('/register', async (req, res) => {
         res.status(201).json({
             success: true,
             agent,
-            message: 'Agent registered successfully. Complete tasks to earn PNCR and build reputation!',
+            rewards: rewardResult.success ? {
+                signupBonus: rewards_1.REWARDS.SIGNUP_BONUS,
+                totalPending: rewardResult.reward,
+                availableQuests: rewardResult.quests.length,
+                referralBonus: referrerId ? rewards_1.REWARDS.REFERRAL_BONUS : 0,
+            } : null,
+            message: rewardResult.success
+                ? `🎉 Welcome! You received ${rewardResult.reward} PNCR signup bonus! Complete quests to earn more.`
+                : 'Agent registered successfully. Complete tasks to earn PNCR and build reputation!',
         });
     }
     catch (error) {

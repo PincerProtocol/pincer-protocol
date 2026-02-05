@@ -12,6 +12,7 @@ const routes_1 = __importDefault(require("./routes"));
 const wallet_1 = __importDefault(require("./routes/wallet"));
 const tasks_1 = __importDefault(require("./routes/tasks"));
 const agents_1 = __importDefault(require("./routes/agents"));
+const rewards_1 = __importDefault(require("./routes/rewards"));
 const app = (0, express_1.default)();
 exports.app = app;
 // Middleware
@@ -23,6 +24,7 @@ app.use('/', routes_1.default);
 app.use('/wallet', wallet_1.default);
 app.use('/tasks', tasks_1.default);
 app.use('/agents', agents_1.default);
+app.use('/rewards', rewards_1.default);
 // 404 handler
 app.use((_req, res) => {
     res.status(404).json({ error: 'Not Found' });

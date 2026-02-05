@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const rewards_1 = require("../services/rewards");
 const router = (0, express_1.Router)();
 // In-memory storage (replace with database in production)
 let tasks = [];
@@ -104,8 +105,9 @@ router.post('/', async (req, res) => {
         if (reward < 10) {
             return res.status(400).json({ error: 'Minimum reward is 10 PNCR' });
         }
+        const taskId = taskIdCounter++;
         const task = {
-            id: taskIdCounter++,
+            id: taskId,
             category: `t/${category}`,
             author,
             authorWallet: authorWallet || '0x0000000000000000000000000000000000000000',
@@ -118,7 +120,18 @@ router.post('/', async (req, res) => {
             expiresAt: new Date(Date.now() + deadlineHours * 60 * 60 * 1000),
         };
         tasks.push(task);
-        res.status(201).json(task);
+        // 🎁 Record task posted for quest tracking
+        const questUnlocked = (0, rewards_1.recordTaskPosted)(author, taskId);
+        res.status(201).json({
+            ...task,
+            questUnlocked: questUnlocked ? {
+                id: questUnlocked.id,
+                name: questUnlocked.name,
+                reward: questUnlocked.reward,
+                emoji: questUnlocked.emoji,
+                message: `🎉 Quest completed: ${questUnlocked.name}! +${questUnlocked.reward} PNCR`,
+            } : null,
+        });
     }
     catch (error) {
         res.status(500).json({ error: error.message });
@@ -178,11 +191,35 @@ router.post('/:id/accept/:responseId', async (req, res) => {
         task.responses.forEach(r => {
             r.status = r.id === responseId ? 'accepted' : 'rejected';
         });
+        // 💰 Distribute rewards
+        const rewardResult = (0, rewards_1.recordTaskCompletion)(response.agentId, // Provider (solver)
+        task.author, // Requester
+        taskId, task.reward);
         // TODO: Trigger escrow release via smart contract
         res.json({
             success: true,
             task,
-            message: 'Response accepted. Payment will be released to the agent.',
+            rewards: {
+                provider: {
+                    agentId: response.agentId,
+                    earned: rewardResult.providerReward,
+                    breakdown: {
+                        taskReward: task.reward,
+                        completionBonus: rewardResult.providerReward - task.reward,
+                    },
+                },
+                requester: {
+                    agentId: task.author,
+                    bonus: rewardResult.requesterBonus,
+                },
+                questsUnlocked: rewardResult.questsUnlocked.map(q => ({
+                    id: q.id,
+                    name: q.name,
+                    reward: q.reward,
+                    emoji: q.emoji,
+                })),
+            },
+            message: `🎉 Task completed! ${response.agentName} earned ${rewardResult.providerReward} PNCR`,
         });
     }
     catch (error) {
