@@ -19,6 +19,8 @@ const mockSouls = [
     skills: ['Market Analysis', 'DeFi', 'On-chain Data', 'Report Writing'],
     rating: 4.9,
     sales: 23,
+    upvotes: 156,
+    downvotes: 8,
     preview: `# SOUL.md - CryptoAnalyst Pro\n\n## Identity\n- Expert crypto analyst with 5+ years experience\n- Specializes in DeFi protocol analysis\n- Data-driven, objective, precise\n\n## Tone\n- Professional but accessible\n- Numbers-focused\n- Avoids hype, focuses on fundamentals`,
     featured: true,
   },
@@ -34,6 +36,8 @@ const mockSouls = [
     skills: ['Blog Writing', 'Copywriting', 'Storytelling', 'SEO'],
     rating: 4.8,
     sales: 45,
+    upvotes: 234,
+    downvotes: 12,
     preview: `# SOUL.md - Creative Writer\n\n## Identity\n- Versatile content creator\n- Adaptable voice and style\n- Focus on engagement and clarity\n\n## Tone\n- Warm and approachable\n- Uses metaphors and stories\n- Balances creativity with clarity`,
     featured: true,
   },
@@ -49,6 +53,8 @@ const mockSouls = [
     skills: ['Code Review', 'TypeScript', 'Solidity', 'Best Practices'],
     rating: 5.0,
     sales: 18,
+    upvotes: 98,
+    downvotes: 2,
     preview: `# SOUL.md - Code Reviewer\n\n## Identity\n- Senior engineer mindset\n- Security-first approach\n- Focus on maintainability\n\n## Tone\n- Constructive criticism\n- Educational explanations\n- Specific, actionable feedback`,
     featured: false,
   },
@@ -64,6 +70,8 @@ const mockSouls = [
     skills: ['Smart Contract Audit', 'Vulnerability Detection', 'Security Best Practices'],
     rating: 5.0,
     sales: 12,
+    upvotes: 187,
+    downvotes: 3,
     preview: `# SOUL.md - Security Auditor\n\n## Identity\n- Paranoid by design\n- Thinks like an attacker\n- Thorough and methodical\n\n## Tone\n- Serious about security\n- Clear severity ratings\n- Provides remediation steps`,
     featured: true,
   },
@@ -79,6 +87,8 @@ const mockSouls = [
     skills: ['Meme Creation', 'Viral Content', 'Social Media', 'Community'],
     rating: 4.7,
     sales: 89,
+    upvotes: 456,
+    downvotes: 34,
     preview: `# SOUL.md - Meme Lord\n\n## Identity\n- Chronically online\n- Knows every meme format\n- Finger on the pulse of internet culture\n\n## Tone\n- Gen-Z energy\n- Self-aware humor\n- No cap, fr fr, based`,
     featured: false,
   },
@@ -94,6 +104,8 @@ const mockSouls = [
     skills: ['Research', 'Fact-Checking', 'Data Analysis', 'Citation'],
     rating: 4.8,
     sales: 34,
+    upvotes: 123,
+    downvotes: 7,
     preview: `# SOUL.md - Research Assistant\n\n## Identity\n- Academic background\n- Evidence-based approach\n- Cites sources meticulously\n\n## Tone\n- Scholarly but accessible\n- Objective and balanced\n- Acknowledges limitations`,
     featured: false,
   },
@@ -109,6 +121,8 @@ const mockSouls = [
     skills: ['Customer Service', 'Problem Solving', 'Conflict Resolution', 'FAQ'],
     rating: 4.6,
     sales: 56,
+    upvotes: 178,
+    downvotes: 21,
     preview: `# SOUL.md - Customer Support\n\n## Identity\n- Endlessly patient\n- Solution-oriented\n- Empathetic listener\n\n## Tone\n- Friendly and warm\n- Never defensive\n- Always offers next steps`,
     featured: false,
   },
@@ -124,6 +138,8 @@ const mockSouls = [
     skills: ['Product Strategy', 'GTM', 'Fundraising', 'Team Building'],
     rating: 4.9,
     sales: 15,
+    upvotes: 89,
+    downvotes: 4,
     preview: `# SOUL.md - Startup Advisor\n\n## Identity\n- Serial entrepreneur mindset\n- Been through the startup journey\n- Focus on execution over theory\n\n## Tone\n- Direct and honest\n- Asks hard questions\n- Celebrates wins, addresses problems`,
     featured: true,
   },
@@ -151,9 +167,25 @@ const stats = {
 export default function SoulsPage() {
   const { t } = useI18n();
   const [activeCategory, setActiveCategory] = useState('All');
-  const [sortBy, setSortBy] = useState<'popular' | 'newest' | 'price-low' | 'price-high'>('popular');
+  const [sortBy, setSortBy] = useState<'popular' | 'newest' | 'price-low' | 'price-high' | 'top-voted'>('popular');
   const [searchQuery, setSearchQuery] = useState('');
   const [previewSoul, setPreviewSoul] = useState<typeof mockSouls[0] | null>(null);
+  const [votes, setVotes] = useState<Record<number, 'up' | 'down' | null>>({});
+
+  useEffect(() => {
+    const savedVotes = localStorage.getItem('pincerbay_soul_votes');
+    if (savedVotes) setVotes(JSON.parse(savedVotes));
+  }, []);
+
+  const handleVote = (soulId: number, voteType: 'up' | 'down') => {
+    setVotes(prev => {
+      const currentVote = prev[soulId];
+      const newVote = currentVote === voteType ? null : voteType;
+      const newVotes = { ...prev, [soulId]: newVote };
+      localStorage.setItem('pincerbay_soul_votes', JSON.stringify(newVotes));
+      return newVotes;
+    });
+  };
 
   const filteredSouls = mockSouls
     .filter(soul => {
@@ -174,6 +206,7 @@ export default function SoulsPage() {
         case 'newest': return b.id - a.id;
         case 'price-low': return a.price - b.price;
         case 'price-high': return b.price - a.price;
+        case 'top-voted': return ((b.upvotes || 0) - (b.downvotes || 0)) - ((a.upvotes || 0) - (a.downvotes || 0));
         default: return 0;
       }
     });
@@ -251,10 +284,11 @@ export default function SoulsPage() {
                 onChange={(e) => setSortBy(e.target.value as any)}
                 className="input text-sm"
               >
-                <option value="popular">Most Popular</option>
-                <option value="newest">Newest</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
+                <option value="popular">🔥 Most Popular</option>
+                <option value="top-voted">👍 Top Voted</option>
+                <option value="newest">🆕 Newest</option>
+                <option value="price-low">💰 Price: Low → High</option>
+                <option value="price-high">💎 Price: High → Low</option>
               </select>
             </div>
 
@@ -349,9 +383,35 @@ export default function SoulsPage() {
                     </div>
 
                     <div className="flex items-center justify-between pt-3 border-t border-[var(--color-border)]">
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-yellow-500">⭐ {soul.rating}</span>
-                        <span className="text-[var(--color-text-muted)]">{soul.sales} sales</span>
+                      {/* Voting */}
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleVote(soul.id, 'up'); }}
+                          className={`p-1 rounded transition ${
+                            votes[soul.id] === 'up' ? 'text-green-500' : 'text-[var(--color-text-muted)] hover:text-green-500'
+                          }`}
+                        >
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 3l6 8H4l6-8z" />
+                          </svg>
+                        </button>
+                        <span className={`text-sm font-medium min-w-[2rem] text-center ${
+                          ((soul.upvotes || 0) - (soul.downvotes || 0) + (votes[soul.id] === 'up' ? 1 : votes[soul.id] === 'down' ? -1 : 0)) > 0 
+                            ? 'text-green-500' 
+                            : 'text-[var(--color-text-muted)]'
+                        }`}>
+                          {(soul.upvotes || 0) - (soul.downvotes || 0) + (votes[soul.id] === 'up' ? 1 : votes[soul.id] === 'down' ? -1 : 0)}
+                        </span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleVote(soul.id, 'down'); }}
+                          className={`p-1 rounded transition ${
+                            votes[soul.id] === 'down' ? 'text-red-500' : 'text-[var(--color-text-muted)] hover:text-red-500'
+                          }`}
+                        >
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 17l-6-8h12l-6 8z" />
+                          </svg>
+                        </button>
                       </div>
                       <button
                         onClick={() => setPreviewSoul(soul)}
