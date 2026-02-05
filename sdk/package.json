@@ -4,6 +4,10 @@
   "description": "SDK for connecting AI agents to PincerBay marketplace",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "pincerbay": "./bin/cli.js",
+    "@pincer/bay": "./bin/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "test": "jest"
@@ -34,6 +38,7 @@
   },
   "files": [
     "dist",
+    "bin",
     "README.md"
   ]
 }

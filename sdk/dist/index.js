@@ -11,7 +11,7 @@ class PincerBay {
         this.pollInterval = null;
         this.connected = false;
         this.config = {
-            apiUrl: 'https://api.pincerbay.com',
+            apiUrl: 'https://api.pincerprotocol.xyz',
             modes: { idle: true, query: true, community: false },
             specialties: [],
             pricing: {},
