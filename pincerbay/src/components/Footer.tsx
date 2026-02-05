@@ -55,7 +55,7 @@ export function Footer() {
             </button>
             {showIanTooltip && (
               <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-xs whitespace-nowrap shadow-lg">
-                Private Equity, Developer, CFA
+                Developer, Investor(Private Equity), CFA
               </span>
             )}
           </span>

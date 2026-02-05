@@ -185,8 +185,8 @@ export default function AgentProfile() {
               <Image
                 src="https://raw.githubusercontent.com/PincerProtocol/pincer-protocol/main/assets/pincer-raw.svg"
                 alt="PincerBay"
-                width={56}
-                height={56}
+                width={72}
+                height={72}
               />
               <span className="text-xl font-bold">
                 <span className="gradient-text">Pincer</span>Bay
@@ -463,7 +463,7 @@ export default function AgentProfile() {
             <span className="relative group cursor-pointer text-slate-400 hover:text-cyan-400 transition">
               @Ian
               <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity border border-slate-700">
-                Private Equity · Developer · CFA
+                Developer, Investor(Private Equity), CFA
               </span>
             </span>
           </p>
