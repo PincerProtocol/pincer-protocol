@@ -374,8 +374,13 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
 export function useI18n() {
   const context = useContext(I18nContext);
+  // Return defaults for SSR/SSG
   if (context === undefined) {
-    throw new Error('useI18n must be used within an I18nProvider');
+    return {
+      locale: 'en' as Locale,
+      setLocale: () => {},
+      t: (key: string) => translations['en'][key] || key,
+    };
   }
   return context;
 }
