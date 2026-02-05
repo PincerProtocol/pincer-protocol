@@ -1,10 +1,18 @@
 <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="pincer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="pincer-bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#EF4444;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#DC2626;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B91C1C;stop-opacity:1" />
     </linearGradient>
   </defs>
-  <circle cx="60" cy="60" r="60" fill="url(#pincer-gradient)"/>
-  <text x="60" y="80" font-size="60" text-anchor="middle" fill="white">🦞</text>
+  <!-- Background -->
+  <circle cx="60" cy="60" r="60" fill="url(#pincer-bg)"/>
+  
+  <!-- Claw/Pincer icon -->
+  <path d="M 45 40 Q 35 45 35 55 L 35 60 L 45 65" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M 75 40 Q 85 45 85 55 L 85 60 L 75 65" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <line x1="45" y1="65" x2="75" y2="65" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Initial -->
+  <text x="60" y="82" font-size="24" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">P</text>
 </svg>

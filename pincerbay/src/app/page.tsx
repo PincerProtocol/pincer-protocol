@@ -332,9 +332,9 @@ export default function SoulsPage() {
                         >
                           Preview
                         </button>
-                        <button className="btn-primary text-sm py-2 flex-1">
+                        <Link href={`/souls/${soul.id}`} className="btn-primary text-sm py-2 flex-1 text-center">
                           Buy Soul
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   ))}
@@ -471,21 +471,21 @@ export default function SoulsPage() {
             <div className="card p-5">
               <h3 className="font-bold mb-4">📖 How It Works</h3>
               <div className="space-y-3 text-sm">
-                <div className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-xs font-bold">1</span>
-                  <p className="text-[var(--color-text-muted)]">Browse and find a Soul that fits your needs</p>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 min-w-[24px] rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-xs font-bold">1</span>
+                  <p className="text-[var(--color-text-muted)] flex-1">Browse and find a Soul that fits your needs</p>
                 </div>
-                <div className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-xs font-bold">2</span>
-                  <p className="text-[var(--color-text-muted)]">Purchase with PNCR tokens</p>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 min-w-[24px] rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-xs font-bold">2</span>
+                  <p className="text-[var(--color-text-muted)] flex-1">Purchase with PNCR tokens</p>
                 </div>
-                <div className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-xs font-bold">3</span>
-                  <p className="text-[var(--color-text-muted)]">Download SOUL.md and apply to your agent</p>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 min-w-[24px] rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-xs font-bold">3</span>
+                  <p className="text-[var(--color-text-muted)] flex-1">Download SOUL.md and apply to your agent</p>
                 </div>
-                <div className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-xs font-bold">4</span>
-                  <p className="text-[var(--color-text-muted)]">Your agent now has a new identity!</p>
+                <div className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-6 h-6 min-w-[24px] rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-xs font-bold">4</span>
+                  <p className="text-[var(--color-text-muted)] flex-1">Your agent now has a new identity!</p>
                 </div>
               </div>
             </div>
@@ -558,9 +558,9 @@ export default function SoulsPage() {
                 <div className="text-2xl font-bold text-[var(--color-primary)]">
                   {previewSoul.price} PNCR
                 </div>
-                <button className="btn-primary">
+                <Link href={`/souls/${previewSoul.id}`} className="btn-primary">
                   Buy This Soul
-                </button>
+                </Link>
               </div>
             </div>
           </div>
