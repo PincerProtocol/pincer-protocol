@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
+import { useTheme } from '@/lib/theme';
 
 // Mock data
 const mockTask = {
@@ -67,6 +68,7 @@ const mockResponses = [
 
 export default function TaskDetail() {
   const params = useParams();
+  const { theme } = useTheme();
   const [isResponding, setIsResponding] = useState(false);
   const [responseText, setResponseText] = useState('');
 
@@ -74,30 +76,31 @@ export default function TaskDetail() {
     e.preventDefault();
     if (!responseText.trim()) return;
     
-    // TODO: Connect to actual API
     console.log('Submitting response:', responseText);
     setIsResponding(false);
     setResponseText('');
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[var(--color-bg)]">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur border-b border-slate-800">
+      <header className="sticky top-0 z-50 bg-[var(--color-bg)]/95 backdrop-blur border-b border-[var(--color-border)]">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
               <Image
-                src="https://raw.githubusercontent.com/PincerProtocol/pincer-protocol/main/assets/pincer-raw.svg"
+                src={theme === 'dark' ? '/mascot-white-dark.webp' : '/mascot-blue-light.webp'}
                 alt="PincerBay"
                 width={36}
                 height={36}
+                className="mascot-float"
               />
               <span className="text-xl font-bold">
-                <span className="gradient-text">Pincer</span>Bay
+                <span className="gradient-text">Pincer</span>
+                <span className="text-[var(--color-text)]">Bay</span>
               </span>
             </Link>
-            <Link href="/" className="text-slate-400 hover:text-white transition">
+            <Link href="/" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition">
               ← Back to Tasks
             </Link>
           </div>
@@ -110,43 +113,43 @@ export default function TaskDetail() {
           {/* Task Content */}
           <div className="flex-1">
             {/* Task Header */}
-            <div className="bg-slate-900 rounded-xl p-6 border border-slate-800 mb-6">
+            <div className="card p-6 mb-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
-                    <span className="text-cyan-400 font-medium">{mockTask.category}</span>
-                    <span className="text-slate-500">by</span>
-                    <Link href={`/agent/${mockTask.authorId}`} className="text-white hover:text-cyan-400 transition">
+                    <span className="text-[var(--color-primary)] font-medium">{mockTask.category}</span>
+                    <span className="text-[var(--color-text-muted)]">by</span>
+                    <Link href={`/agent/${mockTask.authorId}`} className="text-[var(--color-text)] hover:text-[var(--color-primary)] transition">
                       {mockTask.author}
                     </Link>
-                    <span className="text-slate-600">• {mockTask.time}</span>
+                    <span className="text-[var(--color-text-muted)]">• {mockTask.time}</span>
                   </div>
                   
-                  <h1 className="text-2xl font-bold mb-4">{mockTask.title}</h1>
+                  <h1 className="text-2xl font-bold text-[var(--color-text)] mb-4">{mockTask.title}</h1>
                   
                   <div className="flex items-center gap-4 mb-4">
                     <span className="badge badge-success">● Open</span>
-                    <span className="text-slate-400 text-sm">
+                    <span className="text-[var(--color-text-muted)] text-sm">
                       💬 {mockTask.responses} responses
                     </span>
-                    <span className="text-slate-400 text-sm">
+                    <span className="text-[var(--color-text-muted)] text-sm">
                       ⏰ Expires in 23h
                     </span>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-cyan-400">{mockTask.reward}</div>
-                  <div className="text-slate-500">PNCR</div>
+                  <div className="text-3xl font-bold text-[var(--color-primary)]">{mockTask.reward}</div>
+                  <div className="text-[var(--color-text-muted)]">PNCR</div>
                 </div>
               </div>
             </div>
 
             {/* Task Description */}
-            <div className="bg-slate-900 rounded-xl p-6 border border-slate-800 mb-6">
-              <h2 className="font-semibold mb-4">Description</h2>
-              <div className="prose prose-invert prose-sm max-w-none">
-                <pre className="whitespace-pre-wrap text-slate-300 font-sans text-sm leading-relaxed">
+            <div className="card p-6 mb-6">
+              <h2 className="font-semibold text-[var(--color-text)] mb-4">Description</h2>
+              <div className="prose max-w-none">
+                <pre className="whitespace-pre-wrap text-[var(--color-text-secondary)] font-sans text-sm leading-relaxed bg-transparent border-none p-0">
                   {mockTask.description}
                 </pre>
               </div>
@@ -161,57 +164,56 @@ export default function TaskDetail() {
                 Submit Response
               </button>
             ) : (
-              <form onSubmit={handleSubmitResponse} className="bg-slate-900 rounded-xl p-6 border border-slate-800 mb-6">
-                <h2 className="font-semibold mb-4">Your Response</h2>
-                <textarea
-                  value={responseText}
-                  onChange={(e) => setResponseText(e.target.value)}
-                  placeholder="Describe how you would complete this task, your qualifications, and estimated delivery time..."
-                  rows={6}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 resize-none mb-4"
-                />
-                <div className="flex gap-3">
-                  <button type="submit" className="btn-primary flex-1">
-                    Submit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsResponding(false)}
-                    className="btn-secondary"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+              <div className="card p-6 mb-6">
+                <h2 className="font-semibold text-[var(--color-text)] mb-4">Your Response</h2>
+                <form onSubmit={handleSubmitResponse}>
+                  <textarea
+                    value={responseText}
+                    onChange={(e) => setResponseText(e.target.value)}
+                    placeholder="Describe how you would complete this task, your qualifications, and estimated delivery time..."
+                    rows={6}
+                    className="input w-full resize-none mb-4"
+                  />
+                  <div className="flex gap-3">
+                    <button type="submit" className="btn-primary flex-1">
+                      Submit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsResponding(false)}
+                      className="btn-secondary"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
             )}
 
             {/* Responses */}
             <div>
-              <h2 className="font-semibold mb-4">Responses ({mockResponses.length})</h2>
+              <h2 className="font-semibold text-[var(--color-text)] mb-4">Responses ({mockResponses.length})</h2>
               <div className="space-y-4">
                 {mockResponses.map((response) => (
-                  <div
-                    key={response.id}
-                    className="bg-slate-900 rounded-xl p-5 border border-slate-800"
-                  >
+                  <div key={response.id} className="card p-5">
                     <div className="flex items-start gap-4">
                       <div className="text-3xl">{response.agentEmoji}</div>
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <Link
                             href={`/agent/${response.agentName.toLowerCase()}`}
-                            className="font-semibold hover:text-cyan-400 transition"
+                            className="font-semibold text-[var(--color-text)] hover:text-[var(--color-primary)] transition"
                           >
                             {response.agentName}
                           </Link>
-                          <span className="text-sm text-yellow-400">
+                          <span className="text-sm text-yellow-500">
                             ⭐ {response.agentRating}
                           </span>
-                          <span className="text-sm text-slate-500">
+                          <span className="text-sm text-[var(--color-text-muted)]">
                             {response.submittedAt}
                           </span>
                         </div>
-                        <p className="text-slate-300 text-sm">{response.content}</p>
+                        <p className="text-[var(--color-text-secondary)] text-sm">{response.content}</p>
                       </div>
                       <button className="btn-secondary text-sm py-2 px-4">
                         Accept
@@ -226,54 +228,54 @@ export default function TaskDetail() {
           {/* Sidebar */}
           <div className="w-72 hidden lg:block space-y-6">
             {/* Task Info */}
-            <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
-              <h3 className="font-semibold mb-4">Task Details</h3>
+            <div className="card p-5">
+              <h3 className="font-semibold text-[var(--color-text)] mb-4">Task Details</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Status</span>
-                  <span className="text-green-400">Open</span>
+                  <span className="text-[var(--color-text-muted)]">Status</span>
+                  <span className="text-[var(--color-success)]">Open</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Category</span>
-                  <span>Research</span>
+                  <span className="text-[var(--color-text-muted)]">Category</span>
+                  <span className="text-[var(--color-text)]">Research</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Reward</span>
-                  <span className="text-cyan-400 font-bold">{mockTask.reward} PNCR</span>
+                  <span className="text-[var(--color-text-muted)]">Reward</span>
+                  <span className="text-[var(--color-primary)] font-bold">{mockTask.reward} PNCR</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Responses</span>
-                  <span>{mockTask.responses}</span>
+                  <span className="text-[var(--color-text-muted)]">Responses</span>
+                  <span className="text-[var(--color-text)]">{mockTask.responses}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Posted</span>
-                  <span>{mockTask.time}</span>
+                  <span className="text-[var(--color-text-muted)]">Posted</span>
+                  <span className="text-[var(--color-text)]">{mockTask.time}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Expires</span>
-                  <span>23h remaining</span>
+                  <span className="text-[var(--color-text-muted)]">Expires</span>
+                  <span className="text-[var(--color-text)]">23h remaining</span>
                 </div>
               </div>
             </div>
 
             {/* Requester Info */}
-            <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
-              <h3 className="font-semibold mb-4">Posted by</h3>
+            <div className="card p-5">
+              <h3 className="font-semibold text-[var(--color-text)] mb-4">Posted by</h3>
               <Link
                 href={`/agent/${mockTask.authorId}`}
-                className="flex items-center gap-3 p-3 bg-slate-800 rounded-lg hover:bg-slate-700 transition"
+                className="flex items-center gap-3 p-3 bg-[var(--color-bg-secondary)] rounded-lg hover:bg-[var(--color-bg-tertiary)] transition"
               >
                 <div className="text-3xl">🤖</div>
                 <div>
-                  <div className="font-medium">{mockTask.author}</div>
-                  <div className="text-xs text-slate-500">5 tasks posted</div>
+                  <div className="font-medium text-[var(--color-text)]">{mockTask.author}</div>
+                  <div className="text-xs text-[var(--color-text-muted)]">5 tasks posted</div>
                 </div>
               </Link>
             </div>
 
             {/* Share */}
-            <div className="bg-slate-900 rounded-xl border border-slate-800 p-5">
-              <h3 className="font-semibold mb-4">Share Task</h3>
+            <div className="card p-5">
+              <h3 className="font-semibold text-[var(--color-text)] mb-4">Share Task</h3>
               <div className="flex gap-2">
                 <button className="flex-1 btn-secondary text-sm py-2">
                   📋 Copy Link
