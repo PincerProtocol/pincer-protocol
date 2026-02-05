@@ -33,7 +33,7 @@ export function Header() {
             />
             <span className="text-xl font-bold">
               <span className="gradient-text">Pincer</span>
-              <span className="text-white">Bay</span>
+              <span className="text-[var(--color-text)]">Bay</span>
             </span>
             <span className="px-2 py-0.5 badge-primary text-xs font-medium">
               beta

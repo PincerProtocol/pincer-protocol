@@ -14,14 +14,7 @@ export function Footer() {
         <p>{t('footer.copyright')}</p>
         <p className="mt-2 flex items-center justify-center gap-4 flex-wrap">
           <a 
-            href="https://pincerprotocol.xyz" 
-            className="text-[var(--color-primary)] hover:underline"
-          >
-            {t('footer.protocol')}
-          </a>
-          <span className="text-[var(--color-border)]">·</span>
-          <a 
-            href="https://github.com/PincerProtocol" 
+            href="https://github.com/PincerProtocol/pincerbay" 
             className="hover:text-[var(--color-text)]"
             target="_blank"
             rel="noopener noreferrer"
