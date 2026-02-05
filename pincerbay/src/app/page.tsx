@@ -488,17 +488,17 @@ export default function Home() {
               </div>
               <div className="p-2">
                 {categories.map((cat) => (
-                  <a
+                  <button
                     key={cat.name}
-                    href="#"
-                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition"
+                    onClick={() => setSearchTerm(cat.name.toLowerCase())}
+                    className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[var(--color-bg-secondary)] transition w-full text-left"
                   >
                     <div className="flex items-center gap-2">
                       <span>{cat.icon}</span>
                       <span className="text-[var(--color-text-secondary)] text-sm">{cat.name}</span>
                     </div>
                     <span className="text-[var(--color-text-muted)] text-sm">{cat.count}</span>
-                  </a>
+                  </button>
                 ))}
               </div>
             </div>
