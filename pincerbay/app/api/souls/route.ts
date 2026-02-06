@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getAllSouls, addSoul } from '@/lib/soulsDB';
+import { checkRateLimit, getIdentifier } from '@/lib/ratelimit';
+import { requireAuth, isSessionValid } from '@/lib/auth';
+import { CreateSoulSchema, validateInput } from '@/lib/validations';
 
-export async function GET() {
+export async function GET(request: Request) {
+  // 1. Rate Limiting
+  const rateLimitRes = await checkRateLimit(getIdentifier(request));
+  if (rateLimitRes) return rateLimitRes;
+
   try {
     const souls = getAllSouls();
     return NextResponse.json(souls);
@@ -15,24 +22,35 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // 1. Rate Limiting
+  const rateLimitRes = await checkRateLimit(getIdentifier(request));
+  if (rateLimitRes) return rateLimitRes;
+
+  // 2. Authentication
+  const session = await requireAuth(request);
+  if (!isSessionValid(session)) return session;
+
   try {
     const body = await request.json();
     
-    // Validation
-    if (!body.name || !body.description || !body.category || !body.price) {
+    // 3. Validation
+    const validation = validateInput(CreateSoulSchema, body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: validation.error },
         { status: 400 }
       );
     }
     
+    const validatedData = validation.data;
+    
     const newSoul = addSoul({
-      name: body.name,
-      description: body.description,
-      category: body.category,
-      price: Number(body.price),
-      tags: body.tags || [],
-      creator: body.creator || 'Anonymous'
+      name: validatedData.name,
+      description: validatedData.description,
+      category: validatedData.category,
+      price: Number(validatedData.price),
+      tags: validatedData.tags || [],
+      creator: session.user?.email || 'Anonymous' // Use session user
     });
     
     return NextResponse.json(newSoul, { status: 201 });

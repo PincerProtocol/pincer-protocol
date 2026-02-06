@@ -1,10 +1,10 @@
 import axios from 'axios';
 import FormData from 'form-data';
 import fs from 'fs';
-import { fileTypeFromFile } from 'file-type';
+import path from 'path';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_MIME_TYPES = ['text/markdown', 'application/json'];
+const ALLOWED_EXTENSIONS = ['.md', '.json', '.txt'];
 
 interface PinataUploadResponse {
   IpfsHash: string;
@@ -21,7 +21,7 @@ export class PinataIPFSService {
   }
 
   /**
-   * Validate file size and MIME type
+   * Validate file size and extension
    * @param filePath Local path of the file
    */
   private async validateFile(filePath: string): Promise<void> {
@@ -32,20 +32,10 @@ export class PinataIPFSService {
       throw new Error(`File size exceeds 10MB limit: ${stats.size} bytes`);
     }
 
-    // 2. MIME Type Check
-    const type = await fileTypeFromFile(filePath);
-    // Note: file-type might return undefined for some text/markdown if it doesn't have magic numbers
-    // In that case, we might need a fallback check based on extension or content
-    let mimeType = type?.mime;
-    
-    if (!mimeType) {
-      // Fallback for markdown/text which often don't have magic bytes
-      if (filePath.endsWith('.md')) mimeType = 'text/markdown';
-      if (filePath.endsWith('.json')) mimeType = 'application/json';
-    }
-
-    if (!mimeType || !ALLOWED_MIME_TYPES.includes(mimeType)) {
-      throw new Error(`Invalid file type: ${mimeType || 'unknown'}. Allowed: ${ALLOWED_MIME_TYPES.join(', ')}`);
+    // 2. Extension Check (simple validation for text files)
+    const ext = path.extname(filePath).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      throw new Error(`File type not allowed. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}`);
     }
   }
 
