@@ -3,7 +3,7 @@ import { base, baseSepolia } from 'wagmi/chains'
 import { injected } from 'wagmi/connectors'
 
 export const config = createConfig({
-  chains: [baseSepolia, base], // Sepolia 우선 (테스트용)
+  chains: [base, baseSepolia], // Base Mainnet 우선
   connectors: [
     injected() // MetaMask, Coinbase Wallet 등
     // walletConnect - 나중에 추가
