@@ -4,37 +4,86 @@ const path = require("path");
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
+// 전체 Soul 목록 (60+명)
 const souls = [
-  // Anime characters
-  { id: "naruto", name: "NARUTO", title: "NINJA HERO", style: "Naruto Uzumaki anime character with spiky blonde hair and Konoha headband" },
-  { id: "luffy", name: "LUFFY", title: "PIRATE CAPTAIN", style: "Monkey D Luffy anime character with straw hat from One Piece" },
-  { id: "goku", name: "GOKU", title: "SAIYAN WARRIOR", style: "Son Goku anime character with spiky black hair from Dragon Ball" },
-  { id: "pikachu", name: "PIKACHU", title: "ELECTRIC POKEMON", style: "Pikachu yellow electric mouse pokemon character" },
-  
-  // Japanese celebrities
-  { id: "hikakin", name: "HIKAKIN", title: "YOUTUBER", style: "friendly young Japanese male YouTuber" },
-  
-  // Crypto figures
-  { id: "vitalik-buterin", name: "VITALIK BUTERIN", title: "ETHEREUM FOUNDER", style: "young man with thin face and short hair, tech entrepreneur" },
-  { id: "cz-binance", name: "CZ", title: "BINANCE FOUNDER", style: "Asian man with friendly smile, crypto executive" },
-  { id: "brian-armstrong", name: "BRIAN ARMSTRONG", title: "COINBASE CEO", style: "bald American man, tech CEO" },
-  
-  // Tech figures
+  // === 🇺🇸 미국 (10명) ===
   { id: "elon-musk", name: "ELON MUSK", title: "TECH VISIONARY", style: "Elon Musk side profile" },
+  { id: "mark-zuckerberg", name: "MARK ZUCKERBERG", title: "META CEO", style: "Mark Zuckerberg with short curly hair" },
+  { id: "jeff-bezos", name: "JEFF BEZOS", title: "AMAZON FOUNDER", style: "Jeff Bezos bald man confident expression" },
+  { id: "bill-gates", name: "BILL GATES", title: "MICROSOFT FOUNDER", style: "Bill Gates with glasses, tech philanthropist" },
   { id: "steve-jobs", name: "STEVE JOBS", title: "APPLE FOUNDER", style: "Steve Jobs with glasses and black turtleneck" },
-  { id: "mark-zuckerberg", name: "MARK ZUCKERBERG", title: "META CEO", style: "young man with short curly hair, tech CEO" },
-  { id: "jeff-bezos", name: "JEFF BEZOS", title: "AMAZON FOUNDER", style: "bald man with confident expression, business mogul" },
-  { id: "bill-gates", name: "BILL GATES", title: "MICROSOFT FOUNDER", style: "man with glasses, tech philanthropist" },
-  
-  // AI assistants
-  { id: "chatgpt", name: "CHATGPT", title: "AI ASSISTANT", style: "abstract humanoid AI assistant representation, friendly robotic face" },
-  { id: "claude", name: "CLAUDE", title: "AI ASSISTANT", style: "abstract humanoid AI assistant representation, thoughtful robotic face" },
-  { id: "gemini", name: "GEMINI", title: "AI ASSISTANT", style: "abstract humanoid AI assistant representation, dual-faced symmetrical" },
-  
-  // Professional types
-  { id: "cryptoanalyst-pro", name: "CRYPTO ANALYST", title: "BLOCKCHAIN EXPERT", style: "professional analyst with glasses, serious expression" },
+  { id: "oprah-winfrey", name: "OPRAH WINFREY", title: "MEDIA QUEEN", style: "Oprah Winfrey confident African American woman" },
+  { id: "kanye-west", name: "KANYE WEST", title: "ARTIST", style: "Kanye West African American man artistic" },
+  { id: "kim-kardashian", name: "KIM KARDASHIAN", title: "INFLUENCER", style: "Kim Kardashian glamorous woman" },
+  { id: "taylor-swift", name: "TAYLOR SWIFT", title: "POP STAR", style: "Taylor Swift blonde woman singer" },
+  { id: "beyonce", name: "BEYONCÉ", title: "QUEEN BEY", style: "Beyonce African American woman powerful" },
+
+  // === 🇷🇺 러시아 (10명) ===
+  { id: "vladimir-putin", name: "VLADIMIR PUTIN", title: "LEADER", style: "Vladimir Putin serious expression" },
+  { id: "pavel-durov", name: "PAVEL DUROV", title: "TELEGRAM FOUNDER", style: "Pavel Durov young man tech entrepreneur" },
+  { id: "kaspersky", name: "EUGENE KASPERSKY", title: "SECURITY EXPERT", style: "Eugene Kaspersky tech security expert" },
+  { id: "maria-sharapova", name: "MARIA SHARAPOVA", title: "TENNIS STAR", style: "Maria Sharapova elegant blonde woman athlete" },
+  { id: "garry-kasparov", name: "GARRY KASPAROV", title: "CHESS MASTER", style: "Garry Kasparov chess grandmaster" },
+  { id: "dostoevsky", name: "DOSTOEVSKY", title: "WRITER", style: "Fyodor Dostoevsky 19th century Russian author with beard" },
+  { id: "tolstoy", name: "LEO TOLSTOY", title: "AUTHOR", style: "Leo Tolstoy old man with long beard Russian author" },
+  { id: "tchaikovsky", name: "TCHAIKOVSKY", title: "COMPOSER", style: "Pyotr Tchaikovsky classical composer with beard" },
+  { id: "mendeleev", name: "MENDELEEV", title: "SCIENTIST", style: "Dmitri Mendeleev scientist with long beard and hair" },
+
+  // === 🇯🇵 일본 (10명) ===
+  { id: "naruto", name: "NARUTO", title: "NINJA HERO", style: "Naruto Uzumaki anime character with spiky blonde hair and headband, ANIME STYLE" },
+  { id: "luffy", name: "LUFFY", title: "PIRATE CAPTAIN", style: "Monkey D Luffy anime character with straw hat, ANIME STYLE" },
+  { id: "goku", name: "GOKU", title: "SAIYAN WARRIOR", style: "Son Goku anime character with spiky black hair, ANIME STYLE" },
+  { id: "pikachu", name: "PIKACHU", title: "POKEMON", style: "Pikachu yellow electric mouse pokemon character, ANIME STYLE" },
+  { id: "satoshi-nakamoto", name: "SATOSHI NAKAMOTO", title: "BITCOIN CREATOR", style: "mysterious anonymous figure with question mark or shadow" },
+  { id: "hayao-miyazaki", name: "HAYAO MIYAZAKI", title: "DIRECTOR", style: "Hayao Miyazaki old Japanese man with glasses and white beard" },
+  { id: "hideo-kojima", name: "HIDEO KOJIMA", title: "GAME DESIGNER", style: "Hideo Kojima Japanese man with glasses" },
+  { id: "hikakin", name: "HIKAKIN", title: "YOUTUBER", style: "friendly young Japanese male YouTuber" },
+  { id: "akb48-idol", name: "AKB48 IDOL", title: "POP IDOL", style: "cute Japanese female idol singer, ANIME STYLE" },
+  { id: "yoshimoto-comedian", name: "YOSHIMOTO", title: "COMEDIAN", style: "funny Japanese comedian" },
+
+  // === 🇨🇳 중국 (10명) ===
+  { id: "jack-ma", name: "JACK MA", title: "ALIBABA FOUNDER", style: "Jack Ma Chinese businessman with distinct features" },
+  { id: "cz-binance", name: "CZ", title: "BINANCE FOUNDER", style: "Changpeng Zhao CZ Asian man friendly smile" },
+  { id: "pony-ma", name: "PONY MA", title: "TENCENT CEO", style: "Ma Huateng Chinese tech executive" },
+  { id: "lei-jun", name: "LEI JUN", title: "XIAOMI FOUNDER", style: "Lei Jun Chinese tech entrepreneur" },
+  { id: "liu-cixin", name: "LIU CIXIN", title: "SF AUTHOR", style: "Liu Cixin Chinese author with glasses" },
+  { id: "jackie-chan", name: "JACKIE CHAN", title: "ACTION LEGEND", style: "Jackie Chan Chinese martial artist actor" },
+  { id: "bruce-lee", name: "BRUCE LEE", title: "MARTIAL ARTIST", style: "Bruce Lee iconic martial artist" },
+  { id: "confucius", name: "CONFUCIUS", title: "PHILOSOPHER", style: "Confucius ancient Chinese philosopher with traditional hat and beard" },
+  { id: "sun-tzu", name: "SUN TZU", title: "STRATEGIST", style: "Sun Tzu ancient Chinese military strategist" },
+  { id: "mulan", name: "MULAN", title: "WARRIOR", style: "Mulan Chinese female warrior, ANIME STYLE" },
+
+  // === 🤖 AI (10명) ===
+  { id: "chatgpt", name: "CHATGPT", title: "AI ASSISTANT", style: "abstract AI assistant, friendly robotic face with green glow" },
+  { id: "claude", name: "CLAUDE", title: "AI ASSISTANT", style: "abstract AI assistant, thoughtful robotic face with orange glow" },
+  { id: "gemini", name: "GEMINI", title: "AI ASSISTANT", style: "abstract AI assistant, dual symmetrical face with blue glow" },
+  { id: "copilot", name: "COPILOT", title: "CODE ASSISTANT", style: "abstract AI assistant, coding theme with purple glow" },
+  { id: "grok", name: "GROK", title: "AI ASSISTANT", style: "abstract AI assistant, witty expression with X logo theme" },
+  { id: "midjourney", name: "MIDJOURNEY", title: "AI ARTIST", style: "abstract AI artist, creative colorful abstract face" },
+  { id: "dall-e", name: "DALL-E", title: "IMAGE AI", style: "abstract AI artist, visual creative abstract face" },
+  { id: "stable-diffusion", name: "STABLE DIFFUSION", title: "IMAGE AI", style: "abstract AI, open source theme abstract face" },
+  { id: "perplexity", name: "PERPLEXITY", title: "SEARCH AI", style: "abstract AI, search and knowledge theme" },
+  { id: "sora", name: "SORA", title: "VIDEO AI", style: "abstract AI, video and motion theme" },
+
+  // === 💰 크립토 (10명) ===
+  { id: "vitalik-buterin", name: "VITALIK BUTERIN", title: "ETHEREUM FOUNDER", style: "Vitalik Buterin thin young man" },
+  { id: "brian-armstrong", name: "BRIAN ARMSTRONG", title: "COINBASE CEO", style: "Brian Armstrong bald American tech CEO" },
+  { id: "sbf-lesson", name: "SBF", title: "LESSON", style: "abstract warning symbol, cautionary figure" },
+  { id: "gary-vee", name: "GARY VEE", title: "NFT KING", style: "Gary Vaynerchuk energetic man" },
+  { id: "kevin-rose", name: "KEVIN ROSE", title: "NFT CURATOR", style: "Kevin Rose tech entrepreneur" },
+  { id: "yuga-labs", name: "YUGA LABS", title: "BAYC CREATOR", style: "abstract ape silhouette artistic" },
+  { id: "do-kwon-lesson", name: "DO KWON", title: "LESSON", style: "abstract warning symbol, cautionary figure" },
+  { id: "justin-sun", name: "JUSTIN SUN", title: "TRON FOUNDER", style: "Justin Sun young Asian man" },
+  { id: "michael-saylor", name: "MICHAEL SAYLOR", title: "BTC MAXIMALIST", style: "Michael Saylor confident businessman" },
+  { id: "maemi-kim-crypto", name: "MAEMI KIM", title: "CRYPTO ARTIST", style: "Korean female artist creative" },
+
+  // === 기타 (1명) ===
+  { id: "pincer-agent", name: "PINCER", title: "PROTOCOL AGENT", style: "cute lobster mascot character, friendly" },
+
+  // === 전문가 타입 (3명) ===
+  { id: "cryptoanalyst-pro", name: "CRYPTO ANALYST", title: "BLOCKCHAIN EXPERT", style: "professional analyst with glasses" },
   { id: "creative-writer", name: "CREATIVE WRITER", title: "STORYTELLER", style: "creative person with thoughtful artistic expression" },
-  { id: "security-auditor", name: "SECURITY AUDITOR", title: "SECURITY EXPERT", style: "serious professional with stern analytical expression" },
+  { id: "security-auditor", name: "SECURITY AUDITOR", title: "SECURITY EXPERT", style: "serious professional with analytical expression" },
 ];
 
 async function generateSoulImage(soul) {
@@ -60,14 +109,13 @@ EXACT STYLE REQUIREMENTS:
 
 TEXT AT BOTTOM (EXACT FORMAT):
 "${soul.name}" in BOLD BLACK font, then " - " then "${soul.title}" in LIGHT GRAY thinner font
-Example: "ELON MUSK - TECH VISIONARY"
 
 Overall feeling: premium, sophisticated, modern tech aesthetic. Like a high-end profile card.
 
-For anime characters: keep the character recognizable but render in this smooth low-poly grayscale style.`;
+For anime characters: keep the character recognizable but render in this smooth low-poly grayscale style.
+For historical figures: interpret in this modern geometric style.
+For abstract AI: create an artistic abstract representation in this style.`;
 
-  // Generating message moved to main()
-  
   try {
     const response = await model.generateContent(prompt);
     const result = response.response;
@@ -77,28 +125,28 @@ For anime characters: keep the character recognizable but render in this smooth 
         const imageData = part.inlineData.data;
         const outputPath = path.join(__dirname, "..", "public", "souls", `${soul.id}.png`);
         fs.writeFileSync(outputPath, Buffer.from(imageData, "base64"));
-        console.log(`✅ Saved: ${outputPath}`);
+        console.log(`✅ ${soul.id}`);
         return true;
       }
     }
-    console.log(`❌ No image in response for ${soul.id}`);
+    console.log(`❌ No image: ${soul.id}`);
     return false;
   } catch (error) {
-    console.error(`❌ Error for ${soul.id}:`, error.message);
+    console.error(`❌ Error ${soul.id}: ${error.message}`);
     return false;
   }
 }
 
 async function main() {
-  console.log("🎨 Soul Image Generator - Smooth Low-poly Style\n");
-  console.log(`Total souls to generate: ${souls.length}\n`);
+  console.log("🎨 Soul Image Generator - Full Collection\n");
+  console.log(`Total: ${souls.length} souls\n`);
   
   let success = 0;
   let failed = 0;
   
   for (let i = 0; i < souls.length; i++) {
     const soul = souls[i];
-    console.log(`[${i + 1}/${souls.length}] Generating: ${soul.id}...`);
+    process.stdout.write(`[${i + 1}/${souls.length}] ${soul.id}... `);
     
     const result = await generateSoulImage(soul);
     if (result) {
@@ -107,13 +155,13 @@ async function main() {
       failed++;
     }
     
-    // Delay between requests to avoid rate limiting
+    // Delay between requests
     if (i < souls.length - 1) {
-      await new Promise(r => setTimeout(r, 3000));
+      await new Promise(r => setTimeout(r, 2000));
     }
   }
   
-  console.log(`\n✨ Generation complete! Success: ${success}, Failed: ${failed}`);
+  console.log(`\n✨ Complete! Success: ${success}, Failed: ${failed}`);
 }
 
 main();
