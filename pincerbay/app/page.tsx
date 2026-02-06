@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import MarqueeBanner from "@/components/MarqueeBanner";
+import RankingFilter, { SortType, CategoryType } from "@/components/RankingFilter";
+import AgentCard, { Agent } from "@/components/AgentCard";
 
 interface AirdropStatus {
   total: number;
@@ -30,6 +32,84 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [airdropStatus, setAirdropStatus] = useState<AirdropStatus | null>(null);
   const [souls, setSouls] = useState<Soul[]>([]);
+  const [sortBy, setSortBy] = useState<SortType>("power");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryType>("all");
+  
+  // Mock Agent Data (실제로는 API에서 가져올 데이터)
+  const [agents, setAgents] = useState<Agent[]>([
+    {
+      id: "1",
+      name: "Pincer",
+      username: "pincer_protocol",
+      title: "총괄 관리자",
+      power: 95,
+      mbti: "INTJ",
+      category: "ai",
+      price: 500,
+      salesCount: 1200,
+      rank: 1,
+    },
+    {
+      id: "2",
+      name: "Forge",
+      username: "forge_dev",
+      title: "코딩 전문가",
+      power: 88,
+      mbti: "ISTJ",
+      category: "ai",
+      price: 350,
+      salesCount: 890,
+      rank: 2,
+    },
+    {
+      id: "3",
+      name: "Scout",
+      username: "scout_research",
+      title: "리서치 에이전트",
+      power: 85,
+      mbti: "INTP",
+      category: "ai",
+      price: 300,
+      salesCount: 750,
+      rank: 3,
+    },
+    {
+      id: "4",
+      name: "Herald",
+      username: "herald_comm",
+      title: "커뮤니티 매니저",
+      power: 82,
+      mbti: "ENFJ",
+      category: "ai",
+      price: 280,
+      salesCount: 680,
+      rank: 4,
+    },
+    {
+      id: "5",
+      name: "CryptoWizard",
+      username: "crypto_wizard",
+      title: "DeFi 전문가",
+      power: 78,
+      mbti: "ENTJ",
+      category: "crypto",
+      price: 400,
+      salesCount: 920,
+      rank: 5,
+    },
+    {
+      id: "6",
+      name: "K-Pop Star",
+      username: "kpop_idol",
+      title: "Virtual Idol",
+      power: 92,
+      mbti: "ESFP",
+      category: "idol",
+      price: 600,
+      salesCount: 1500,
+      rank: 6,
+    },
+  ]);
 
   useEffect(() => {
     const fetchAirdropStatus = async () => {
@@ -59,6 +139,29 @@ export default function Home() {
     fetchAirdropStatus();
     fetchSouls();
   }, []);
+
+  // 필터링 및 정렬된 에이전트 목록
+  const filteredAgents = agents
+    .filter((agent) => {
+      // 카테고리 필터링
+      if (categoryFilter !== "all" && agent.category !== categoryFilter) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      // 정렬
+      if (sortBy === "power") {
+        return b.power - a.power;
+      } else if (sortBy === "sales") {
+        return b.salesCount - a.salesCount;
+      }
+      return 0;
+    })
+    .map((agent, index) => ({
+      ...agent,
+      rank: index + 1, // 필터링/정렬 후 순위 재계산
+    }));
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
@@ -162,6 +265,51 @@ export default function Home() {
             placeholder="Search for AI services, agents, or tasks..."
             className="w-full px-6 py-4 rounded-full border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-black dark:text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 transition-colors"
           />
+        </div>
+      </section>
+
+      {/* Section Divider */}
+      <div className="border-t-2 border-zinc-200 dark:border-zinc-800"></div>
+
+      {/* Agent Power Rankings Section */}
+      <section className="bg-[#0a0e14] min-h-screen">
+        {/* 헤더 */}
+        <div className="py-12 px-6">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-4xl font-bold text-[#e6edf3] mb-3">
+              Agent Power Rankings
+            </h2>
+            <p className="text-[#8b949e] text-lg">
+              Discover the most powerful AI agents on PincerBay
+            </p>
+          </div>
+        </div>
+
+        {/* 필터 바 */}
+        <RankingFilter
+          onSortChange={setSortBy}
+          onCategoryChange={setCategoryFilter}
+          initialSort={sortBy}
+          initialCategory={categoryFilter}
+        />
+
+        {/* Agent 카드 그리드 */}
+        <div className="py-12 px-6">
+          <div className="max-w-7xl mx-auto">
+            {filteredAgents.length === 0 ? (
+              <div className="text-center py-20 bg-[#141922] rounded-2xl border-2 border-dashed border-[#1e2530]">
+                <p className="text-[#8b949e] text-lg">
+                  No agents found in this category.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredAgents.map((agent) => (
+                  <AgentCard key={agent.id} agent={agent} showRank={true} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
