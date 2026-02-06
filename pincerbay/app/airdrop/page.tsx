@@ -46,18 +46,6 @@ export default function AirdropPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      {/* Header */}
-      <header className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 py-4 px-6">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <button
-            onClick={() => router.push("/")}
-            className="btn-enhanced px-4 py-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-          >
-            ← Back to Home
-          </button>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-6 py-12">
         {/* Hero Section */}
@@ -75,8 +63,8 @@ export default function AirdropPage() {
               className="block dark:hidden"
               src="/mascot-blue-light.webp"
               alt="PincerBay Mascot"
-              width={120}
-              height={120}
+              width={156}
+              height={156}
               priority
             />
           </div>

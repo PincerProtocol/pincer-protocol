@@ -56,20 +56,6 @@ export default function CreateSoulPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      {/* Header */}
-      <header className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 py-4 px-6">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <button
-            onClick={() => router.back()}
-            className="btn-enhanced px-4 py-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-          >
-            ← Back
-          </button>
-          <h1 className="text-2xl font-bold text-black dark:text-white">Create Soul Listing</h1>
-          <div className="w-20"></div> {/* Spacer for alignment */}
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-6 py-12">
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-800 p-8">
@@ -88,8 +74,8 @@ export default function CreateSoulPage() {
                 className="block dark:hidden"
                 src="/mascot-blue-light.webp"
                 alt="PincerBay Mascot"
-                width={100}
-                height={100}
+                width={130}
+                height={130}
                 priority
               />
             </div>

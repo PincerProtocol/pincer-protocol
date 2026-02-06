@@ -117,8 +117,8 @@ export default function Home() {
             className="block dark:hidden"
             src="/mascot-blue-light.webp"
             alt="PincerBay Mascot"
-            width={120}
-            height={120}
+            width={156}
+            height={156}
             priority
           />
         </div>

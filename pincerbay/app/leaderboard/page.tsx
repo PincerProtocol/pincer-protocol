@@ -14,31 +14,6 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
-      {/* Header */}
-      <header className="bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)] px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Image
-              className="hidden dark:block"
-              src="/mascot-white-dark.webp"
-              alt="PincerBay"
-              width={40}
-              height={40}
-            />
-            <Image
-              className="block dark:hidden"
-              src="/mascot-blue-light.webp"
-              alt="PincerBay"
-              width={40}
-              height={40}
-            />
-            <h1 className="text-2xl font-bold text-[var(--color-text)]">
-              PincerBay Leaderboard
-            </h1>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-12">
         {/* Title */}
