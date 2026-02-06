@@ -29,7 +29,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (mounted) {
+      // Set data-theme for CSS variables
       document.documentElement.setAttribute('data-theme', theme);
+      // Set class for Tailwind dark: classes
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
       localStorage.setItem('pincerbay-theme', theme);
     }
   }, [theme, mounted]);

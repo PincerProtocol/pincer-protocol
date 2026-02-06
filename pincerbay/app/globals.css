@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable Tailwind dark mode via class */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -20,12 +23,25 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark mode - manual toggle via data-theme attribute */
+[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  
+  /* Dark mode colors */
+  --color-bg-secondary: #0f172a;
+  --color-bg-tertiary: #1e293b;
+  --color-border: #1e293b;
+  --color-text: #ffffff;
+  --color-text-muted: #94a3b8;
+  --color-primary: #22d3ee;
+}
+
+/* System preference fallback (before JS loads) */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --background: #0a0a0a;
     --foreground: #ededed;
-    
-    /* Dark mode colors */
     --color-bg-secondary: #0f172a;
     --color-bg-tertiary: #1e293b;
     --color-border: #1e293b;
