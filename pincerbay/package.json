@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
     "security:test": "bash scripts/test-security.sh",
@@ -17,6 +18,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
+    "@prisma/client": "^5.22.0",
     "@sentry/nextjs": "^10.38.0",
     "@tanstack/react-query": "^5.90.20",
     "@upstash/ratelimit": "^2.0.8",
@@ -32,7 +34,6 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@prisma/client": "^5.22.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
