@@ -396,7 +396,7 @@ const souls: Soul[] = [
     name: 'HikaKin',
     description: '일본의 대표 유튜버. 비트박스 출신이자 크리에이터 경제의 선두주자.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=HikaKin',
+    imageUrl: '/souls/hikakin.png',
     price: 1500,
     tags: ['youtuber', 'japan', 'creator', 'beatbox'],
     createdAt: '2026-02-05T00:00:00Z',
