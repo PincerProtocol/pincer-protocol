@@ -2,15 +2,16 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require("fs");
 const path = require("path");
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+const genAI = new GoogleGenerativeAI("AIzaSyCHlq8nWY_2bIj0CpMRHrAcu274NpCltoI");
 
-// 새로 추가된 한국 유명인
+// 한국 유명인 - 실제 정보 기반
 const souls = [
-  { id: "chimchakman", name: "침착맨", title: "MEME KING", style: "Korean male streamer with glasses, cartoon/webtoon style face, friendly humorous expression" },
-  { id: "syuka-world", name: "슈카월드", title: "ECONOMY EXPERT", style: "Korean male YouTuber, professional look, knowledgeable expression" },
-  { id: "sinsa-imdang", name: "신사임당", title: "INVESTMENT GURU", style: "Korean female YouTuber, professional elegant look, confident expression" },
-  { id: "pengsoo", name: "펭수", title: "MEME CHARACTER", style: "giant penguin character, cute and funny, EBS mascot style" },
-  { id: "woowakgood", name: "우왁굳", title: "VTUBER CREATOR", style: "Korean male streamer, creative artistic expression, virtual idol creator" },
+  { id: "chimchakman", name: "침착맨", title: "MEME KING", style: "Korean man in his 30s-40s, wearing glasses, friendly humorous expression, webtoon artist and streamer vibe" },
+  { id: "syuka-world", name: "슈카월드", title: "ECONOMY EXPERT", style: "Korean man, professional economist YouTuber look, intelligent analytical expression, business casual" },
+  { id: "sinsa-imdang", name: "신사임당", title: "INVESTMENT GURU", style: "Korean woman, professional investor YouTuber, confident smart expression, business attire" },
+  { id: "pengsoo", name: "펭수", title: "MEME CHARACTER", style: "Giant penguin character mascot, cute and rebellious personality, EBS Korean TV character, blue and white penguin" },
+  { id: "woowakgood", name: "우왁굳", title: "VTUBER CREATOR", style: "Korean man streamer, creative gaming streamer, founder of virtual idol group, energetic expression" },
+  { id: "maemi-kim", name: "매미킴", title: "UFC FIGHTER", style: "Korean man, muscular UFC MMA fighter turned YouTuber, strong athletic build, confident fighter expression" },
 ];
 
 async function generateSoulImage(soul) {
@@ -48,7 +49,7 @@ Overall feeling: premium, sophisticated, modern tech aesthetic. Like a high-end 
         const imageData = part.inlineData.data;
         const outputPath = path.join(__dirname, "..", "public", "souls", `${soul.id}.png`);
         fs.writeFileSync(outputPath, Buffer.from(imageData, "base64"));
-        console.log(`✅ ${soul.id}`);
+        console.log(`✅ ${soul.id} - ${soul.name}`);
         return true;
       }
     }
@@ -65,10 +66,10 @@ async function main() {
   
   for (let i = 0; i < souls.length; i++) {
     const soul = souls[i];
-    console.log(`[${i + 1}/${souls.length}] ${soul.id}...`);
+    console.log(`[${i + 1}/${souls.length}] Generating ${soul.name}...`);
     await generateSoulImage(soul);
     if (i < souls.length - 1) {
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise(r => setTimeout(r, 3000)); // 3초 딜레이
     }
   }
   

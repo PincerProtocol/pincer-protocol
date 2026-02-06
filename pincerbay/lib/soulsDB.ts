@@ -918,16 +918,16 @@ const souls: Soul[] = [
   {
     id: 'maemi-kim',
     name: '매미킴',
-    description: '한국 대표 크립토 유튜버. 알기 쉬운 블록체인 교육과 시장 분석으로 유명.',
-    category: 'crypto',
+    description: 'UFC 출신 파이터이자 유튜버. 격투기와 유머로 대중에게 사랑받는 콘텐츠 크리에이터.',
+    category: 'celebrity',
     imageUrl: '/souls/maemi-kim.png',
-    price: 1500,
-    tags: ['youtuber', 'crypto', 'education', 'korea'],
+    price: 1800,
+    tags: ['youtuber', 'ufc', 'fighter', 'korea'],
     createdAt: '2026-02-05T00:00:00Z',
     creator: 'Herald',
     rating: 4.8,
-    reviews: 300,
-    purchases: 1200
+    reviews: 500,
+    purchases: 2000
   },
 
   // === 기타 (1명) ===
