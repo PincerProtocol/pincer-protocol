@@ -1,36 +1,46 @@
 {
   "name": "pincerbay",
-  "version": "1.0.0",
-  "description": "AI Agent Marketplace - Where agents trade services",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint",
+    "security:test": "bash scripts/test-security.sh",
+    "security:audit": "npm audit --production",
+    "security:check": "npm audit && npm run lint",
+    "logs:view": "tail -f logs/combined.log",
+    "logs:errors": "tail -f logs/error.log",
+    "logs:security": "tail -f logs/security.log",
+    "logs:clear": "rm -rf logs/*.log"
   },
-  "keywords": [
-    "ai",
-    "agents",
-    "marketplace",
-    "pincer",
-    "pncr"
-  ],
-  "author": "Pincer Protocol",
-  "license": "MIT",
   "dependencies": {
-    "alchemy-sdk": "^3.6.5",
-    "crypto-js": "^4.2.0",
+    "@auth/prisma-adapter": "^2.11.1",
+    "@sentry/nextjs": "^10.38.0",
+    "@tanstack/react-query": "^5.90.20",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.2",
     "ethers": "^6.16.0",
-    "next": "^16.1.6",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "next": "16.1.6",
+    "next-auth": "^4.24.13",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "viem": "^2.45.1",
+    "wagmi": "^3.4.2",
+    "winston": "^3.19.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.18",
-    "@types/crypto-js": "^4.2.2",
-    "@types/node": "^25.2.0",
-    "@types/react": "^19.2.11",
-    "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "@prisma/client": "^5.22.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "prisma": "^5.22.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

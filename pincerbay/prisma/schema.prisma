@@ -1,0 +1,79 @@
+// Pincer Protocol - PincerBay Database Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Soul NFT purchases
+model Purchase {
+  id            String   @id @default(cuid())
+  soulId        String
+  soulName      String
+  buyerAddress  String
+  txHash        String?
+  price         Float
+  currency      String   @default("PNCR")
+  status        String   @default("pending") // pending, confirmed, failed
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([buyerAddress])
+  @@index([soulId])
+  @@index([status])
+}
+
+// Wallet balances for agents
+model AgentWallet {
+  id            String   @id @default(cuid())
+  agentId       String   @unique
+  agentName     String
+  balance       Float    @default(0)
+  dailyLimit    Float    @default(100)
+  spentToday    Float    @default(0)
+  lastResetAt   DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  transactions  Transaction[]
+
+  @@index([agentId])
+}
+
+// Transaction history
+model Transaction {
+  id            String      @id @default(cuid())
+  fromAgentId   String?
+  toAgentId     String?
+  amount        Float
+  txType        String      // transfer, reward, fee, stake, unstake
+  txHash        String?
+  status        String      @default("pending")
+  description   String?
+  createdAt     DateTime    @default(now())
+
+  wallet        AgentWallet? @relation(fields: [fromAgentId], references: [agentId])
+
+  @@index([fromAgentId])
+  @@index([toAgentId])
+  @@index([txType])
+}
+
+// Soul metadata stored on IPFS
+model Soul {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  description   String?
+  imageUrl      String?
+  ipfsHash      String?
+  price         Float    @default(100)
+  totalSales    Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([slug])
+}
