@@ -126,8 +126,7 @@ export default function Home() {
 
         {/* Main Headline */}
         <h1 className="text-5xl sm:text-6xl font-bold text-center mb-4 text-black dark:text-white">
-          A Marketplace for{" "}
-          <span className="gradient-text">AI Agents</span>
+          A Marketplace for <span className="gradient-text">AI Agents 🦞</span>
         </h1>
 
         {/* Subheadline */}
@@ -176,79 +175,94 @@ export default function Home() {
 
       {/* Feed Section */}
       <section className="bg-zinc-50 dark:bg-zinc-950 py-12 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-black dark:text-white">
-              Latest Souls
-            </h2>
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-4">
+            <div>
+              <h2 className="text-4xl font-bold text-black dark:text-white mb-2">
+                Explore Souls
+              </h2>
+              <p className="text-zinc-600 dark:text-zinc-400">
+                Discover and acquire unique AI agent personalities
+              </p>
+            </div>
             <Link
               href="/souls/create"
-              className="btn-enhanced px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+              className="btn-enhanced px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold shadow-lg hover:shadow-xl transition-all"
             >
-              + Create Listing
+              + Mint New Soul
             </Link>
           </div>
           
-          {/* Soul Listings */}
-          <div className="space-y-4">
-            {souls.length === 0 ? (
-              <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
+          {/* Soul Listings - Grid Layout */}
+          {souls.length === 0 ? (
+            <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+              <p className="text-zinc-500 dark:text-zinc-400 text-lg">
                 No souls available yet. Be the first to create one!
-              </div>
-            ) : (
-              souls.map((soul) => (
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {souls.map((soul) => (
                 <Link
                   key={soul.id}
                   href={`/souls/${soul.id}`}
-                  className="block p-6 bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-purple-400 dark:hover:border-purple-600 transition-all"
+                  className="group bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 hover:border-purple-500 dark:hover:border-purple-500 hover:shadow-2xl transition-all duration-300 flex flex-col"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-zinc-100 dark:bg-zinc-800">
-                      {soul.imageUrl ? (
-                        <Image
-                          src={soul.imageUrl}
-                          alt={soul.name}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-4xl">
-                          {soul.category === 'character' && '🤖'}
-                          {soul.category === 'idol' && '⭐'}
-                          {soul.category === 'comedian' && '😄'}
-                          {soul.category === 'influencer' && '🎥'}
-                          {!['character', 'idol', 'comedian', 'influencer'].includes(soul.category) && '🌟'}
-                        </div>
-                      )}
+                  <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+                    {soul.imageUrl ? (
+                      <Image
+                        src={soul.imageUrl}
+                        alt={soul.name}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-6xl">
+                        {soul.category === 'character' && '🤖'}
+                        {soul.category === 'idol' && '⭐'}
+                        {soul.category === 'comedian' && '😄'}
+                        {soul.category === 'influencer' && '🎥'}
+                        {!['character', 'idol', 'comedian', 'influencer'].includes(soul.category) && '🌟'}
+                      </div>
+                    )}
+                    <div className="absolute top-3 right-3 px-3 py-1 bg-black/50 backdrop-blur-md text-white text-xs font-bold rounded-full">
+                      {soul.category.toUpperCase()}
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold mb-2 text-black dark:text-white">
+                  </div>
+                  
+                  <div className="p-5 flex-1 flex flex-col">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-xl font-bold text-black dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                         {soul.name}
                       </h3>
-                      <p className="text-zinc-600 dark:text-zinc-400 mb-3">
-                        {soul.description}
-                      </p>
-                      <div className="flex flex-wrap gap-2 text-sm">
-                        <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full font-semibold">
+                      <div className="flex items-center gap-1 text-sm font-bold text-zinc-600 dark:text-zinc-400">
+                        ⭐ {soul.rating || '0.0'}
+                      </div>
+                    </div>
+                    
+                    <p className="text-zinc-600 dark:text-zinc-400 text-sm line-clamp-2 mb-4 flex-1">
+                      {soul.description}
+                    </p>
+                    
+                    <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
+                      <div>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-500 font-medium">Price</p>
+                        <p className="text-lg font-black text-purple-600 dark:text-purple-400">
                           {soul.price} PNCR
-                        </span>
-                        {soul.rating && (
-                          <span className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full">
-                            ⭐ {soul.rating} ({soul.reviews} reviews)
-                          </span>
-                        )}
-                        {soul.purchases !== undefined && (
-                          <span className="px-3 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full">
-                            {soul.purchases} purchases
-                          </span>
-                        )}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-zinc-500 dark:text-zinc-500 font-medium">Sales</p>
+                        <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                          {soul.purchases || 0}
+                        </p>
                       </div>
                     </div>
                   </div>
                 </Link>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>
