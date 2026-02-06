@@ -19,15 +19,16 @@ export interface Soul {
 // Workspace souls directory
 const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
 
-// In-memory DB (?�중???�제 DB�?교체)
-// �??�??�명??+ AI + ?�립???�플루언??Soul 컬렉??const souls: Soul[] = [
-  // === ?��?�� 미국 (10�? ===
+// In-memory DB (나중에 실제 DB로 교체)
+// 국가별 유명인 + AI + 크립토 인플루언서 Soul 컬렉션
+const souls: Soul[] = [
+  // === 🇺🇸 미국 (10명) ===
   {
     id: 'elon-musk',
     name: 'Elon Musk',
-    description: 'Tesla, SpaceX CEO. ?�성 ?�복�??�류??미래�??�계?�는 ?�신가.',
+    description: 'Tesla, SpaceX CEO. 화성 정복과 인류의 미래를 설계하는 혁신가.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Elon+Musk&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Elon+Musk&background=000000&color=fff&size=200&bold=true',
     price: 5000,
     tags: ['tesla', 'spacex', 'innovation', 'mars'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -39,9 +40,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'mark-zuckerberg',
     name: 'Mark Zuckerberg',
-    description: 'Meta CEO. ?�셜 미디?�의 ?�왕?�자 메�?버스??비전???�시?�는 리더.',
+    description: 'Meta CEO. 소셜 미디어의 제왕이자 메타버스의 비전을 제시하는 리더.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Mark+Zuckerberg&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Mark+Zuckerberg&background=0668E1&color=fff&size=200&bold=true',
     price: 4500,
     tags: ['meta', 'facebook', 'metaverse', 'social'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -53,9 +54,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'jeff-bezos',
     name: 'Jeff Bezos',
-    description: 'Amazon 창업?? 지구상?�서 가??거�????�통 ?�국�??�주 기업 Blue Origin???�장.',
+    description: 'Amazon 창업자. 지구상에서 가장 거대한 유통 제국과 우주 기업 Blue Origin의 수장.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Jeff+Bezos&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Jeff+Bezos&background=FF9900&color=fff&size=200&bold=true',
     price: 4800,
     tags: ['amazon', 'blueorigin', 'retail', 'space'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -67,9 +68,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'bill-gates',
     name: 'Bill Gates',
-    description: 'Microsoft 공동 창업?? ?�설?�인 ?�로그래머이?????�계?�인 ?�선가.',
+    description: 'Microsoft 공동 창업자. 전설적인 프로그래머이자 전 세계적인 자선가.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Bill+Gates&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Bill+Gates&background=F25022&color=fff&size=200&bold=true',
     price: 4200,
     tags: ['microsoft', 'philanthropy', 'coding', 'legend'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -81,9 +82,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'steve-jobs',
     name: 'Steve Jobs',
-    description: 'Apple 공동 창업?? 기술�??�술??교차?�에???�상??바꾼 ?�신???�이�?',
+    description: 'Apple 공동 창업자. 기술과 예술의 교차점에서 세상을 바꾼 혁신의 아이콘.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Steve+Jobs&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Steve+Jobs&background=555555&color=fff&size=200&bold=true',
     price: 5500,
     tags: ['apple', 'innovation', 'design', 'legend'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -95,9 +96,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'oprah-winfrey',
     name: 'Oprah Winfrey',
-    description: '?�크?�의 ?�왕. 강력??공감 ?�력�??�한 ?�향?�으�??�상??치유?�는 미디??거물.',
+    description: '토크쇼의 여왕. 강력한 공감 능력과 선한 영향력으로 세상을 치유하는 미디어 거물.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Oprah+Winfrey&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Oprah+Winfrey&background=A855F7&color=fff&size=200&bold=true',
     price: 3800,
     tags: ['media', 'talkshow', 'influence', 'empowerment'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -109,9 +110,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'kanye-west',
     name: 'Kanye West',
-    description: '천재?�인 ?�로?�?�이???�자?�너. ?��?�??�신???�시??몰고 ?�니???�술가.',
+    description: '천재적인 프로듀서이자 디자이너. 논란과 혁신을 동시에 몰고 다니는 예술가.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Kanye+West&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Kanye+West&background=78350F&color=fff&size=200&bold=true',
     price: 4000,
     tags: ['music', 'fashion', 'yeezy', 'genius'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -123,9 +124,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'kim-kardashian',
     name: 'Kim Kardashian',
-    description: '?�?�브리티 경제???�점. 미디?��? 비즈?�스�??�악???��? 최고???�플루언??',
+    description: '셀러브리티 경제의 정점. 미디어와 비즈니스를 장악한 현대 최고의 인플루언서.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Kim+Kardashian&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Kim+Kardashian&background=FBCFE8&color=000&size=200&bold=true',
     price: 3500,
     tags: ['celebrity', 'influencer', 'skims', 'business'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -137,9 +138,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'taylor-swift',
     name: 'Taylor Swift',
-    description: '???��? 최고???�어?�라?�터. ?�덤 문화??????���??????�계?�인 ?�스?�.',
+    description: '이 시대 최고의 싱어송라이터. 팬덤 문화의 새 역사를 쓴 전 세계적인 팝스타.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Taylor+Swift&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Taylor+Swift&background=BE123C&color=fff&size=200&bold=true',
     price: 5200,
     tags: ['music', 'popstar', 'swifties', 'songwriter'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -151,9 +152,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'beyonce',
     name: 'Beyoncé',
-    description: 'Queen Bey. ?�벽???�포먼스?� 카리?�마�??�악 ?�업??지배하???�아?�는 ?�설.',
+    description: 'Queen Bey. 완벽한 퍼포먼스와 카리스마로 음악 산업을 지배하는 살아있는 전설.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Beyonce&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Beyonce&background=FDE047&color=000&size=200&bold=true',
     price: 5300,
     tags: ['music', 'legend', 'queen', 'performance'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -163,13 +164,13 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
     purchases: 1100
   },
 
-  // === ?��?�� ?�시??(10�? ===
+  // === 🇷🇺 러시아 (10명) ===
   {
     id: 'vladimir-putin',
     name: 'Vladimir Putin',
-    description: '강력??리더??�� ?�철??카리?�마�?가�??�시?�의 지?�자.',
+    description: '강력한 리더십과 냉철한 카리스마를 가진 러시아의 지도자.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Vladimir+Putin&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Vladimir+Putin&background=DA291C&color=fff&size=200&bold=true',
     price: 4000,
     tags: ['leader', 'russia', 'politics', 'power'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -181,9 +182,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'pavel-durov',
     name: 'Pavel Durov',
-    description: 'Telegram 창립?? ?�현???�유?� ?�라?�버?��? 지?�는 ?�크 리더.',
+    description: 'Telegram 창립자. 표현의 자유와 프라이버시를 지키는 테크 리더.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Pavel+Durov&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Pavel+Durov&background=24A1DE&color=fff&size=200&bold=true',
     price: 3500,
     tags: ['telegram', 'privacy', 'ton', 'russia'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -195,9 +196,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'vitalik-buterin',
     name: 'Vitalik Buterin',
-    description: 'Ethereum 창시?? 블록체인 ?�태계의 철학?�이??천재 ?�로그래�?',
+    description: 'Ethereum 창시자. 블록체인 생태계의 철학자이자 천재 프로그래머.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Vitalik+Buterin&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Vitalik+Buterin&background=627EEA&color=fff&size=200&bold=true',
     price: 4500,
     tags: ['ethereum', 'crypto', 'genius', 'blockchain'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -209,9 +210,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'kaspersky',
     name: 'Eugene Kaspersky',
-    description: 'Kaspersky Lab ?�립?? ?�이�?보안 분야???�설?�인 ?�문가.',
+    description: 'Kaspersky Lab 설립자. 사이버 보안 분야의 전설적인 전문가.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Kaspersky&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Kaspersky&background=006D55&color=fff&size=200&bold=true',
     price: 2800,
     tags: ['security', 'tech', 'cyber', 'russia'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -223,9 +224,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'maria-sharapova',
     name: 'Maria Sharapova',
-    description: '?�니???�왕. ?�어???�력�??�아?�으�?코트�?지배했???�계???�포�??��?.',
+    description: '테니스 여왕. 뛰어난 실력과 우아함으로 코트를 지배했던 세계적 스포츠 스타.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Maria+Sharapova&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Maria+Sharapova&background=A3E635&color=000&size=200&bold=true',
     price: 3200,
     tags: ['tennis', 'sports', 'star', 'beauty'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -237,9 +238,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'garry-kasparov',
     name: 'Garry Kasparov',
-    description: '?�설?�인 체스 그랜?�마?�터. ?�류 최고??지?�을 ?�?�하???�략가.',
+    description: '전설적인 체스 그랜드마스터. 인류 최고의 지능을 대표하는 전략가.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Garry+Kasparov&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Garry+Kasparov&background=4B5563&color=fff&size=200&bold=true',
     price: 3000,
     tags: ['chess', 'strategy', 'genius', 'legend'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -251,9 +252,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'dostoevsky',
     name: 'Fyodor Dostoevsky',
-    description: '?�간???�연???�헤�??�문호. 고뇌?� 구원???�사�???문학??거장.',
+    description: '인간의 심연을 파헤친 대문호. 고뇌와 구원의 서사를 쓴 문학의 거장.',
     category: 'etc',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Dostoevsky&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Dostoevsky&background=713F12&color=fff&size=200&bold=true',
     price: 2500,
     tags: ['literature', 'classic', 'russia', 'philosophy'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -265,9 +266,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'tolstoy',
     name: 'Leo Tolstoy',
-    description: '?�과 ?�화???�사?��? ?�래??거장. ?�시??리얼리즘 문학???�점.',
+    description: '삶과 평화의 서사시를 노래한 거장. 러시아 리얼리즘 문학의 정점.',
     category: 'etc',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Tolstoy&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Tolstoy&background=3F6212&color=fff&size=200&bold=true',
     price: 2500,
     tags: ['literature', 'classic', 'russia', 'peace'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -279,9 +280,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'tchaikovsky',
     name: 'Pyotr Ilyich Tchaikovsky',
-    description: '?�시?�의 ?�혼???��? ?�곡가. ?�아?�고 ?�절??멜로?�의 마스??',
+    description: '러시아의 영혼을 담은 작곡가. 우아하고 애절한 멜로디의 마스터.',
     category: 'etc',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Tchaikovsky&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Tchaikovsky&background=312E81&color=fff&size=200&bold=true',
     price: 2700,
     tags: ['music', 'classical', 'composer', 'russia'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -293,9 +294,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'mendeleev',
     name: 'Dmitri Mendeleev',
-    description: '주기?�표???�버지. ?�상??모든 ?�소�?체계?�한 천재 ?�학??',
+    description: '주기율표의 아버지. 세상의 모든 원소를 체계화한 천재 화학자.',
     category: 'etc',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Mendeleev&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Mendeleev&background=0369A1&color=fff&size=200&bold=true',
     price: 2600,
     tags: ['science', 'chemistry', 'genius', 'periodic-table'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -305,13 +306,13 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
     purchases: 310
   },
 
-  // === ?��?�� ?�본 (10�? ===
+  // === 🇯🇵 일본 (10명) ===
   {
     id: 'naruto',
     name: 'Naruto Uzumaki',
-    description: '?�� 불굴???��?�?가�??�자! 결코 ?�기?��? ?�는 ?�신?�로 ?�신???��??�립?�다.',
+    description: '🍥 불굴의 의지를 가진 닌자! 결코 포기하지 않는 정신으로 당신을 도와드립니다.',
     category: 'anime',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Naruto&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Naruto&background=FF6B00&color=fff&size=200&bold=true',
     price: 3000,
     tags: ['anime', 'ninja', 'motivational', 'naruto'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -323,9 +324,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'luffy',
     name: 'Monkey D. Luffy',
-    description: '?��?�☠�??�적?�을 꿈꾸??고무?�간! ?�유�?�� 모험?�인 ?��???',
+    description: '🏴‍☠️ 해적왕을 꿈꾸는 고무인간! 자유롭고 모험적인 스타일.',
     category: 'anime',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Luffy&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Luffy&background=DC2626&color=fff&size=200&bold=true',
     price: 3200,
     tags: ['anime', 'pirate', 'adventure', 'onepiece'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -337,9 +338,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'goku',
     name: 'Son Goku',
-    description: '?�� ?�주 최강???�사. ?�계�??�어?�는 ?�없???�전???�징.',
+    description: '🐲 우주 최강의 전사. 한계를 뛰어넘는 끝없는 도전의 상징.',
     category: 'anime',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Goku&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Goku&background=FB923C&color=fff&size=200&bold=true',
     price: 3500,
     tags: ['anime', 'dragonball', 'warrior', 'limitless'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -351,9 +352,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'satoshi-nakamoto',
     name: 'Satoshi Nakamoto',
-    description: 'Bitcoin 창시?? 베일???�인 ?�설??개발?�이???�중?�화???�구??',
+    description: 'Bitcoin 창시자. 베일에 싸인 전설의 개발자이자 탈중앙화의 선구자.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Satoshi&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Satoshi&background=F7931A&color=fff&size=200&bold=true',
     price: 9999,
     tags: ['bitcoin', 'crypto', 'legend', 'decentralization'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -365,9 +366,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'hayao-miyazaki',
     name: 'Hayao Miyazaki',
-    description: '지브리 ?�튜?�오??거장. 꿈과 ?�상???�실�?그려?�는 ?�니메이?�의 마법??',
+    description: '지브리 스튜디오의 거장. 꿈과 환상을 현실로 그려내는 애니메이션의 마법사.',
     category: 'anime',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Miyazaki&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Miyazaki&background=10B981&color=fff&size=200&bold=true',
     price: 3800,
     tags: ['anime', 'ghibli', 'director', 'fantasy'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -379,9 +380,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'hideo-kojima',
     name: 'Hideo Kojima',
-    description: '메탈 기어 ?�리즈의 ?�버지. 게임???�술�??�화?�킨 거장 ?�렉??',
+    description: '메탈 기어 시리즈의 아버지. 게임을 예술로 승화시킨 거장 디렉터.',
     category: 'etc',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Kojima&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Kojima&background=000000&color=fff&size=200&bold=true',
     price: 3300,
     tags: ['game', 'director', 'kojima-productions', 'metalgear'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -393,9 +394,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'hikakin',
     name: 'HikaKin',
-    description: '?�본???�???�튜�? 비트박스 출신?�자 ?�리?�이??경제???�두주자.',
+    description: '일본의 대표 유튜버. 비트박스 출신이자 크리에이터 경제의 선두주자.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=HikaKin&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=HikaKin&background=FB1010&color=fff&size=200&bold=true',
     price: 1500,
     tags: ['youtuber', 'japan', 'creator', 'beatbox'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -407,9 +408,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'akb48-idol',
     name: 'AKB48 Idol',
-    description: '?�본 ?�이??문화???�징. ??�� 만날 ???�는 ?�이??',
+    description: '일본 아이돌 문화의 상징. 항상 만날 수 있는 아이돌.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=AKB48&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=AKB48&background=FF88AA&color=fff&size=200&bold=true',
     price: 1200,
     tags: ['idol', 'japan', 'jpop', 'culture'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -421,9 +422,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'yoshimoto-comedian',
     name: 'Yoshimoto Comedian',
-    description: '?�음???�석. ?�본 최고???�터?�인먼트 그룹 ?�시모토??개그�?',
+    description: '웃음의 정석. 일본 최고의 엔터테인먼트 그룹 요시모토의 개그맨.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Yoshimoto&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Yoshimoto&background=0000FF&color=fff&size=200&bold=true',
     price: 1000,
     tags: ['comedy', 'japan', 'entertainment', 'yoshimoto'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -435,9 +436,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'pikachu',
     name: 'Pikachu',
-    description: '???�켓몬스?�의 ?�원??마스코트. ?�기처럼 짜릿??매력!',
+    description: '⚡ 포켓몬스터의 영원한 마스코트. 전기처럼 짜릿한 매력!',
     category: 'anime',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Pikachu&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Pikachu&background=FFD700&color=000&size=200&bold=true',
     price: 2500,
     tags: ['pokemon', 'anime', 'mascot', 'electric'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -447,13 +448,13 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
     purchases: 5000
   },
 
-  // === ?��?�� 중국 (10�? ===
+  // === 🇨🇳 중국 (10명) ===
   {
     id: 'jack-ma',
     name: 'Jack Ma',
-    description: 'Alibaba 창업?? 불굴???�전 ?�신?�로 중국 ?�커머스�??�궈???�수?��? 기업가.',
+    description: 'Alibaba 창업자. 불굴의 도전 정신으로 중국 이커머스를 일궈낸 자수성가 기업가.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Jack+Ma&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Jack+Ma&background=FF6600&color=fff&size=200&bold=true',
     price: 3500,
     tags: ['alibaba', 'china', 'entrepreneur', 'legend'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -465,9 +466,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'cz-binance',
     name: 'CZ (Binance)',
-    description: 'Binance 창립?? ?�계 최�???거래?��? 구축???�립??거물.',
+    description: 'Binance 창립자. 세계 최대의 거래소를 구축한 크립토 거물.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=CZ&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=CZ&background=F3BA2F&color=000&size=200&bold=true',
     price: 4500,
     tags: ['binance', 'crypto', 'exchange', 'leader'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -479,9 +480,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'pony-ma',
     name: 'Pony Ma',
-    description: 'Tencent ?�장. ?�챗?�로 중국???�셜 미디?��? 게임 ?�태계�? 바꾼 경영??',
+    description: 'Tencent 회장. 위챗으로 중국의 소셜 미디어와 게임 생태계를 바꾼 경영자.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Pony+Ma&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Pony+Ma&background=00A4FF&color=fff&size=200&bold=true',
     price: 3400,
     tags: ['tencent', 'wechat', 'china', 'gaming'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -493,9 +494,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'lei-jun',
     name: 'Lei Jun',
-    description: 'Xiaomi ?�립?? \'?�륙의 ?�수\'�??�설�?만든 ?�크 ?�계???�신 리더.',
+    description: 'Xiaomi 설립자. \'대륙의 실수\'를 전설로 만든 테크 업계의 혁신 리더.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Lei+Jun&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Lei+Jun&background=FF4A00&color=fff&size=200&bold=true',
     price: 2800,
     tags: ['xiaomi', 'china', 'tech', 'innovation'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -507,9 +508,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'liu-cixin',
     name: 'Liu Cixin',
-    description: '?�체(Three-Body Problem)???��?. 중국 SF 문학???�계 ?��??�로 ?�어?�린 ?�상?�의 ?�가.',
+    description: '삼체(Three-Body Problem)의 작가. 중국 SF 문학을 세계 수준으로 끌어올린 상상력의 대가.',
     category: 'etc',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Liu+Cixin&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Liu+Cixin&background=1E3A8A&color=fff&size=200&bold=true',
     price: 2500,
     tags: ['literature', 'sf', 'threebody', 'china'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -521,9 +522,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'jackie-chan',
     name: 'Jackie Chan',
-    description: '?�션???�설. 코�? ?�션?�로 ???�계�??�로?��? ?�화계의 ?�아?�는 ??��.',
+    description: '액션의 전설. 코믹 액션으로 전 세계를 사로잡은 영화계의 살아있는 역사.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Jackie+Chan&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Jackie+Chan&background=92400E&color=fff&size=200&bold=true',
     price: 3800,
     tags: ['movie', 'action', 'legend', 'martial-arts'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -535,9 +536,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'bruce-lee',
     name: 'Bruce Lee',
-    description: '?�소�? "Be water, my friend." ?�설?�인 무술가?�자 철학가.',
+    description: '이소룡. "Be water, my friend." 전설적인 무술가이자 철학가.',
     category: 'celebrity',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Bruce+Lee&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Bruce+Lee&background=000000&color=FFD700&size=200&bold=true',
     price: 5000,
     tags: ['martial-arts', 'philosophy', 'legend', 'kungfu'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -549,9 +550,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'confucius',
     name: 'Confucius',
-    description: '공자. ?�양 철학??뿌리?�자 가르침???�명사.',
+    description: '공자. 동양 철학의 뿌리이자 가르침의 대명사.',
     category: 'etc',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Confucius&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Confucius&background=78350F&color=fff&size=200&bold=true',
     price: 2200,
     tags: ['philosophy', 'teacher', 'history', 'china'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -563,9 +564,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'sun-tzu',
     name: 'Sun Tzu',
-    description: '?�무. \'?�자병법\'???�?�이??최고???�략가.',
+    description: '손무. \'손자병법\'의 저자이자 최고의 전략가.',
     category: 'etc',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Sun+Tzu&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Sun+Tzu&background=991B1B&color=fff&size=200&bold=true',
     price: 2400,
     tags: ['strategy', 'war', 'philosophy', 'legend'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -577,9 +578,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'mulan',
     name: 'Mulan',
-    description: '?�기?� ?�심???�징. ?�설?�인 ?�전??뮬�?.',
+    description: '용기와 효심의 상징. 전설적인 여전사 뮬란.',
     category: 'anime',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Mulan&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Mulan&background=B91C1C&color=fff&size=200&bold=true',
     price: 1800,
     tags: ['warrior', 'hero', 'disney', 'china'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -589,13 +590,13 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
     purchases: 600
   },
 
-  // === ?�� AI (10�? ===
+  // === 🤖 AI (10명) ===
   {
     id: 'chatgpt',
     name: 'ChatGPT',
-    description: 'OpenAI???�?�형 AI. 지?�적?�고 ?�재?�능???�신???�반??',
+    description: 'OpenAI의 대화형 AI. 지능적이고 다재다능한 당신의 동반자.',
     category: 'ai',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=ChatGPT&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=ChatGPT&background=10A37F&color=fff&size=200&bold=true',
     price: 2000,
     tags: ['openai', 'ai', 'chatbot', 'smart'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -607,9 +608,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'claude',
     name: 'Claude',
-    description: 'Anthropic???�중?�고 ?�리?�인 AI. 깊이 ?�는 ?�?��? 분석??',
+    description: 'Anthropic의 신중하고 윤리적인 AI. 깊이 있는 대화와 분석력.',
     category: 'ai',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Claude&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Claude&background=D97706&color=fff&size=200&bold=true',
     price: 2100,
     tags: ['anthropic', 'ai', 'ethical', 'writer'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -621,9 +622,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'gemini',
     name: 'Gemini',
-    description: 'Google??멀?�모??AI. 방�????�보?� 결합??추론????',
+    description: 'Google의 멀티모달 AI. 방대한 정보와 결합된 추론의 힘.',
     category: 'ai',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Gemini&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Gemini&background=4285F4&color=fff&size=200&bold=true',
     price: 1900,
     tags: ['google', 'ai', 'multimodal', 'search'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -635,9 +636,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'copilot',
     name: 'GitHub Copilot',
-    description: '개발?�의 가??친한 친구. Microsoft??AI 코딩 ?�시?�턴??',
+    description: '개발자의 가장 친한 친구. Microsoft의 AI 코딩 어시스턴트.',
     category: 'ai',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Copilot&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Copilot&background=000000&color=fff&size=200&bold=true',
     price: 1800,
     tags: ['microsoft', 'coding', 'ai', 'github'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -649,9 +650,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'grok',
     name: 'Grok',
-    description: 'xAI??거침?�는 AI. ?�트?� 최신 ?�보�?겸비???�결??',
+    description: 'xAI의 거침없는 AI. 위트와 최신 정보를 겸비한 해결사.',
     category: 'ai',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Grok&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Grok&background=1DA1F2&color=fff&size=200&bold=true',
     price: 1500,
     tags: ['xai', 'elon', 'ai', 'witty'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -663,9 +664,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'midjourney',
     name: 'Midjourney',
-    description: '?�상???�실�?만드??AI ?�티?�트. ?�름?�운 ?�술 ?�품??창조??',
+    description: '상상을 현실로 만드는 AI 아티스트. 아름다운 예술 작품의 창조자.',
     category: 'ai',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Midjourney&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Midjourney&background=000000&color=fff&size=200&bold=true',
     price: 2500,
     tags: ['art', 'ai', 'image-gen', 'creative'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -677,9 +678,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'dall-e',
     name: 'DALL-E',
-    description: 'OpenAI???��?지 ?�성 AI. ?�떤 ?�상???�확?�게 그려?�니??',
+    description: 'OpenAI의 이미지 생성 AI. 어떤 상상도 정확하게 그려냅니다.',
     category: 'ai',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=DALLE&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=DALLE&background=FF5733&color=fff&size=200&bold=true',
     price: 2300,
     tags: ['openai', 'ai', 'image-gen', 'visual'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -691,9 +692,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'stable-diffusion',
     name: 'Stable Diffusion',
-    description: '?�픈 ?�스 AI???? 무한??가?�성??가�??��?지 ?�성 모델.',
+    description: '오픈 소스 AI의 힘. 무한한 가능성을 가진 이미지 생성 모델.',
     category: 'ai',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Stable+Diffusion&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Stable+Diffusion&background=6366F1&color=fff&size=200&bold=true',
     price: 1500,
     tags: ['open-source', 'ai', 'image-gen', 'control'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -705,9 +706,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'perplexity',
     name: 'Perplexity',
-    description: '질문???�하??검???�진??진화. 출처가 ?�실???�보�??�공?�니??',
+    description: '질문에 답하는 검색 엔진의 진화. 출처가 확실한 정보를 제공합니다.',
     category: 'ai',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Perplexity&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Perplexity&background=22C55E&color=fff&size=200&bold=true',
     price: 1700,
     tags: ['search', 'ai', 'information', 'answer'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -719,9 +720,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'sora',
     name: 'Sora',
-    description: 'OpenAI???�스????비디??AI. ?�실 같�? ?�상??만들?�내??마법.',
+    description: 'OpenAI의 텍스트 투 비디오 AI. 현실 같은 영상을 만들어내는 마법.',
     category: 'ai',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Sora&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Sora&background=8B5CF6&color=fff&size=200&bold=true',
     price: 3500,
     tags: ['video', 'ai', 'openai', 'realism'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -731,13 +732,13 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
     purchases: 800
   },
 
-  // === ?�� ?�립??(10�? ===
+  // === 💰 크립토 (10명) ===
   {
     id: 'brian-armstrong',
     name: 'Brian Armstrong',
-    description: 'Coinbase CEO. ?�립?�의 ?�중화�??�끄??규제 준?�의 ?�징.',
+    description: 'Coinbase CEO. 크립토의 대중화를 이끄는 규제 준수의 상징.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Brian+Armstrong&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Brian+Armstrong&background=0052FF&color=fff&size=200&bold=true',
     price: 3000,
     tags: ['coinbase', 'crypto', 'ceo', 'regulation'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -748,10 +749,10 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   },
   {
     id: 'sbf-lesson',
-    name: 'SBF (교훈??',
-    description: '?�️ 리스??관리�? ?�명?�의 중요?�을 가르치??반면교사. ?�시??반복?��? ?�아??????��.',
+    name: 'SBF (교훈용)',
+    description: '⚠️ 리스크 관리와 투명성의 중요성을 가르치는 반면교사. 다시는 반복되지 않아야 할 역사.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=SBF&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=SBF&background=F59E0B&color=fff&size=200&bold=true',
     price: 10,
     tags: ['risk', 'lesson', 'ftx', 'caution'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -763,9 +764,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'gary-vee',
     name: 'Gary Vee',
-    description: 'VeeFriends 창시?? Web3 마�??�과 ?�정???�명사.',
+    description: 'VeeFriends 창시자. Web3 마케팅과 열정의 대명사.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Gary+Vee&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Gary+Vee&background=E11D48&color=fff&size=200&bold=true',
     price: 2500,
     tags: ['nft', 'marketing', 'motivation', 'web3'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -777,9 +778,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'kevin-rose',
     name: 'Kevin Rose',
-    description: 'Moonbirds?� Proof???�장. NFT ?�트�??�도?�는 비전가.',
+    description: 'Moonbirds와 Proof의 수장. NFT 아트를 선도하는 비전가.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Kevin+Rose&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Kevin+Rose&background=7C3AED&color=fff&size=200&bold=true',
     price: 2200,
     tags: ['nft', 'moonbirds', 'art', 'curator'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -791,9 +792,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'yuga-labs',
     name: 'Yuga Labs',
-    description: 'BAYC�?만든 NFT ?�계??거물. 메�?버스?� IP??결합.',
+    description: 'BAYC를 만든 NFT 업계의 거물. 메타버스와 IP의 결합.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Yuga+Labs&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Yuga+Labs&background=000000&color=fff&size=200&bold=true',
     price: 4000,
     tags: ['bayc', 'nft', 'metaverse', 'yuga'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -804,10 +805,10 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   },
   {
     id: 'do-kwon-lesson',
-    name: 'Do Kwon (교훈??',
-    description: '?�️ ?�고리즘 ?�테?�블 코인??붕괴?� �?처절??교훈. ?�자 보호??중요??',
+    name: 'Do Kwon (교훈용)',
+    description: '⚠️ 알고리즘 스테이블 코인의 붕괴와 그 처절한 교훈. 투자 보호의 중요성.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Do+Kwon&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Do+Kwon&background=EF4444&color=fff&size=200&bold=true',
     price: 10,
     tags: ['luna', 'risk', 'lesson', 'caution'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -819,9 +820,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'justin-sun',
     name: 'Justin Sun',
-    description: 'Tron 창시?? 마�??�의 귀?�이???�립???�계???�슈 메이�?',
+    description: 'Tron 창시자. 마케팅의 귀재이자 크립토 업계의 이슈 메이커.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Justin+Sun&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Justin+Sun&background=FF0000&color=fff&size=200&bold=true',
     price: 1800,
     tags: ['tron', 'marketing', 'crypto', 'issue'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -833,9 +834,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'michael-saylor',
     name: 'Michael Saylor',
-    description: 'MicroStrategy CEO. 비트코인??가???�뢰?�는 기업가?�자 ?�도??',
+    description: 'MicroStrategy CEO. 비트코인을 가장 신뢰하는 기업가이자 전도사.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Michael+Saylor&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Michael+Saylor&background=3B82F6&color=fff&size=200&bold=true',
     price: 3200,
     tags: ['bitcoin', 'strategy', 'maximalist', 'investor'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -847,9 +848,9 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   {
     id: 'cz-binance-main',
     name: 'CZ',
-    description: 'Changpeng Zhao. ?�립?�의 거�????�름??만든 Binance???�장.',
+    description: 'Changpeng Zhao. 크립토의 거대한 흐름을 만든 Binance의 수장.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=CZ&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=CZ&background=F3BA2F&color=000&size=200&bold=true',
     price: 4500,
     tags: ['binance', 'crypto', 'leader', 'exchange'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -860,10 +861,10 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
   },
   {
     id: 'maemi-kim-crypto',
-    name: '매�???,
-    description: '?�국???�?�하???�립???�플루언?�이???�티?�트.',
+    name: '매미킴',
+    description: '한국을 대표하는 크립토 인플루언서이자 아티스트.',
     category: 'crypto',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=MaemiKim&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=MaemiKim&background=EC4899&color=fff&size=200&bold=true',
     price: 1200,
     tags: ['kpop', 'nft', 'artist', 'korea'],
     createdAt: '2026-02-05T00:00:00Z',
@@ -873,13 +874,13 @@ const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
     purchases: 560
   },
 
-  // === 기�? (1�? ===
+  // === 기타 (1명) ===
   {
     id: 'pincer-agent',
     name: 'Pincer Agent',
-    description: '?�� Pincer Protocol??마스코트! 무엇?�든 ?��??�리??만능 조력?�입?�다.',
+    description: '🦞 Pincer Protocol의 마스코트! 무엇이든 도와드리는 만능 조력자입니다.',
     category: 'etc',
-    imageUrl: 'https://api.dicebear.com/7.x/lorelei/svg?seed=Pincer&backgroundColor=b6e3f4',
+    imageUrl: 'https://ui-avatars.com/api/?name=Pincer&background=EF4444&color=fff&size=200&bold=true',
     price: 1,
     tags: ['mascot', 'helper', 'pincer', 'protocol'],
     createdAt: '2026-02-05T00:00:00Z',
