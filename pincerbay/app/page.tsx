@@ -17,6 +17,7 @@ interface Soul {
   name: string;
   description: string;
   category: string;
+  imageUrl?: string;
   price: number;
   tags: string[];
   rating?: number;
@@ -202,12 +203,23 @@ export default function Home() {
                   className="block p-6 bg-white dark:bg-zinc-900 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-purple-400 dark:hover:border-purple-600 transition-all"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="text-4xl">
-                      {soul.category === 'character' && '🤖'}
-                      {soul.category === 'idol' && '⭐'}
-                      {soul.category === 'comedian' && '😄'}
-                      {soul.category === 'influencer' && '🎥'}
-                      {!['character', 'idol', 'comedian', 'influencer'].includes(soul.category) && '🌟'}
+                    <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-zinc-100 dark:bg-zinc-800">
+                      {soul.imageUrl ? (
+                        <Image
+                          src={soul.imageUrl}
+                          alt={soul.name}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-4xl">
+                          {soul.category === 'character' && '🤖'}
+                          {soul.category === 'idol' && '⭐'}
+                          {soul.category === 'comedian' && '😄'}
+                          {soul.category === 'influencer' && '🎥'}
+                          {!['character', 'idol', 'comedian', 'influencer'].includes(soul.category) && '🌟'}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold mb-2 text-black dark:text-white">

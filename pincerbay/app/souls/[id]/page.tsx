@@ -9,6 +9,7 @@ interface Soul {
   name: string;
   description: string;
   category: string;
+  imageUrl?: string;
   price: number;
   tags: string[];
   creator: string;
@@ -115,15 +116,25 @@ export default function SoulDetailPage() {
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
           {/* Hero Section */}
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-8 text-white">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="mascot-float">
-                <Image
-                  src="/mascot-white-dark.webp"
-                  alt="Soul"
-                  width={80}
-                  height={80}
-                  priority
-                />
+            <div className="flex items-center gap-6 mb-4">
+              <div className="relative w-24 h-24 rounded-xl overflow-hidden shadow-2xl bg-white/20 mascot-float">
+                {soul.imageUrl ? (
+                  <Image
+                    src={soul.imageUrl}
+                    alt={soul.name}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                ) : (
+                  <Image
+                    src="/mascot-white-dark.webp"
+                    alt="Soul"
+                    fill
+                    className="object-contain p-2"
+                    priority
+                  />
+                )}
               </div>
               <div>
                 <h1 className="text-4xl font-bold">{soul.name}</h1>
