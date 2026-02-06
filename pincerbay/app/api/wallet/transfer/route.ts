@@ -43,7 +43,8 @@ const transferSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
-    const identifier = request.ip ?? 'anonymous'
+    const forwarded = request.headers.get('x-forwarded-for')
+    const identifier = forwarded?.split(',')[0] ?? 'anonymous'
     const { success } = await ratelimit.limit(identifier)
     
     if (!success) {
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     
     if (!validation.success) {
       return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.errors },
+        { error: 'Validation failed', details: validation.error.issues },
         { status: 400 }
       )
     }

@@ -43,7 +43,7 @@ export async function GET(
           
           // Try to get agent name from database
           const agentWallet = await prisma.agentWallet.findFirst({
-            where: { walletId }
+            where: { agentId: wallet.agentId }
           })
           
           return {

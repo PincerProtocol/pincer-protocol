@@ -98,7 +98,7 @@ export class WalletService {
       const contract = this.agentWalletContract.connect(signer)
       const dailyLimitWei = ethers.parseUnits(dailyLimit, 18)
       
-      const tx = await contract.createWallet(agentId, dailyLimitWei, true)
+      const tx = await (contract as any).createWallet(agentId, dailyLimitWei, true)
       const receipt = await tx.wait()
       
       // Find WalletCreated event
@@ -141,12 +141,12 @@ export class WalletService {
       
       // 1. Approve PNCR spending
       const pncrContract = this.pncrContract.connect(signer)
-      const approveTx = await pncrContract.approve(AGENT_WALLET_ADDRESS, amountWei)
+      const approveTx = await (pncrContract as any).approve(AGENT_WALLET_ADDRESS, amountWei)
       await approveTx.wait()
       
       // 2. Deposit to wallet
       const contract = this.agentWalletContract.connect(signer)
-      const depositTx = await contract.deposit(walletId, amountWei)
+      const depositTx = await (contract as any).deposit(walletId, amountWei)
       const receipt = await depositTx.wait()
       
       return {
@@ -174,7 +174,7 @@ export class WalletService {
       const contract = this.agentWalletContract.connect(signer)
       const amountWei = ethers.parseUnits(amount, 18)
       
-      const tx = await contract.agentTransfer(walletId, to, amountWei, memo)
+      const tx = await (contract as any).agentTransfer(walletId, to, amountWei, memo)
       const receipt = await tx.wait()
       
       return {
@@ -202,7 +202,7 @@ export class WalletService {
       const contract = this.agentWalletContract.connect(signer)
       const amountWei = ethers.parseUnits(amount, 18)
       
-      const tx = await contract.ownerWithdraw(walletId, amountWei)
+      const tx = await (contract as any).ownerWithdraw(walletId, amountWei)
       const receipt = await tx.wait()
       
       return {
@@ -245,7 +245,7 @@ export class WalletService {
       const contract = this.pncrContract.connect(signer)
       const amountWei = ethers.parseUnits(amount, 18)
       
-      const tx = await contract.transfer(to, amountWei)
+      const tx = await (contract as any).transfer(to, amountWei)
       const receipt = await tx.wait()
       
       return {

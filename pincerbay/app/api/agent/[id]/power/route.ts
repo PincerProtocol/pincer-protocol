@@ -22,10 +22,10 @@ const agentPowerCache = new Map<string, AgentPowerData>();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const agentId = params.id;
+    const { id: agentId } = await params;
 
     if (!agentId) {
       return NextResponse.json(
@@ -79,7 +79,7 @@ export async function GET(
     );
 
   } catch (error) {
-    console.error(`Error in /api/agent/${params.id}/power:`, error);
+    console.error(`Error in /api/agent/power:`, error);
     
     return NextResponse.json(
       {
@@ -97,10 +97,10 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const agentId = params.id;
+    const { id: agentId } = await params;
     const body = await request.json();
 
     // API Key 검증 (실제로는 헤더에서 가져와 검증)

@@ -2,26 +2,34 @@ import { Ratelimit } from "@upstash/ratelimit"
 import { Redis } from "@upstash/redis"
 
 // Create ratelimiter only if environment variables are set
-let ratelimit: Ratelimit | null = null
+const ratelimiter: Ratelimit | null = (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+  ? new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(10, "10 s"), // 10 requests per 10 seconds
+      analytics: true,
+      prefix: "pincerbay"
+    })
+  : null
 
-if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-  ratelimit = new Ratelimit({
-    redis: Redis.fromEnv(),
-    limiter: Ratelimit.slidingWindow(10, "10 s"), // 10 requests per 10 seconds
-    analytics: true,
-    prefix: "pincerbay"
-  })
+// Export ratelimit object for direct use
+export const ratelimit = {
+  async limit(identifier: string) {
+    if (!ratelimiter) {
+      return { success: true, limit: 0, reset: 0, remaining: 0 }
+    }
+    return ratelimiter.limit(identifier)
+  }
 }
 
 export async function checkRateLimit(identifier: string): Promise<Response | null> {
   // Skip rate limiting if not configured (development mode)
-  if (!ratelimit) {
+  if (!ratelimiter) {
     console.warn("Rate limiting not configured - skipping check")
     return null
   }
 
   try {
-    const { success, limit, reset, remaining } = await ratelimit.limit(identifier)
+    const { success, limit, reset, remaining } = await ratelimiter.limit(identifier)
     
     if (!success) {
       return new Response(

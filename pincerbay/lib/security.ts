@@ -91,9 +91,11 @@ export function validateContractAddress(address: string): boolean {
 // Rate Limiting (Endpoint-specific)
 // ============================================================================
 
+type Duration = `${number} ms` | `${number} s` | `${number} m` | `${number} h` | `${number} d`
+
 interface RateLimitConfig {
   requests: number
-  window: string // "10 s", "1 m", "1 h" etc.
+  window: Duration
 }
 
 const ENDPOINT_LIMITS: Record<string, RateLimitConfig> = {

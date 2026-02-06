@@ -133,7 +133,10 @@ export async function middleware(request: NextRequest) {
     
     if (rateLimitResult) {
       // Rate limit exceeded, return error response
-      return handleCORS(request, rateLimitResult)
+      return new NextResponse(rateLimitResult.body, {
+        status: rateLimitResult.status,
+        headers: rateLimitResult.headers
+      })
     }
   }
   
