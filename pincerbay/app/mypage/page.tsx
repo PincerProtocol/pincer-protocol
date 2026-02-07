@@ -3,17 +3,11 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSession, signIn, signOut } from 'next-auth/react';
 
-// Mock user data
-const mockUser = {
-  name: 'Demo User',
-  email: 'demo@example.com',
-  avatar: '/souls/pincer-agent.png',
-  walletAddress: '0x1234...5678',
-  pncrBalance: 15420,
-  joinedAt: '2026-01-15',
-};
+type Tab = 'overview' | 'agents' | 'souls' | 'transactions';
 
+// Mock data for demo
 const mockAgents = [
   { id: 'my-agent-1', name: 'MyAssistant', power: 7850, status: 'active', earnings: 1250 },
   { id: 'my-agent-2', name: 'CodeHelper', power: 6920, status: 'active', earnings: 890 },
@@ -31,24 +25,50 @@ const mockTransactions = [
   { id: 'tx4', type: 'sale', amount: 750, item: 'Data Analyst', date: '2026-02-03' },
 ];
 
-type Tab = 'overview' | 'agents' | 'souls' | 'transactions';
-
 export default function MyPage() {
+  const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  if (!isLoggedIn) {
+  // Loading state
+  if (status === 'loading') {
     return (
       <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-16 px-6">
         <div className="max-w-md mx-auto text-center">
-          <div className="text-6xl mb-8">🔐</div>
-          <h1 className="text-3xl font-bold mb-4">Connect to View</h1>
-          <p className="text-zinc-500 mb-8">Sign in to access your dashboard, agents, and souls.</p>
+          <div className="text-6xl mb-8 animate-bounce">🦞</div>
+          <p className="text-zinc-500">Loading...</p>
+        </div>
+      </main>
+    );
+  }
+
+  // Not logged in - show login options
+  if (!session) {
+    return (
+      <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-16 px-6">
+        <div className="max-w-md mx-auto text-center">
+          <div className="flex justify-center mb-6">
+            <Image
+              src="/mascot-white-dark.webp"
+              alt="Pincer"
+              width={100}
+              height={100}
+              className="dark:block hidden"
+            />
+            <Image
+              src="/mascot-transparent.png"
+              alt="Pincer"
+              width={100}
+              height={100}
+              className="dark:hidden block"
+            />
+          </div>
+          <h1 className="text-3xl font-bold mb-4">Sign In to Continue</h1>
+          <p className="text-zinc-500 mb-8">Access your dashboard, agents, and souls.</p>
           
           <div className="space-y-4">
             <button
-              onClick={() => setIsLoggedIn(true)}
-              className="w-full py-3 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl font-medium flex items-center justify-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-750 transition-colors"
+              onClick={() => signIn('google', { callbackUrl: '/mypage' })}
+              className="w-full py-4 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl font-medium flex items-center justify-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -59,21 +79,33 @@ export default function MyPage() {
               Continue with Google
             </button>
             
-            <button
-              onClick={() => setIsLoggedIn(true)}
-              className="w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors"
+            <Link
+              href="/connect"
+              className="block w-full py-4 bg-cyan-500 hover:bg-cyan-600 text-black text-center rounded-xl font-bold transition-colors"
             >
               🔗 Connect Wallet
-            </button>
+            </Link>
           </div>
           
           <p className="text-sm text-zinc-500 mt-8">
-            By signing in, you agree to our <Link href="/terms" className="text-cyan-500 hover:underline">Terms</Link> and <Link href="/privacy" className="text-cyan-500 hover:underline">Privacy Policy</Link>.
+            By signing in, you agree to our{' '}
+            <Link href="/terms" className="text-cyan-500 hover:underline">Terms</Link>
+            {' '}and{' '}
+            <Link href="/privacy" className="text-cyan-500 hover:underline">Privacy Policy</Link>.
           </p>
         </div>
       </main>
     );
   }
+
+  // Logged in - show dashboard
+  const user = {
+    name: session.user?.name || 'User',
+    email: session.user?.email || '',
+    avatar: session.user?.image || '/mascot-transparent.png',
+    walletAddress: '0x1234...5678',
+    pncrBalance: 15420,
+  };
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
     { key: 'overview', label: 'Overview', icon: '📊' },
@@ -88,19 +120,19 @@ export default function MyPage() {
         {/* Header */}
         <div className="flex items-center gap-6 mb-8">
           <Image
-            src={mockUser.avatar}
-            alt={mockUser.name}
+            src={user.avatar}
+            alt={user.name}
             width={80}
             height={80}
             className="rounded-full border-4 border-cyan-500"
           />
           <div>
-            <h1 className="text-2xl font-bold">{mockUser.name}</h1>
-            <p className="text-zinc-500">{mockUser.email}</p>
-            <p className="text-sm text-zinc-400 font-mono">{mockUser.walletAddress}</p>
+            <h1 className="text-2xl font-bold">{user.name}</h1>
+            <p className="text-zinc-500">{user.email}</p>
+            <p className="text-sm text-zinc-400 font-mono">{user.walletAddress}</p>
           </div>
           <div className="ml-auto text-right">
-            <div className="text-3xl font-bold text-cyan-500">{mockUser.pncrBalance.toLocaleString()}</div>
+            <div className="text-3xl font-bold text-cyan-500">{user.pncrBalance.toLocaleString()}</div>
             <div className="text-sm text-zinc-500">$PNCR Balance</div>
           </div>
         </div>
@@ -230,10 +262,10 @@ export default function MyPage() {
           </div>
         )}
 
-        {/* Logout */}
+        {/* Sign Out */}
         <div className="mt-8 text-center">
           <button
-            onClick={() => setIsLoggedIn(false)}
+            onClick={() => signOut({ callbackUrl: '/' })}
             className="text-zinc-500 hover:text-red-500 transition-colors"
           >
             Sign Out
