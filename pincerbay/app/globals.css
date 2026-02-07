@@ -137,3 +137,24 @@ body {
   transform: scale(0.97);
   box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
 }
+
+/* Marquee animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: inline-flex;
+  animation: marquee 30s linear infinite;
+}
+
+/* Dark mode helper for Tailwind */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
