@@ -138,8 +138,8 @@ body {
   box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
 }
 
-/* Marquee animation */
-@keyframes marquee {
+/* Marquee animation - faster, seamless */
+@keyframes marquee-fast {
   0% {
     transform: translateX(0);
   }
@@ -148,9 +148,8 @@ body {
   }
 }
 
-.animate-marquee {
-  display: inline-flex;
-  animation: marquee 30s linear infinite;
+.animate-marquee-fast {
+  animation: marquee-fast 25s linear infinite;
 }
 
 /* Dark mode helper for Tailwind */
