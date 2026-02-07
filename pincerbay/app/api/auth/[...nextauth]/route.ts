@@ -1,70 +1,43 @@
-import { NextAuthOptions } from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
-import { verifyMessage } from "viem"
+import NextAuth from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
-export const authOptions: NextAuthOptions = {
+const handler = NextAuth({
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    }),
     CredentialsProvider({
-      name: "Wallet",
+      name: 'Email',
       credentials: {
-        address: { label: "Wallet Address", type: "text" },
-        signature: { label: "Signature", type: "text" },
-        message: { label: "Message", type: "text" }
+        email: { label: 'Email', type: 'email', placeholder: 'your@email.com' },
       },
       async authorize(credentials) {
-        if (!credentials?.address || !credentials?.signature || !credentials?.message) {
-          return null
+        // For now, accept any email and create a user
+        if (credentials?.email) {
+          return {
+            id: credentials.email,
+            email: credentials.email,
+            name: credentials.email.split('@')[0],
+          };
         }
-        
-        try {
-          // Verify wallet signature
-          const isValid = await verifyMessage({
-            address: credentials.address as `0x${string}`,
-            message: credentials.message,
-            signature: credentials.signature as `0x${string}`,
-          })
-          
-          if (isValid) {
-            return {
-              id: credentials.address,
-              address: credentials.address
-            }
-          }
-          
-          return null
-        } catch (error) {
-          console.error("Auth error:", error)
-          return null
-        }
-      }
-    })
+        return null;
+      },
+    }),
   ],
-  session: {
-    strategy: "jwt",
-    maxAge: 24 * 60 * 60 // 24 hours
+  pages: {
+    signIn: '/connect',
   },
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.address = (user as any).address
-      }
-      return token
-    },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).address = token.address
+        session.user.id = token.sub;
       }
-      return session
-    }
+      return session;
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
-  pages: {
-    signIn: "/",
-    error: "/"
-  }
-}
+});
 
-import NextAuth from "next-auth"
-
-const handler = NextAuth(authOptions)
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST };
