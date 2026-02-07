@@ -2,6 +2,7 @@ import { NextAuthOptions, Session } from 'next-auth';
 import { getServerSession } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { verifyOTP } from './otp';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -10,29 +11,51 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     }),
     CredentialsProvider({
+      id: 'email-otp',
       name: 'Email',
       credentials: {
-        email: { label: 'Email', type: 'email', placeholder: 'your@email.com' },
+        email: { label: 'Email', type: 'email' },
+        otp: { label: 'Verification Code', type: 'text' },
       },
       async authorize(credentials) {
-        if (credentials?.email) {
-          return {
-            id: credentials.email,
-            email: credentials.email,
-            name: credentials.email.split('@')[0],
-          };
+        if (!credentials?.email || !credentials?.otp) {
+          return null;
         }
-        return null;
+
+        // Verify OTP
+        const isValid = await verifyOTP(credentials.email, credentials.otp);
+        
+        if (!isValid) {
+          return null;
+        }
+
+        // OTP verified - create user session
+        return {
+          id: credentials.email,
+          email: credentials.email,
+          name: credentials.email.split('@')[0],
+        };
       },
     }),
   ],
   pages: {
     signIn: '/connect',
   },
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+      }
+      return token;
+    },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.sub;
+        (session.user as any).id = token.id || token.sub;
       }
       return session;
     },
