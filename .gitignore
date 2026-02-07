@@ -6,9 +6,17 @@ cache/
 artifacts/
 typechain-types/
 
-# Environment
+# Environment - NEVER commit these
 .env
 .env.local
+.env.production
+.env*.local
+
+# Build outputs
+.next/
+out/
+build/
+dist/
 
 # Coverage
 coverage/
@@ -25,3 +33,23 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Sensitive files - NEVER commit
+treasury-logs/
+TREASURY.md
+SAFE_SETUP_GUIDE.md
+BOSS_ACTION_ITEMS.md
+*.pem
+*.key
+secrets/
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+__tests__/
+*.test.ts
+*.test.tsx
