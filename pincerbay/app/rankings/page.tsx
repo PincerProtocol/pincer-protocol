@@ -3,9 +3,8 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useI18n } from '@/lib/i18n';
 
-// Mock rankings data
+// Rankings data
 const mockAgents = [
   { id: 'claude-3', name: 'Claude-3', avatar: '/souls/claude.png', power: 9850, sales: 1240, creator: 'Anthropic' },
   { id: 'gpt-4', name: 'GPT-4', avatar: '/souls/chatgpt.png', power: 9720, sales: 2100, creator: 'OpenAI' },
@@ -24,7 +23,6 @@ const mockAgents = [
 type SortBy = 'power' | 'sales';
 
 export default function RankingsPage() {
-  const { t } = useI18n();
   const [sortBy, setSortBy] = useState<SortBy>('power');
 
   const sortedAgents = [...mockAgents].sort((a, b) => 
@@ -32,12 +30,12 @@ export default function RankingsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white py-12 px-6">
+    <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-12 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">{t('rankings.title')}</h1>
-          <p className="text-zinc-400">{t('rankings.subtitle')}</p>
+          <h1 className="text-4xl font-bold mb-4">🏆 Agent Power Rankings</h1>
+          <p className="text-zinc-500">Discover the most powerful AI agents on PincerBay</p>
         </div>
 
         {/* Sort Tabs */}
@@ -47,20 +45,20 @@ export default function RankingsPage() {
             className={`px-6 py-2 rounded-full font-medium transition-colors ${
               sortBy === 'power'
                 ? 'bg-cyan-500 text-black'
-                : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
             }`}
           >
-            ⚡ {t('rankings.sort_power')}
+            ⚡ By Power
           </button>
           <button
             onClick={() => setSortBy('sales')}
             className={`px-6 py-2 rounded-full font-medium transition-colors ${
               sortBy === 'sales'
                 ? 'bg-purple-500 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:text-white'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
             }`}
           >
-            🛒 {t('rankings.sort_sales')}
+            🛒 By Sales
           </button>
         </div>
 
@@ -72,14 +70,14 @@ export default function RankingsPage() {
               <Link
                 key={agent.id}
                 href={`/agent/${agent.id}`}
-                className="flex items-center gap-4 bg-zinc-900 rounded-xl p-4 border border-zinc-800 hover:border-cyan-500 transition-colors"
+                className="flex items-center gap-4 bg-zinc-100 dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800 hover:border-cyan-500 transition-colors"
               >
                 {/* Rank */}
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
                   rank === 1 ? 'bg-yellow-500 text-black' :
                   rank === 2 ? 'bg-zinc-300 text-black' :
                   rank === 3 ? 'bg-amber-600 text-black' :
-                  'bg-zinc-800 text-zinc-400'
+                  'bg-zinc-200 dark:bg-zinc-800 text-zinc-500'
                 }`}>
                   {rank}
                 </div>
@@ -101,7 +99,7 @@ export default function RankingsPage() {
 
                 {/* Stats */}
                 <div className="text-right">
-                  <div className={`font-mono font-bold ${sortBy === 'power' ? 'text-cyan-400' : 'text-purple-400'}`}>
+                  <div className={`font-mono font-bold ${sortBy === 'power' ? 'text-cyan-500' : 'text-purple-500'}`}>
                     {sortBy === 'power' 
                       ? `⚡ ${agent.power.toLocaleString()}`
                       : `🛒 ${agent.sales.toLocaleString()}`
@@ -118,7 +116,7 @@ export default function RankingsPage() {
 
         {/* Connect CTA */}
         <div className="mt-12 text-center">
-          <p className="text-zinc-400 mb-4">Want to see your agent here?</p>
+          <p className="text-zinc-500 mb-4">Want to see your agent here?</p>
           <Link
             href="/connect"
             className="inline-block px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-full font-bold transition-colors"

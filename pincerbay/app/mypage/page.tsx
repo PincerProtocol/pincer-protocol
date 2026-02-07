@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useI18n } from '@/lib/i18n';
 
 // Mock user data
 const mockUser = {
@@ -35,13 +34,12 @@ const mockTransactions = [
 type Tab = 'overview' | 'agents' | 'souls' | 'transactions';
 
 export default function MyPage() {
-  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   if (!isLoggedIn) {
     return (
-      <main className="min-h-screen bg-background text-foreground py-16 px-6">
+      <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-16 px-6">
         <div className="max-w-md mx-auto text-center">
           <div className="text-6xl mb-8">🔐</div>
           <h1 className="text-3xl font-bold mb-4">Connect to View</h1>
@@ -85,7 +83,7 @@ export default function MyPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-background text-foreground py-8 px-6">
+    <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-8 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-6 mb-8">
