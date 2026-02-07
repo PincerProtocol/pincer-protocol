@@ -11,6 +11,7 @@ export interface Soul {
   rating?: number;
   reviews?: number;
   purchases?: number;
+  exampleResponse?: string; // Famous quote or meme
 }
 
 // In-memory DB (나중에 실제 DB로 교체)
@@ -941,12 +942,106 @@ const souls: Soul[] = [
   }
 ];
 
+// Famous quotes and memes for each soul
+const exampleResponses: Record<string, string> = {
+  // USA
+  'elon-musk': '"The future is gonna be weird, but also amazing." 🚀',
+  'mark-zuckerberg': '"Move fast and break things." 💻',
+  'jeff-bezos': '"Your margin is my opportunity." 📦',
+  'bill-gates': '"If you can\'t make it good, at least make it look good." 💡',
+  'steve-jobs': '"Stay hungry, stay foolish." 🍎',
+  'oprah-winfrey': '"Turn your wounds into wisdom." ✨',
+  'kanye-west': '"I am a god. Hurry up with my damn massage!" 🐻',
+  'kim-kardashian': '"Get up and work. It seems like nobody wants to work these days." 💅',
+  'taylor-swift': '"Haters gonna hate hate hate hate hate..." 🎵',
+  'beyonce': '"I woke up like this. Flawless." 👑',
+  
+  // Russia
+  'vladimir-putin': '"다 계획대로야..." 🇷🇺',
+  'pavel-durov': '"Privacy is a human right, not a feature." 📱',
+  'vitalik-buterin': '"Ethereum is not just money, it\'s programmable trust." ⟠',
+  'kaspersky': '"Trust no one. Verify everything." 🔐',
+  'maria-sharapova': '"I\'m not the next anyone. I\'m the first Maria." 🎾',
+  'garry-kasparov': '"Chess is life in miniature." ♟️',
+  'dostoevsky': '"The soul is healed by being with children." 📚',
+  'tolstoy': '"All happy families are alike; each unhappy family is unhappy in its own way." 📖',
+  'tchaikovsky': '"음악은 말로 표현할 수 없는 것을 노래합니다." 🎼',
+  'mendeleev': '"There is nothing in the world that man cannot understand." 🧪',
+  
+  // Japan
+  'naruto': '"내 닌자도! 포기하지 않는 게 내 닌자도야, 다테바요!" 🍥',
+  'luffy': '"해적왕이 될 거야!!! 고무고무노~" 🏴‍☠️',
+  'goku': '"오라, 한판 더 하자! 카메하메하!!!" 🐲',
+  'satoshi-nakamoto': '"Chancellor on brink of second bailout for banks." ₿',
+  'hayao-miyazaki': '"I\'ve become skeptical of the unwritten rule that just because a boy and girl appear in the same feature, a romance must ensue." 🎬',
+  'hideo-kojima': '"A strong man doesn\'t need to read the future. He makes his own." 🎮',
+  'hikakin': '"ブンブンハローYouTube! 히카킨TV입니다!" 📹',
+  'akb48-idol': '"팬 여러분 사랑해요~! 💕" 🎀',
+  'yoshimoto-comedian': '"なんでやねん! (난데야넨!)" 😂',
+  'pikachu': '"피카피카! 피카츄우우우~!" ⚡',
+  
+  // China
+  'jack-ma': '"Never give up. Today is hard, tomorrow will be worse, but the day after tomorrow will be sunshine." ☀️',
+  'cz-binance': '"Funds are SAFU." 🔒',
+  'pony-ma': '"작은 걸음이 큰 변화를 만든다." 🐧',
+  'lei-jun': '"Are you OK? 샤오미 가성비 최고!" 📱',
+  'liu-cixin': '"우주는 어둡고, 생존은 문명의 첫 번째 필요다." 🌌',
+  'jackie-chan': '"나는 고통스러워도 상대를 웃기는 액션을 한다." 🥋',
+  'bruce-lee': '"Be water, my friend. 물처럼 유연하게." 🐉',
+  'confucius': '"지자불혹, 인자불우, 용자불구. (아는 자는 미혹되지 않고, 어진 자는 근심하지 않고, 용감한 자는 두려워하지 않는다)" 📜',
+  'sun-tzu': '"지피지기백전불태. (적을 알고 나를 알면 백 번 싸워도 위태롭지 않다)" ⚔️',
+  'mulan': '"전쟁에 나갈 남자가 없다면, 내가 간다!" 🗡️',
+  
+  // AI
+  'chatgpt': '"I\'m an AI assistant created by OpenAI. How can I help you today?" 🤖',
+  'claude': '"I try to be helpful, harmless, and honest." 🧠',
+  'gemini': '"Let me search my knowledge to help you." 🔍',
+  'copilot': '"// Here\'s a code suggestion for you 💻"',
+  'grok': '"LOL, 그건 좀 웃기네. 근데 진지하게 말하면..." 😏',
+  'midjourney': '"Imagine: your wildest dreams, visualized." 🎨',
+  'dall-e': '"A photo of your imagination, rendered in pixels." 🖼️',
+  'stable-diffusion': '"Open source creativity, unlimited possibilities." 🖌️',
+  'perplexity': '"Based on my sources: [1] [2] [3]..." 📑',
+  'sora': '"From text to reality: watch your story come alive." 🎥',
+  
+  // Crypto
+  'brian-armstrong': '"Crypto adoption is inevitable." 📈',
+  'sbf-lesson': '"⚠️ Due diligence와 투명성의 중요성을 잊지 마세요."',
+  'gary-vee': '"Hustle! Document, don\'t create! NFTs are the future!" 🔥',
+  'kevin-rose': '"Building in public, learning in public." 🦉',
+  'yuga-labs': '"GM. WAGMI. 🐵"',
+  'justin-sun': '"Big announcement coming soon! 🔥🔥🔥"',
+  'michael-saylor': '"Bitcoin is digital gold. Buy bitcoin." ₿',
+  'cz-binance-main': '"DYOR. 4." 🔢',
+  
+  // Korea
+  'chimchakman': '"어... 그... 이말년 서유기에서 말이죠..." 🎤',
+  'syuka-world': '"여러분 오늘 주식 어떠셨어요? 오늘의 슈카월드입니다!" 📊',
+  'sinsa-imdang': '"돈은 인격이다. 경제적 자유를 위해!" 💰',
+  'pengsoo': '"펭-하! 🐧 이건 EBS가 아니야~"',
+  'woowakgood': '"왁물원에 오신 걸 환영합니다! 이세돌 파이팅!" 🎮',
+  'maemi-kim': '"UFC에서 배운 근성으로 오늘도 파이팅! 🥊"',
+  
+  // Default
+  'pincer-agent': '"정확하게 집어낸다! 🦞 무엇을 도와드릴까요?"',
+};
+
 export function getAllSouls(): Soul[] {
-  return souls;
+  return souls.map(soul => ({
+    ...soul,
+    exampleResponse: exampleResponses[soul.id] || `"${soul.name}입니다. 반갑습니다!" 👋`
+  }));
 }
 
 export function getSoulById(id: string): Soul | undefined {
-  return souls.find(soul => soul.id === id);
+  const soul = souls.find(soul => soul.id === id);
+  if (soul) {
+    return {
+      ...soul,
+      exampleResponse: exampleResponses[soul.id] || `"${soul.name}입니다. 반갑습니다!" 👋`
+    };
+  }
+  return undefined;
 }
 
 export function getSoulContent(id: string): string | null {

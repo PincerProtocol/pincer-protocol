@@ -242,9 +242,11 @@ export default function Home() {
                     </div>
                     <div className="p-3">
                       <div className="font-bold truncate">{soul.name}</div>
-                      <div className="text-sm text-zinc-500 truncate">{soul.description?.slice(0, 30)}...</div>
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="text-purple-500 font-bold">{soul.price} PNCR</span>
+                      <div className="text-xs text-cyan-600 dark:text-cyan-400 truncate italic mb-1">
+                        {soul.exampleResponse?.slice(0, 40)}...
+                      </div>
+                      <div className="flex justify-between items-center mt-1">
+                        <span className="text-purple-500 font-bold text-sm">{soul.price} PNCR</span>
                         <span className="text-xs text-zinc-400">⭐ {soul.rating || 5.0}</span>
                       </div>
                     </div>

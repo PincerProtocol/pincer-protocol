@@ -132,8 +132,8 @@ export default function SoulsPage() {
               </div>
               <div className="p-3">
                 <div className="font-bold truncate">{soul.name}</div>
-                <div className="text-xs text-zinc-500 truncate h-4">
-                  {soul.description?.slice(0, 40)}...
+                <div className="text-xs text-cyan-600 dark:text-cyan-400 truncate italic h-4">
+                  {soul.exampleResponse?.slice(0, 35)}...
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-purple-500 font-bold text-sm">{soul.price} PNCR</span>
