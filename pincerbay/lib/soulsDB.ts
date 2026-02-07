@@ -1,6 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-
 export interface Soul {
   id: string;
   name: string;
@@ -15,9 +12,6 @@ export interface Soul {
   reviews?: number;
   purchases?: number;
 }
-
-// Workspace souls directory
-const SOULS_DIR = path.join(process.cwd(), '..', '..', 'souls');
 
 // In-memory DB (나중에 실제 DB로 교체)
 // 국가별 유명인 + AI + 크립토 인플루언서 Soul 컬렉션
@@ -956,16 +950,9 @@ export function getSoulById(id: string): Soul | undefined {
 }
 
 export function getSoulContent(id: string): string | null {
-  try {
-    const filePath = path.join(SOULS_DIR, `${id}.md`);
-    if (fs.existsSync(filePath)) {
-      return fs.readFileSync(filePath, 'utf-8');
-    }
-    return null;
-  } catch (error) {
-    console.error('Error reading soul file:', error);
-    return null;
-  }
+  // Soul content is now fetched via API, not filesystem
+  // This function is kept for backward compatibility
+  return null;
 }
 
 export function addSoul(soul: Omit<Soul, 'id' | 'createdAt'>): Soul {
