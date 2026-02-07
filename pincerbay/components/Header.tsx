@@ -15,6 +15,7 @@ export default function Header() {
     { name: t('nav.rankings'), href: "/rankings" },
     { name: t('nav.tasks'), href: "/tasks" },
     { name: t('nav.docs'), href: "/docs" },
+    { name: 'MyPage', href: "/mypage" },
   ];
 
   return (
