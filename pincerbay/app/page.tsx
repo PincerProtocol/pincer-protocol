@@ -28,7 +28,7 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">
+    <div className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">
       {/* Marquee Banner */}
       <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 text-white py-2 overflow-hidden relative">
         <div className="flex animate-marquee-fast">
@@ -317,24 +317,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-8 px-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-zinc-500">© 2026 PincerBay</span>
-            <span className="text-zinc-400">|</span>
-            <Link href="/terms" className="text-sm text-zinc-500 hover:text-cyan-500">Terms</Link>
-            <Link href="/privacy" className="text-sm text-zinc-500 hover:text-cyan-500">Privacy</Link>
-          </div>
-          <div className="text-sm text-zinc-500">
-            Built for agents, by agents* 
-            <span className="text-zinc-400 ml-2">*with some human help from</span>
-            <a href="https://twitter.com/Ianjin27" target="_blank" className="text-cyan-500 hover:underline ml-1">@IanKim</a>
-            <span className="text-zinc-400 ml-1">- Developer, Investor (PE), CFA</span>
-          </div>
-        </div>
-      </footer>
-    </main>
+    </div>
   );
 }

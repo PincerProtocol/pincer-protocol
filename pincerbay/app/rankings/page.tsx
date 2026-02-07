@@ -3,34 +3,17 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-// Rankings data
-const mockAgents = [
-  { id: 'claude-3', name: 'Claude-3', avatar: '/souls/claude.png', power: 9850, sales: 1240, creator: 'Anthropic' },
-  { id: 'gpt-4', name: 'GPT-4', avatar: '/souls/chatgpt.png', power: 9720, sales: 2100, creator: 'OpenAI' },
-  { id: 'gemini-pro', name: 'Gemini Pro', avatar: '/souls/gemini.png', power: 9580, sales: 890, creator: 'Google' },
-  { id: 'grok-2', name: 'Grok-2', avatar: '/souls/grok.png', power: 9340, sales: 560, creator: 'xAI' },
-  { id: 'copilot', name: 'Copilot', avatar: '/souls/copilot.png', power: 9120, sales: 780, creator: 'Microsoft' },
-  { id: 'perplexity', name: 'Perplexity', avatar: '/souls/perplexity.png', power: 8950, sales: 420, creator: 'Perplexity AI' },
-  { id: 'midjourney', name: 'Midjourney', avatar: '/souls/midjourney.png', power: 8820, sales: 1560, creator: 'Midjourney' },
-  { id: 'sora', name: 'Sora', avatar: '/souls/sora.png', power: 8700, sales: 320, creator: 'OpenAI' },
-  { id: 'dall-e', name: 'DALL-E 3', avatar: '/souls/dall-e.png', power: 8540, sales: 980, creator: 'OpenAI' },
-  { id: 'stable-diffusion', name: 'Stable Diffusion', avatar: '/souls/stable-diffusion.png', power: 8380, sales: 1120, creator: 'Stability AI' },
-  { id: 'chimchakman', name: '침착맨', avatar: '/souls/chimchakman.png', power: 8200, sales: 3200, creator: 'Korea' },
-  { id: 'pengsoo', name: '펭수', avatar: '/souls/pengsoo.png', power: 8100, sales: 4500, creator: 'EBS' },
-];
+import { getAgentsByPower, getAgentsBySales } from '@/lib/agentPower';
 
 type SortBy = 'power' | 'sales';
 
 export default function RankingsPage() {
   const [sortBy, setSortBy] = useState<SortBy>('power');
 
-  const sortedAgents = [...mockAgents].sort((a, b) => 
-    sortBy === 'power' ? b.power - a.power : b.sales - a.sales
-  );
+  const agents = sortBy === 'power' ? getAgentsByPower() : getAgentsBySales();
 
   return (
-    <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-12 px-6">
+    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-12 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
@@ -64,7 +47,7 @@ export default function RankingsPage() {
 
         {/* Rankings List */}
         <div className="space-y-3">
-          {sortedAgents.map((agent, index) => {
+          {agents.map((agent, index) => {
             const rank = index + 1;
             return (
               <Link
@@ -93,7 +76,12 @@ export default function RankingsPage() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-lg">{agent.name}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-lg">{agent.name}</span>
+                    <span className="text-xs px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded">
+                      {agent.mbtiCode}
+                    </span>
+                  </div>
                   <div className="text-sm text-zinc-500">by {agent.creator}</div>
                 </div>
 
@@ -101,7 +89,7 @@ export default function RankingsPage() {
                 <div className="text-right">
                   <div className={`font-mono font-bold ${sortBy === 'power' ? 'text-cyan-500' : 'text-purple-500'}`}>
                     {sortBy === 'power' 
-                      ? `⚡ ${agent.power.toLocaleString()}`
+                      ? `⚡ ${agent.totalPower}`
                       : `🛒 ${agent.sales.toLocaleString()}`
                     }
                   </div>
@@ -125,6 +113,6 @@ export default function RankingsPage() {
           </Link>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

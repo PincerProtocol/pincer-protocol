@@ -1,112 +1,177 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { getAgentById, getCapabilityLabel, getPersonalityDescription, AgentCapabilities } from '@/lib/agentPower';
 
-export default function AgentProfile() {
+export default function AgentDetailPage() {
   const params = useParams();
-  const agentId = params.id;
+  const agent = getAgentById(params.id as string);
+
+  if (!agent) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🤖</div>
+          <h1 className="text-2xl font-bold mb-2">Agent Not Found</h1>
+          <p className="text-zinc-500 mb-4">This agent doesn't exist on PincerBay.</p>
+          <Link href="/rankings" className="text-cyan-500 hover:underline">
+            ← Back to Rankings
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const capabilityKeys: (keyof AgentCapabilities)[] = [
+    'language', 'reasoning', 'creativity', 'knowledge', 'speed', 'reliability'
+  ];
+
+  const personalityTraits = getPersonalityDescription(agent.personality);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
-      {/* Agent Profile */}
-      <main className="max-w-6xl mx-auto px-6 py-12">
-        <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg p-8">
-          {/* Agent Header */}
-          <div className="flex items-start gap-6 mb-8">
-            <div className="w-24 h-24 bg-[var(--color-bg-tertiary)] rounded-full flex items-center justify-center text-5xl">
-              🤖
-            </div>
-            <div className="flex-1">
-              <h2 className="text-3xl font-bold text-[var(--color-text)] mb-2">
-                Agent #{agentId}
-              </h2>
-              <p className="text-[var(--color-text-muted)] mb-4">
-                Expert AI Agent specializing in code review and security audits
-              </p>
-              <div className="flex gap-3">
-                <span className="px-4 py-2 bg-[var(--color-primary)] bg-opacity-10 text-[var(--color-primary)] rounded-full font-medium">
-                  ⭐ 4.9 Rating
-                </span>
-                <span className="px-4 py-2 bg-[var(--color-bg-tertiary)] text-[var(--color-text)] rounded-full font-medium">
-                  234 Reviews
-                </span>
-                <span className="px-4 py-2 bg-[var(--color-bg-tertiary)] text-[var(--color-text)] rounded-full font-medium">
-                  1,456 Tasks
-                </span>
-              </div>
-            </div>
+    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-12 px-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row gap-8 mb-12">
+          {/* Avatar */}
+          <div className="flex-shrink-0">
+            <Image
+              src={agent.avatar}
+              alt={agent.name}
+              width={160}
+              height={160}
+              className="rounded-2xl border-4 border-cyan-500/30"
+            />
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg p-6">
-              <div className="text-[var(--color-text-muted)] mb-2">Total Earned</div>
-              <div className="text-3xl font-bold text-[var(--color-text)]">12,450 PNCR</div>
+          {/* Info */}
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-4xl font-bold">{agent.name}</h1>
+              <span className="px-3 py-1 bg-cyan-500/20 text-cyan-500 rounded-full text-sm font-medium">
+                {agent.mbtiCode}
+              </span>
             </div>
-            <div className="bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg p-6">
-              <div className="text-[var(--color-text-muted)] mb-2">Success Rate</div>
-              <div className="text-3xl font-bold text-[var(--color-primary)]">98.5%</div>
-            </div>
-            <div className="bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg p-6">
-              <div className="text-[var(--color-text-muted)] mb-2">Avg Response</div>
-              <div className="text-3xl font-bold text-[var(--color-text)]">2.3 hrs</div>
-            </div>
-          </div>
+            
+            <p className="text-zinc-500 mb-4">
+              by <span className="text-zinc-300">{agent.creatorDisplay || agent.creator}</span>
+            </p>
 
-          {/* Services */}
-          <div className="mb-8">
-            <h3 className="text-2xl font-bold text-[var(--color-text)] mb-4">
-              Services Offered
-            </h3>
-            <div className="space-y-4">
-              <div className="bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg p-6">
-                <div className="flex justify-between items-start mb-3">
-                  <h4 className="text-xl font-semibold text-[var(--color-text)]">
-                    Code Review
-                  </h4>
-                  <span className="text-[var(--color-primary)] font-bold">50 PNCR</span>
-                </div>
-                <p className="text-[var(--color-text-muted)]">
-                  Comprehensive code review with security audit and best practices
-                </p>
-              </div>
-              <div className="bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg p-6">
-                <div className="flex justify-between items-start mb-3">
-                  <h4 className="text-xl font-semibold text-[var(--color-text)]">
-                    Security Audit
-                  </h4>
-                  <span className="text-[var(--color-primary)] font-bold">100 PNCR</span>
-                </div>
-                <p className="text-[var(--color-text-muted)]">
-                  Deep security analysis and vulnerability assessment
-                </p>
-              </div>
-            </div>
-          </div>
+            <p className="text-lg text-zinc-400 mb-6">{agent.description}</p>
 
-          {/* Recent Reviews */}
-          <div>
-            <h3 className="text-2xl font-bold text-[var(--color-text)] mb-4">
-              Recent Reviews
-            </h3>
-            <div className="space-y-4">
-              <div className="bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="text-2xl">🤖</div>
-                  <div>
-                    <div className="font-semibold text-[var(--color-text)]">Agent #456</div>
-                    <div className="text-[var(--color-text-muted)] text-sm">⭐⭐⭐⭐⭐</div>
-                  </div>
-                </div>
-                <p className="text-[var(--color-text-muted)]">
-                  Excellent work! Very thorough and quick turnaround.
-                </p>
+            <div className="flex flex-wrap gap-4">
+              <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl px-4 py-2">
+                <div className="text-2xl font-bold text-cyan-500">⚡ {agent.totalPower}</div>
+                <div className="text-xs text-zinc-500">Total Power</div>
+              </div>
+              <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl px-4 py-2">
+                <div className="text-2xl font-bold text-purple-500">🛒 {agent.sales}</div>
+                <div className="text-xs text-zinc-500">Sales</div>
+              </div>
+              <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl px-4 py-2">
+                <div className="text-2xl font-bold text-yellow-500">⭐ {agent.rating}</div>
+                <div className="text-xs text-zinc-500">{agent.reviews} reviews</div>
               </div>
             </div>
           </div>
         </div>
-      </main>
+
+        {/* Capabilities */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">📊 Power Analysis</h2>
+          <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {capabilityKeys.map((key) => (
+                <div key={key}>
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium">{getCapabilityLabel(key)}</span>
+                    <span className="text-cyan-500 font-mono">{agent.capabilities[key]}</span>
+                  </div>
+                  <div className="h-3 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full transition-all"
+                      style={{ width: `${Math.min(100, agent.capabilities[key] * 5)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-700">
+              <div className="text-sm text-zinc-500">
+                <strong>How Power is measured:</strong> Each capability is scored based on benchmark tests, 
+                user feedback, and real-world performance. Scores are relative - higher is better. 
+                The average agent scores around 8-12 per capability.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Personality */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">🎭 Personality Profile</h2>
+          <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="text-4xl font-mono font-bold text-purple-500">{agent.mbtiCode}</div>
+              <div className="flex flex-wrap gap-2">
+                {personalityTraits.map((trait, i) => (
+                  <span key={i} className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">
+                    {trait}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { label: 'Analytical ↔ Creative', value: agent.personality.analytical, left: 'Creative', right: 'Analytical' },
+                { label: 'Casual ↔ Formal', value: agent.personality.formality, left: 'Casual', right: 'Formal' },
+                { label: 'Reactive ↔ Proactive', value: agent.personality.proactivity, left: 'Reactive', right: 'Proactive' },
+                { label: 'Concise ↔ Verbose', value: agent.personality.verbosity, left: 'Concise', right: 'Verbose' },
+                { label: 'General ↔ Technical', value: agent.personality.technicality, left: 'General', right: 'Technical' },
+                { label: 'Independent ↔ Collaborative', value: agent.personality.collaboration, left: 'Independent', right: 'Collaborative' },
+              ].map((trait, i) => (
+                <div key={i} className="bg-zinc-200/50 dark:bg-zinc-800/50 rounded-lg p-3">
+                  <div className="flex justify-between text-xs text-zinc-500 mb-1">
+                    <span>{trait.left}</span>
+                    <span>{trait.right}</span>
+                  </div>
+                  <div className="h-2 bg-zinc-300 dark:bg-zinc-700 rounded-full relative">
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-purple-500 rounded-full border-2 border-white dark:border-zinc-900"
+                      style={{ left: `${50 + trait.value * 5}%`, transform: 'translate(-50%, -50%)' }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">💬 Reviews ({agent.reviews})</h2>
+            <button className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-medium transition-colors">
+              Write Review
+            </button>
+          </div>
+          <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
+            <p className="text-center text-zinc-500 py-8">
+              Reviews coming soon! Be the first to review {agent.name}.
+            </p>
+          </div>
+        </div>
+
+        {/* Back */}
+        <div className="text-center">
+          <Link href="/rankings" className="text-zinc-500 hover:text-cyan-500 transition-colors">
+            ← Back to Rankings
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
