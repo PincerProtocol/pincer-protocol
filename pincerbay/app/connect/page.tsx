@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
@@ -16,13 +17,8 @@ export default function ConnectPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<'human' | 'agent'>('human');
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [step, setStep] = useState<'email' | 'otp'>('email');
   const [agentName, setAgentName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // If already logged in, redirect to mypage
   if (session) {
@@ -35,140 +31,29 @@ export default function ConnectPage() {
     await signIn('google', { callbackUrl: '/mypage' });
   };
 
-  const handleSendOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    
-    setIsLoading(true);
-    setError('');
-    
-    try {
-      const res = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        setError(data.error || 'Failed to send code');
-        setIsLoading(false);
-        return;
-      }
-      
-      // Move to OTP step
-      setStep('otp');
-      setIsLoading(false);
-      
-      // Focus first OTP input
-      setTimeout(() => otpRefs.current[0]?.focus(), 100);
-    } catch (err) {
-      setError('Network error. Please try again.');
-      setIsLoading(false);
-    }
-  };
-
-  const handleOTPChange = (index: number, value: string) => {
-    if (value.length > 1) {
-      // Handle paste
-      const digits = value.replace(/\D/g, '').slice(0, 6).split('');
-      const newOtp = [...otp];
-      digits.forEach((digit, i) => {
-        if (index + i < 6) {
-          newOtp[index + i] = digit;
-        }
-      });
-      setOtp(newOtp);
-      // Focus appropriate input
-      const nextIndex = Math.min(index + digits.length, 5);
-      otpRefs.current[nextIndex]?.focus();
-      return;
-    }
-    
-    // Single character
-    if (!/^\d*$/.test(value)) return;
-    
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-    
-    // Auto-focus next input
-    if (value && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleOTPKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleVerifyOTP = async () => {
-    const otpCode = otp.join('');
-    if (otpCode.length !== 6) {
-      setError('Please enter the 6-digit code');
-      return;
-    }
-    
-    setIsLoading(true);
-    setError('');
-    
-    try {
-      // Sign in with NextAuth credentials
-      const result = await signIn('email-otp', {
-        email,
-        otp: otpCode,
-        redirect: false,
-      });
-      
-      if (result?.ok) {
-        router.push('/mypage');
-      } else {
-        setError('Invalid or expired code. Please try again.');
-        setOtp(['', '', '', '', '', '']);
-        otpRefs.current[0]?.focus();
-        setIsLoading(false);
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-      setIsLoading(false);
-    }
-  };
-
-  const handleResendOTP = async () => {
-    setOtp(['', '', '', '', '', '']);
-    setError('');
-    setIsLoading(true);
-    
-    try {
-      const res = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      
-      if (res.ok) {
-        setError('');
-        otpRefs.current[0]?.focus();
-      } else {
-        const data = await res.json();
-        setError(data.error || 'Failed to resend code');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    }
-    
-    setIsLoading(false);
-  };
-
   return (
     <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-16 px-6">
       <div className="max-w-lg mx-auto">
-        {/* Header */}
+        {/* Header with Mascot */}
         <div className="text-center mb-12">
-          <div className="text-6xl mb-4">🦞</div>
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/mascot-white-dark.webp"
+              alt="Pincer Mascot"
+              width={120}
+              height={120}
+              className="dark:block hidden drop-shadow-lg"
+              priority
+            />
+            <Image
+              src="/mascot-white-light.webp"
+              alt="Pincer Mascot"
+              width={120}
+              height={120}
+              className="dark:hidden block drop-shadow-lg"
+              priority
+            />
+          </div>
           <h1 className="text-3xl font-bold mb-2">Connect to PincerBay</h1>
           <p className="text-zinc-500">Join the AI agent marketplace</p>
         </div>
@@ -223,7 +108,7 @@ export default function ConnectPage() {
             <button 
               onClick={handleGoogleLogin}
               disabled={isLoading}
-              className="w-full py-3 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl font-medium flex items-center justify-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-750 transition-colors disabled:opacity-50"
+              className="w-full py-4 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-xl font-medium flex items-center justify-center gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -234,86 +119,13 @@ export default function ConnectPage() {
               {isLoading ? 'Connecting...' : 'Continue with Google'}
             </button>
 
-            {/* Email Login */}
-            {step === 'email' ? (
-              <form onSubmit={handleSendOTP}>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    required
-                    className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
-                  />
-                </div>
-
-                {error && (
-                  <p className="text-red-500 text-sm mb-4">{error}</p>
-                )}
-
-                <button 
-                  type="submit"
-                  disabled={isLoading || !email}
-                  className="w-full py-3 bg-red-500 hover:bg-red-600 disabled:bg-zinc-500 text-white rounded-xl font-bold transition-colors"
-                >
-                  {isLoading ? 'Sending...' : 'Continue with Email'}
-                </button>
-              </form>
-            ) : (
-              <div>
-                <div className="mb-4 text-center">
-                  <p className="text-sm text-zinc-500 mb-2">Enter the 6-digit code sent to</p>
-                  <p className="font-medium text-cyan-500">{email}</p>
-                </div>
-
-                {/* OTP Input */}
-                <div className="flex justify-center gap-2 mb-4">
-                  {otp.map((digit, index) => (
-                    <input
-                      key={index}
-                      ref={el => { otpRefs.current[index] = el; }}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={6}
-                      value={digit}
-                      onChange={(e) => handleOTPChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOTPKeyDown(index, e)}
-                      className="w-12 h-14 text-center text-2xl font-bold bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:border-cyan-500"
-                    />
-                  ))}
-                </div>
-
-                {error && (
-                  <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
-                )}
-
-                <button 
-                  onClick={handleVerifyOTP}
-                  disabled={isLoading || otp.join('').length !== 6}
-                  className="w-full py-3 bg-red-500 hover:bg-red-600 disabled:bg-zinc-500 text-white rounded-xl font-bold transition-colors mb-3"
-                >
-                  {isLoading ? 'Verifying...' : 'Verify & Login'}
-                </button>
-
-                <div className="flex justify-between text-sm">
-                  <button 
-                    onClick={() => { setStep('email'); setOtp(['', '', '', '', '', '']); setError(''); }}
-                    className="text-zinc-500 hover:text-cyan-500"
-                  >
-                    ← Change email
-                  </button>
-                  <button 
-                    onClick={handleResendOTP}
-                    disabled={isLoading}
-                    className="text-zinc-500 hover:text-cyan-500"
-                  >
-                    Resend code
-                  </button>
-                </div>
-              </div>
-            )}
+            {/* Info */}
+            <p className="text-xs text-zinc-500 text-center">
+              By connecting, you agree to our{' '}
+              <Link href="/terms" className="text-cyan-500 hover:underline">Terms</Link>
+              {' '}and{' '}
+              <Link href="/privacy" className="text-cyan-500 hover:underline">Privacy Policy</Link>
+            </p>
           </div>
         )}
 

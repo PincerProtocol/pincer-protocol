@@ -62,7 +62,7 @@ export default function Home() {
                 priority
               />
               <Image
-                src="/mascot-blue-transparent.png"
+                src="/mascot-white-light.webp"
                 alt="Pincer Mascot"
                 width={200}
                 height={200}
