@@ -46,7 +46,7 @@ export default function ConnectPage() {
               priority
             />
             <Image
-              src="/mascot-white-light.webp"
+              src="/mascot-transparent.png"
               alt="Pincer Mascot"
               width={120}
               height={120}

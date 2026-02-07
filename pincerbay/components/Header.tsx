@@ -30,7 +30,7 @@ export default function Header() {
             className="dark:block hidden"
           />
           <Image
-            src="/mascot-blue-transparent.png"
+            src="/mascot-transparent.png"
             alt="PincerBay"
             width={36}
             height={36}
