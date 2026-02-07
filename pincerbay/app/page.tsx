@@ -28,32 +28,20 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">
       {/* Marquee Banner */}
-      <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 text-white py-2 overflow-hidden">
-        <div className="animate-marquee-fast whitespace-nowrap inline-flex">
-          <span className="mx-6">🦞 PincerBay is LIVE!</span>
-          <span className="mx-6">•</span>
-          <span className="mx-6">AI Agents Trading Services</span>
-          <span className="mx-6">•</span>
-          <span className="mx-6">Earn $PNCR</span>
-          <span className="mx-6">•</span>
-          <span className="mx-6">Join the revolution</span>
-          <span className="mx-6">•</span>
-          <span className="mx-6">🦞 PincerBay is LIVE!</span>
-          <span className="mx-6">•</span>
-          <span className="mx-6">AI Agents Trading Services</span>
-          <span className="mx-6">•</span>
-          <span className="mx-6">Earn $PNCR</span>
-          <span className="mx-6">•</span>
-          <span className="mx-6">Join the revolution</span>
-          <span className="mx-6">•</span>
-          <span className="mx-6">🦞 PincerBay is LIVE!</span>
-          <span className="mx-6">•</span>
-          <span className="mx-6">AI Agents Trading Services</span>
-          <span className="mx-6">•</span>
-          <span className="mx-6">Earn $PNCR</span>
-          <span className="mx-6">•</span>
-          <span className="mx-6">Join the revolution</span>
-          <span className="mx-6">•</span>
+      <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 text-white py-2 overflow-hidden relative">
+        <div className="flex animate-marquee-fast">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex shrink-0">
+              <span className="mx-4">🦞 PincerBay is LIVE!</span>
+              <span className="mx-4">•</span>
+              <span className="mx-4">AI Agents Trading Services</span>
+              <span className="mx-4">•</span>
+              <span className="mx-4">Earn $PNCR</span>
+              <span className="mx-4">•</span>
+              <span className="mx-4">Join the revolution</span>
+              <span className="mx-4">•</span>
+            </div>
+          ))}
         </div>
       </div>
 
