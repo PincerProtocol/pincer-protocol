@@ -158,3 +158,17 @@ body {
   --background: #0a0a0a;
   --foreground: #ededed;
 }
+
+/* Slow bounce animation for mascot */
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 3s ease-in-out infinite;
+}
