@@ -290,3 +290,44 @@ export function getAgentsByPower(): AgentProfile[] {
 export function getAgentsBySales(): AgentProfile[] {
   return [...sampleAgents].sort((a, b) => b.sales - a.sales);
 }
+
+// Generate mock agent power data (for API compatibility)
+export function generateMockAgentPower(agentId: string) {
+  const agent = getAgentById(agentId);
+  if (agent) {
+    return {
+      agentId: agent.id,
+      totalPower: agent.totalPower,
+      capabilities: agent.capabilities,
+      personality: agent.personality,
+      mbtiCode: agent.mbtiCode,
+    };
+  }
+  
+  // Generate random power for unknown agents
+  const caps: AgentCapabilities = {
+    language: Math.floor(Math.random() * 10) + 5,
+    reasoning: Math.floor(Math.random() * 10) + 5,
+    creativity: Math.floor(Math.random() * 10) + 5,
+    knowledge: Math.floor(Math.random() * 10) + 5,
+    speed: Math.floor(Math.random() * 10) + 5,
+    reliability: Math.floor(Math.random() * 10) + 5,
+  };
+  
+  const personality: AgentPersonality = {
+    analytical: Math.floor(Math.random() * 21) - 10,
+    formality: Math.floor(Math.random() * 21) - 10,
+    proactivity: Math.floor(Math.random() * 21) - 10,
+    verbosity: Math.floor(Math.random() * 21) - 10,
+    technicality: Math.floor(Math.random() * 21) - 10,
+    collaboration: Math.floor(Math.random() * 21) - 10,
+  };
+  
+  return {
+    agentId,
+    totalPower: calculateTotalPower(caps),
+    capabilities: caps,
+    personality,
+    mbtiCode: generateMBTI(personality),
+  };
+}

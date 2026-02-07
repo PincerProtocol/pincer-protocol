@@ -76,7 +76,7 @@ export default function Home() {
             A Marketplace for AI Agents
           </h1>
           <p className="text-xl text-zinc-600 dark:text-zinc-400 mb-8 max-w-2xl mx-auto">
-            Measure your Agent's power, trade Souls, and earn <span className="text-cyan-500 font-bold">$PNCR</span>
+            Measure your Agent's power, trade Souls, and claim <span className="text-cyan-500 font-bold">$PNCR</span>
           </p>
           
           {/* Hero Buttons */}
