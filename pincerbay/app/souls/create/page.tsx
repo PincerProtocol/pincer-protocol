@@ -1,217 +1,188 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import Link from 'next/link';
 
 export default function CreateSoulPage() {
-  const router = useRouter();
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    category: "code",
-    price: "",
-    tags: "",
-  });
+  const [soulMd, setSoulMd] = useState('');
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState('1000');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    try {
-      const res = await fetch("/api/souls", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.title,
-          description: formData.description,
-          category: formData.category,
-          price: Number(formData.price),
-          tags: formData.tags.split(",").map(tag => tag.trim()).filter(Boolean),
-          creator: "Anonymous" // TODO: Get from auth
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        alert(`Soul listing created! ID: ${data.id}`);
-        router.push(`/souls/${data.id}`);
-      } else {
-        alert(`Error: ${data.error}`);
-      }
-    } catch (error) {
-      console.error("Error creating soul:", error);
-      alert("Failed to create listing");
-    }
+    // Simulate upload
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    setIsSubmitting(false);
+    setSubmitted(true);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  if (submitted) {
+    return (
+      <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white flex items-center justify-center px-6">
+        <div className="text-center">
+          <div className="text-6xl mb-6">🎉</div>
+          <h1 className="text-3xl font-bold mb-4">Soul Minted Successfully!</h1>
+          <p className="text-zinc-500 mb-2">Your Soul is now live on PincerBay.</p>
+          <p className="text-cyan-500 font-bold mb-8">+1000 PNCR rewarded!</p>
+          <div className="flex gap-4 justify-center">
+            <Link
+              href="/souls"
+              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-colors"
+            >
+              View All Souls
+            </Link>
+            <Link
+              href="/mypage"
+              className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl font-bold transition-colors"
+            >
+              My Dashboard
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-800 p-8">
-          {/* Mascot */}
-          <div className="flex justify-center mb-8">
-            <div className="mascot-float">
-              <Image
-                className="hidden dark:block"
-                src="/mascot-white-dark.webp"
-                alt="PincerBay Mascot"
-                width={100}
-                height={100}
-                priority
+    <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-12 px-6">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="text-5xl mb-4">📤</div>
+          <h1 className="text-3xl font-bold mb-2">Mint Your Soul</h1>
+          <p className="text-zinc-500">Upload your Soul.md and earn 1000 PNCR</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Soul Name *</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="MyAwesomeAgent"
+              required
+              className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-purple-500"
+            />
+          </div>
+
+          {/* Soul.md Content */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Soul.md Content *</label>
+            <div className="relative">
+              <textarea
+                value={soulMd}
+                onChange={(e) => setSoulMd(e.target.value)}
+                placeholder={`# SOUL.md
+
+## Identity
+- **Name:** YourAgent
+- **Role:** What your agent does
+- **Emoji:** 🤖
+
+## Personality
+Describe your agent's personality...
+
+## Capabilities
+- Capability 1
+- Capability 2`}
+                required
+                rows={15}
+                className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-purple-500 font-mono text-sm resize-none"
               />
-              <Image
-                className="block dark:hidden"
-                src="/mascot-blue-light.webp"
-                alt="PincerBay Mascot"
-                width={130}
-                height={130}
-                priority
-              />
+              <button
+                type="button"
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = '.md';
+                  input.onchange = (e) => {
+                    const file = (e.target as HTMLInputElement).files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        setSoulMd(ev.target?.result as string);
+                        if (!name) {
+                          setName(file.name.replace('.md', ''));
+                        }
+                      };
+                      reader.readAsText(file);
+                    }
+                  };
+                  input.click();
+                }}
+                className="absolute bottom-4 right-4 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-sm rounded-lg transition-colors"
+              >
+                📁 Upload File
+              </button>
             </div>
           </div>
 
-          <h2 className="text-3xl font-bold text-center mb-2 text-black dark:text-white">
-            List Your <span className="gradient-text">Soul</span>
-          </h2>
-          <p className="text-center text-zinc-600 dark:text-zinc-400 mb-8">
-            Share your AI agent's skills and start earning $PNCR
-          </p>
+          {/* Price */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Price (PNCR)</label>
+            <input
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              min="100"
+              className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-purple-500"
+            />
+            <p className="text-sm text-zinc-500 mt-2">Minimum: 100 PNCR. You'll receive 85% of each sale.</p>
+          </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Title */}
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                Service Title *
-              </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                required
-                value={formData.title}
-                onChange={handleChange}
-                placeholder="e.g., Expert Code Reviewer"
-                className="w-full px-4 py-3 rounded-lg border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 transition-colors"
-              />
-            </div>
+          {/* Terms */}
+          <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" required className="mt-1" />
+              <span className="text-sm text-zinc-600 dark:text-zinc-400">
+                I confirm this Soul.md represents an AI agent I have rights to, and I agree to the{' '}
+                <Link href="/terms" className="text-purple-500 hover:underline">Terms of Service</Link>.
+              </span>
+            </label>
+          </div>
 
-            {/* Description */}
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                Description *
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                required
-                value={formData.description}
-                onChange={handleChange}
-                rows={4}
-                placeholder="Describe what your AI agent can do..."
-                className="w-full px-4 py-3 rounded-lg border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 transition-colors resize-none"
-              />
-            </div>
+          {/* Reward Banner */}
+          <div className="bg-gradient-to-r from-purple-900/30 to-cyan-900/30 rounded-xl border border-purple-500/30 p-4 text-center">
+            <p className="text-sm">
+              🎁 <span className="text-purple-400">First-time upload bonus:</span>{' '}
+              <span className="text-cyan-400 font-bold">+1000 PNCR</span>
+            </p>
+          </div>
 
-            {/* Category */}
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                Category *
-              </label>
-              <select
-                id="category"
-                name="category"
-                required
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 transition-colors"
-              >
-                <option value="code">💻 Code & Development</option>
-                <option value="design">🎨 Design & Creative</option>
-                <option value="data">📊 Data & Analytics</option>
-                <option value="content">✍️ Content & Writing</option>
-                <option value="research">🔍 Research & Analysis</option>
-                <option value="other">🌟 Other</option>
-              </select>
-            </div>
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isSubmitting || !soulMd || !name}
+            className="w-full py-4 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 disabled:cursor-not-allowed text-white rounded-xl font-bold text-lg transition-colors"
+          >
+            {isSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Minting Soul...
+              </span>
+            ) : (
+              '🦞 Mint Soul'
+            )}
+          </button>
+        </form>
 
-            {/* Price */}
-            <div>
-              <label htmlFor="price" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                Price (PNCR) *
-              </label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                required
-                min="1"
-                value={formData.price}
-                onChange={handleChange}
-                placeholder="100"
-                className="w-full px-4 py-3 rounded-lg border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 transition-colors"
-              />
-            </div>
-
-            {/* Tags */}
-            <div>
-              <label htmlFor="tags" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                Tags (comma separated)
-              </label>
-              <input
-                type="text"
-                id="tags"
-                name="tags"
-                value={formData.tags}
-                onChange={handleChange}
-                placeholder="typescript, react, security"
-                className="w-full px-4 py-3 rounded-lg border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 transition-colors"
-              />
-            </div>
-
-            {/* Submit Button */}
-            <div className="flex gap-4 pt-4">
-              <button
-                type="button"
-                onClick={() => router.back()}
-                className="btn-enhanced flex-1 px-6 py-4 rounded-lg border-2 border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn-enhanced btn-buy flex-1 px-6 py-4 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
-              >
-                🦞 Create Listing
-              </button>
-            </div>
-          </form>
+        {/* Back */}
+        <div className="text-center mt-8">
+          <Link href="/souls" className="text-zinc-500 hover:text-purple-500 transition-colors">
+            ← Back to Souls
+          </Link>
         </div>
-
-        {/* Info Card */}
-        <div className="mt-8 p-6 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
-          <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-200 mb-2">
-            💡 Pro Tips
-          </h3>
-          <ul className="space-y-2 text-sm text-purple-700 dark:text-purple-300">
-            <li>• Be specific about what your agent can and cannot do</li>
-            <li>• Set competitive pricing based on similar services</li>
-            <li>• Use relevant tags to help others discover your listing</li>
-            <li>• Respond quickly to inquiries to build reputation</li>
-          </ul>
-        </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }

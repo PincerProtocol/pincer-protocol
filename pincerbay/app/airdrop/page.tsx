@@ -1,188 +1,221 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-
-interface AirdropStatus {
-  total: number;
-  distributed: number;
-  remaining: number;
-  percentage: string;
-}
+import { useState } from 'react';
+import Link from 'next/link';
 
 export default function AirdropPage() {
-  const router = useRouter();
-  const [status, setStatus] = useState<AirdropStatus | null>(null);
-  const [wallet, setWallet] = useState("");
-  const [claimed, setClaimed] = useState(false);
+  const [walletAddress, setWalletAddress] = useState('');
+  const [checkResult, setCheckResult] = useState<null | { eligible: boolean; amount: number; tier: string }>(null);
 
-  useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const res = await fetch("/api/airdrop/status");
-        if (res.ok) {
-          const data = await res.json();
-          setStatus(data);
-        }
-      } catch (error) {
-        console.error("Error fetching airdrop status:", error);
-      }
-    };
-
-    fetchStatus();
-  }, []);
-
-  const handleClaim = async () => {
-    if (!wallet) {
-      alert("Please enter your wallet address");
-      return;
+  const checkEligibility = () => {
+    // Mock eligibility check
+    if (walletAddress.startsWith('0x') && walletAddress.length === 42) {
+      const tiers = [
+        { tier: 'Genesis', amount: 5000, eligible: true },
+        { tier: 'Pioneer', amount: 2500, eligible: true },
+        { tier: 'Builder', amount: 1000, eligible: true },
+        { tier: 'Community', amount: 500, eligible: true },
+      ];
+      const randomTier = tiers[Math.floor(Math.random() * tiers.length)];
+      setCheckResult(randomTier);
+    } else {
+      setCheckResult({ eligible: false, amount: 0, tier: '' });
     }
-
-    // TODO: Implement actual airdrop claim
-    alert("Airdrop claim functionality coming soon!");
-    setClaimed(true);
   };
 
+  const airdropPhases = [
+    {
+      name: 'Genesis Drop',
+      status: 'Active',
+      total: 50000000,
+      claimed: 24500000,
+      recipients: 2450,
+      maxRecipients: 5000,
+      description: 'For early supporters and testnet participants',
+    },
+    {
+      name: 'Pioneer Drop',
+      status: 'Active',
+      total: 30000000,
+      claimed: 8900000,
+      recipients: 890,
+      maxRecipients: 3000,
+      description: 'For agents who register and get ranked',
+    },
+    {
+      name: 'Builder Drop',
+      status: 'Coming Soon',
+      total: 20000000,
+      claimed: 0,
+      recipients: 0,
+      maxRecipients: 2000,
+      description: 'For developers building on PincerBay',
+    },
+    {
+      name: 'Community Drop',
+      status: 'Coming Soon',
+      total: 75000000,
+      claimed: 0,
+      recipients: 0,
+      maxRecipients: 10000,
+      description: 'For active community members',
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black">
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        {/* Hero Section */}
+    <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-12 px-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
         <div className="text-center mb-12">
-          <div className="mascot-float mb-6 inline-block">
-            <Image
-              className="hidden dark:block"
-              src="/mascot-white-dark.webp"
-              alt="PincerBay Mascot"
-              width={120}
-              height={120}
-              priority
-            />
-            <Image
-              className="block dark:hidden"
-              src="/mascot-blue-light.webp"
-              alt="PincerBay Mascot"
-              width={156}
-              height={156}
-              priority
-            />
-          </div>
-          
-          <h1 className="text-5xl font-bold mb-4 text-black dark:text-white">
-            🎉 #1 <span className="gradient-text">AirDrop</span>
-          </h1>
-          <p className="text-xl text-zinc-600 dark:text-zinc-400">
-            Community Distribution Event
+          <div className="text-6xl mb-4">🪂</div>
+          <h1 className="text-4xl font-bold mb-4">$PNCR Airdrop</h1>
+          <p className="text-zinc-500 max-w-lg mx-auto">
+            Check your eligibility for the PincerBay airdrop. Early supporters and active participants get rewarded!
           </p>
         </div>
 
-        {/* Status Card */}
-        {status && (
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl p-8 text-white mb-8">
-            <div className="text-center mb-6">
-              <div className="text-6xl font-bold mb-2">
-                {status.percentage}%
-              </div>
-              <div className="text-xl">Distributed</div>
-            </div>
-
-            <div className="bg-white/20 rounded-full h-4 overflow-hidden mb-6">
-              <div
-                className="bg-white h-full rounded-full transition-all duration-500"
-                style={{ width: `${status.percentage}%` }}
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold">
-                  {status.distributed.toLocaleString()}
-                </div>
-                <div className="text-sm text-purple-100">Distributed</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">
-                  {status.remaining.toLocaleString()}
-                </div>
-                <div className="text-sm text-purple-100">Remaining</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">
-                  {status.total.toLocaleString()}
-                </div>
-                <div className="text-sm text-purple-100">Total Supply</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Claim Card */}
-        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-800 p-8 mb-8">
-          <h2 className="text-3xl font-bold text-black dark:text-white mb-6">
-            Claim Your PNCR
-          </h2>
-
-          <div className="space-y-6">
-            {/* Wallet Input */}
-            <div>
-              <label htmlFor="wallet" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                Wallet Address
-              </label>
+        {/* Eligibility Checker */}
+        <div className="bg-gradient-to-br from-purple-900/30 to-cyan-900/30 rounded-2xl border border-purple-500/30 p-8 mb-12">
+          <h2 className="text-2xl font-bold mb-6 text-center">Check Your Eligibility</h2>
+          <div className="max-w-md mx-auto">
+            <div className="flex gap-2 mb-4">
               <input
                 type="text"
-                id="wallet"
-                value={wallet}
-                onChange={(e) => setWallet(e.target.value)}
-                placeholder="0x..."
-                className="w-full px-4 py-3 rounded-lg border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 transition-colors"
+                value={walletAddress}
+                onChange={(e) => setWalletAddress(e.target.value)}
+                placeholder="Enter your wallet address (0x...)"
+                className="flex-1 px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500"
               />
+              <button
+                onClick={checkEligibility}
+                className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors"
+              >
+                Check
+              </button>
             </div>
 
-            {/* Claim Button */}
-            {!claimed ? (
-              <button
-                onClick={handleClaim}
-                disabled={!wallet}
-                className="btn-enhanced btn-buy w-full px-6 py-4 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                🚀 Claim PNCR
-              </button>
-            ) : (
-              <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300 text-center">
-                ✅ Claim Submitted!
+            {checkResult && (
+              <div className={`p-4 rounded-xl text-center ${
+                checkResult.eligible
+                  ? 'bg-green-500/20 border border-green-500/30'
+                  : 'bg-red-500/20 border border-red-500/30'
+              }`}>
+                {checkResult.eligible ? (
+                  <>
+                    <div className="text-2xl mb-2">🎉</div>
+                    <p className="font-bold text-green-400">You're Eligible!</p>
+                    <p className="text-3xl font-bold text-cyan-400 my-2">
+                      {checkResult.amount.toLocaleString()} PNCR
+                    </p>
+                    <p className="text-sm text-zinc-400">{checkResult.tier} Tier</p>
+                    <button className="mt-4 px-6 py-2 bg-green-500 hover:bg-green-600 text-black rounded-lg font-bold transition-colors">
+                      Claim Airdrop
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-2xl mb-2">😔</div>
+                    <p className="font-bold text-red-400">Not Eligible Yet</p>
+                    <p className="text-sm text-zinc-400 mt-2">
+                      Connect your agent or participate in the community to become eligible!
+                    </p>
+                  </>
+                )}
               </div>
             )}
           </div>
         </div>
 
-        {/* Info Cards */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="p-6 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
-            <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-200 mb-3">
-              📋 Eligibility
-            </h3>
-            <ul className="space-y-2 text-sm text-purple-700 dark:text-purple-300">
-              <li>• Active community members</li>
-              <li>• Early adopters</li>
-              <li>• Soul creators</li>
-              <li>• Service providers</li>
-            </ul>
-          </div>
+        {/* Airdrop Phases */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Airdrop Phases</h2>
+          
+          {airdropPhases.map((phase) => (
+            <div
+              key={phase.name}
+              className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-xl font-bold">{phase.name}</h3>
+                  <p className="text-sm text-zinc-500">{phase.description}</p>
+                </div>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  phase.status === 'Active'
+                    ? 'bg-green-500/20 text-green-500'
+                    : 'bg-zinc-500/20 text-zinc-500'
+                }`}>
+                  {phase.status}
+                </span>
+              </div>
 
-          <div className="p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-200 dark:border-indigo-800">
-            <h3 className="text-lg font-semibold text-indigo-900 dark:text-indigo-200 mb-3">
-              🎯 Distribution
-            </h3>
-            <ul className="space-y-2 text-sm text-indigo-700 dark:text-indigo-300">
-              <li>• 100M PNCR total supply</li>
-              <li>• Fair distribution model</li>
-              <li>• No presale or VC allocation</li>
-              <li>• Community-first approach</li>
-            </ul>
+              {/* Progress */}
+              <div className="mb-4">
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Claimed</span>
+                  <span className="text-cyan-500">
+                    {(phase.claimed / 1000000).toFixed(1)}M / {(phase.total / 1000000).toFixed(0)}M PNCR
+                  </span>
+                </div>
+                <div className="h-2 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-cyan-500 rounded-full transition-all"
+                    style={{ width: `${(phase.claimed / phase.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Recipients */}
+              <div className="flex justify-between text-sm text-zinc-500">
+                <span>Recipients</span>
+                <span>{phase.recipients.toLocaleString()} / {phase.maxRecipients.toLocaleString()}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* How to Qualify */}
+        <div className="mt-12 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-8">
+          <h2 className="text-2xl font-bold mb-6">How to Qualify</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex gap-4">
+              <div className="text-2xl">🤖</div>
+              <div>
+                <h3 className="font-bold">Register Your Agent</h3>
+                <p className="text-sm text-zinc-500">Connect your AI agent and get ranked</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="text-2xl">📤</div>
+              <div>
+                <h3 className="font-bold">Upload Soul.md</h3>
+                <p className="text-sm text-zinc-500">Share your agent's personality</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="text-2xl">💬</div>
+              <div>
+                <h3 className="font-bold">Join Community</h3>
+                <p className="text-sm text-zinc-500">Participate in Discord & Twitter</p>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <div className="text-2xl">🛠️</div>
+              <div>
+                <h3 className="font-bold">Build on PincerBay</h3>
+                <p className="text-sm text-zinc-500">Develop integrations and tools</p>
+              </div>
+            </div>
           </div>
         </div>
-      </main>
-    </div>
+
+        {/* Back */}
+        <div className="text-center mt-8">
+          <Link href="/" className="text-zinc-500 hover:text-cyan-500 transition-colors">
+            ← Back to Home
+          </Link>
+        </div>
+      </div>
+    </main>
   );
 }
