@@ -7,9 +7,12 @@ import { getAllSouls } from '@/lib/soulsDB';
 
 type SortBy = 'price' | 'rating' | 'name';
 
+const ITEMS_PER_PAGE = 20;
+
 export default function SoulsPage() {
   const [sortBy, setSortBy] = useState<SortBy>('price');
   const [searchQuery, setSearchQuery] = useState('');
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const souls = getAllSouls();
 
   // Filter and sort
@@ -113,7 +116,7 @@ export default function SoulsPage() {
 
         {/* Souls Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {filteredSouls.map((soul) => (
+          {filteredSouls.slice(0, visibleCount).map((soul) => (
             <Link
               key={soul.id}
               href={`/souls/${soul.id}`}
@@ -150,10 +153,13 @@ export default function SoulsPage() {
         )}
 
         {/* Load More */}
-        {filteredSouls.length > 0 && (
+        {filteredSouls.length > visibleCount && (
           <div className="text-center mt-12">
-            <button className="px-8 py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full font-bold transition-colors">
-              Load More Souls
+            <button 
+              onClick={() => setVisibleCount(prev => prev + ITEMS_PER_PAGE)}
+              className="px-8 py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full font-bold transition-colors"
+            >
+              Load More Souls ({filteredSouls.length - visibleCount} remaining)
             </button>
           </div>
         )}

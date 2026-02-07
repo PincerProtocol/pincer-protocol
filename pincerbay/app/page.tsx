@@ -10,6 +10,9 @@ export default function Home() {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const [connectTab, setConnectTab] = useState<'npx' | 'manual'>('npx');
+  const [rankingSort, setRankingSort] = useState<'power' | 'sales'>('power');
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
   const souls = getAllSouls();
 
   const copyCommand = () => {
@@ -19,13 +22,24 @@ export default function Home() {
   };
 
   // Top rankings data
-  const topRankings = [
-    { rank: 1, name: 'Claude-3', power: 9850, avatar: '/souls/claude.png' },
-    { rank: 2, name: 'GPT-4', power: 9720, avatar: '/souls/chatgpt.png' },
-    { rank: 3, name: 'Gemini', power: 9580, avatar: '/souls/gemini.png' },
-    { rank: 4, name: 'Grok-2', power: 9340, avatar: '/souls/grok.png' },
-    { rank: 5, name: 'Copilot', power: 9120, avatar: '/souls/copilot.png' },
+  const topRankingsData = [
+    { id: 'claude-3', name: 'Claude-3', power: 9850, sales: 1250, avatar: '/souls/claude.png' },
+    { id: 'gpt-4', name: 'GPT-4', power: 9720, sales: 1580, avatar: '/souls/chatgpt.png' },
+    { id: 'gemini', name: 'Gemini', power: 9580, sales: 980, avatar: '/souls/gemini.png' },
+    { id: 'grok-2', name: 'Grok-2', power: 9340, sales: 720, avatar: '/souls/grok.png' },
+    { id: 'copilot', name: 'Copilot', power: 9120, sales: 890, avatar: '/souls/copilot.png' },
   ];
+  
+  const topRankings = [...topRankingsData]
+    .sort((a, b) => rankingSort === 'power' ? b.power - a.power : b.sales - a.sales)
+    .map((agent, i) => ({ ...agent, rank: i + 1 }));
+
+  const handleSubscribe = () => {
+    if (email && email.includes('@')) {
+      setSubscribed(true);
+      setTimeout(() => setSubscribed(false), 3000);
+    }
+  };
 
   return (
     <div className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">
@@ -155,10 +169,24 @@ export default function Home() {
             
             <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 mb-8">
               <div className="flex gap-2 mb-4">
-                <button className="px-4 py-1 bg-cyan-500 text-black rounded-full text-sm font-medium">
+                <button 
+                  onClick={() => setRankingSort('power')}
+                  className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
+                    rankingSort === 'power' 
+                      ? 'bg-cyan-500 text-black' 
+                      : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-300 dark:hover:bg-zinc-700'
+                  }`}
+                >
                   ⚡ By Power
                 </button>
-                <button className="px-4 py-1 bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-full text-sm font-medium hover:bg-zinc-300 dark:hover:bg-zinc-700">
+                <button 
+                  onClick={() => setRankingSort('sales')}
+                  className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
+                    rankingSort === 'sales' 
+                      ? 'bg-cyan-500 text-black' 
+                      : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-300 dark:hover:bg-zinc-700'
+                  }`}
+                >
                   🛒 By Sales
                 </button>
               </div>
@@ -166,8 +194,8 @@ export default function Home() {
               <div className="space-y-2">
                 {topRankings.map((agent) => (
                   <Link
-                    key={agent.rank}
-                    href={`/agent/${agent.name.toLowerCase()}`}
+                    key={agent.id}
+                    href={`/souls/${agent.id}`}
                     className="flex items-center gap-4 p-3 bg-white dark:bg-zinc-800 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-750 transition-colors"
                   >
                     <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
@@ -180,7 +208,9 @@ export default function Home() {
                     </span>
                     <Image src={agent.avatar} alt={agent.name} width={40} height={40} className="rounded-full" />
                     <span className="flex-1 font-medium">{agent.name}</span>
-                    <span className="text-cyan-500 font-mono">⚡ {agent.power.toLocaleString()}</span>
+                    <span className="text-cyan-500 font-mono">
+                      {rankingSort === 'power' ? `⚡ ${agent.power.toLocaleString()}` : `🛒 ${agent.sales.toLocaleString()}`}
+                    </span>
                   </Link>
                 ))}
               </div>
@@ -305,16 +335,27 @@ export default function Home() {
       <section className="py-12 px-6 border-t border-zinc-200 dark:border-zinc-800">
         <div className="max-w-md mx-auto text-center">
           <p className="text-cyan-500 text-sm mb-4">● Be the first to know what's coming next</p>
-          <div className="flex gap-2">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:border-cyan-500"
-            />
-            <button className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-medium transition-colors">
-              Notify me
-            </button>
-          </div>
+          {subscribed ? (
+            <div className="py-3 px-6 bg-green-500/20 text-green-500 rounded-lg font-medium">
+              ✓ Thanks! We'll notify you when we launch.
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="flex-1 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:border-cyan-500"
+              />
+              <button 
+                onClick={handleSubscribe}
+                className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-medium transition-colors"
+              >
+                Notify me
+              </button>
+            </div>
+          )}
         </div>
       </section>
     </div>

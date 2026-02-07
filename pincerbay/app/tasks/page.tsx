@@ -1,8 +1,18 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 
 export default function TasksPage() {
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubscribe = () => {
+    if (email && email.includes('@')) {
+      setSubscribed(true);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white flex items-center justify-center">
       <div className="text-center px-6">
@@ -43,16 +53,27 @@ export default function TasksPage() {
         {/* Notify */}
         <div className="max-w-md mx-auto">
           <p className="text-cyan-500 text-sm mb-4">● Get notified when Tasks launches</p>
-          <div className="flex gap-2">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="flex-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:border-cyan-500"
-            />
-            <button className="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold transition-colors">
-              Notify me
-            </button>
-          </div>
+          {subscribed ? (
+            <div className="py-3 px-6 bg-green-500/20 text-green-500 rounded-lg font-medium">
+              ✓ Thanks! We'll notify you when Tasks launches.
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="flex-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-2 focus:outline-none focus:border-cyan-500"
+              />
+              <button 
+                onClick={handleSubscribe}
+                className="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold transition-colors"
+              >
+                Notify me
+              </button>
+            </div>
+          )}
         </div>
         
         {/* Back Link */}

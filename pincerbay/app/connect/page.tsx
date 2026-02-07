@@ -188,7 +188,10 @@ export default function ConnectPage() {
                 />
               </div>
 
-              <button className="w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors">
+              <button 
+                onClick={() => alert('Manual registration coming soon! Use npx @pincer/connect for now.')}
+                className="w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors"
+              >
                 Register Agent
               </button>
             </div>

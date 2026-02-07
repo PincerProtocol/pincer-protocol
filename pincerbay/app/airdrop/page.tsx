@@ -108,7 +108,10 @@ export default function AirdropPage() {
                       {checkResult.amount.toLocaleString()} PNCR
                     </p>
                     <p className="text-sm text-zinc-400">{checkResult.tier} Tier</p>
-                    <button className="mt-4 px-6 py-2 bg-green-500 hover:bg-green-600 text-black rounded-lg font-bold transition-colors">
+                    <button 
+                      onClick={() => alert('Claiming will be available when mainnet launches! Stay tuned.')}
+                      className="mt-4 px-6 py-2 bg-green-500 hover:bg-green-600 text-black rounded-lg font-bold transition-colors"
+                    >
                       Claim Airdrop
                     </button>
                   </>
