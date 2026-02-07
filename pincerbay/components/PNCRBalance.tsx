@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { formatUnits } from 'viem';
