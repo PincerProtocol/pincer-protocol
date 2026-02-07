@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAllSouls, addSoul } from '@/lib/soulsDB';
 import { checkRateLimit, getIdentifier } from '@/lib/ratelimit';
-import { requireAuth, isSessionValid } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { CreateSoulSchema, validateInput } from '@/lib/validations';
 
 export async function GET(request: Request) {
@@ -27,8 +27,10 @@ export async function POST(request: Request) {
   if (rateLimitRes) return rateLimitRes;
 
   // 2. Authentication
-  const session = await requireAuth(request);
-  if (!isSessionValid(session)) return session;
+  const session = await requireAuth();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     const body = await request.json();
@@ -50,7 +52,7 @@ export async function POST(request: Request) {
       category: validatedData.category,
       price: Number(validatedData.price),
       tags: validatedData.tags || [],
-      creator: session.user?.email || 'Anonymous' // Use session user
+      creator: session.user?.email || 'Anonymous'
     });
     
     return NextResponse.json(newSoul, { status: 201 });

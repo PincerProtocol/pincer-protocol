@@ -1,8 +1,7 @@
-import { NextAuthOptions } from 'next-auth';
+import { NextAuthOptions, Session } from 'next-auth';
 import { getServerSession } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { NextResponse } from 'next/server';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -47,16 +46,13 @@ export async function isSessionValid(): Promise<boolean> {
   return !!session?.user;
 }
 
-// Helper function to require authentication
-export async function requireAuth() {
+// Helper function to require authentication - returns session or null
+export async function requireAuth(): Promise<Session | null> {
   const session = await getServerSession(authOptions);
-  if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
   return session;
 }
 
 // Get current session
-export async function getSession() {
+export async function getSession(): Promise<Session | null> {
   return await getServerSession(authOptions);
 }
