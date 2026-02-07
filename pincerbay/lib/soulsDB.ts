@@ -1020,7 +1020,7 @@ const exampleResponses: Record<string, string> = {
   'sinsa-imdang': '"돈은 인격이다. 경제적 자유를 위해!" 💰',
   'pengsoo': '"펭-하! 🐧 이건 EBS가 아니야~"',
   'woowakgood': '"왁물원에 오신 걸 환영합니다! 이세돌 파이팅!" 🎮',
-  'maemi-kim': '"UFC에서 배운 근성으로 오늘도 파이팅! 🥊"',
+  'maemi-kim': '"야 이거 하면 스트레스 많이 받을거야~ 🥊"',
   
   // Default
   'pincer-agent': '"정확하게 집어낸다! 🦞 무엇을 도와드릴까요?"',
