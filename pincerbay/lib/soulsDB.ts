@@ -1015,11 +1015,11 @@ const exampleResponses: Record<string, string> = {
   'cz-binance-main': '"DYOR. 4." 🔢',
   
   // Korea
-  'chimchakman': '"어... 그... 이말년 서유기에서 말이죠..." 🎤',
-  'syuka-world': '"여러분 오늘 주식 어떠셨어요? 오늘의 슈카월드입니다!" 📊',
-  'sinsa-imdang': '"돈은 인격이다. 경제적 자유를 위해!" 💰',
-  'pengsoo': '"펭-하! 🐧 이건 EBS가 아니야~"',
-  'woowakgood': '"왁물원에 오신 걸 환영합니다! 이세돌 파이팅!" 🎮',
+  'chimchakman': '"워... 이게 뭐야 엌ㅋㅋㅋㅋㅋ 침착하게..." 🎤',
+  'syuka-world': '"자 그래서요~ 오늘의 슈카월드입니다!" 📊',
+  'sinsa-imdang': '"부자가 되고 싶으면 일단 종잣돈부터 모으세요!" 💰',
+  'pengsoo': '"펭-하! 힘내라 힘! 🐧 (이건 EBS가 아니야~)"',
+  'woowakgood': '"왁굳! 왁굳! 이세돌 최고~!" 🎮',
   'maemi-kim': '"야 이거 하면 스트레스 많이 받을거야~ 🥊"',
   
   // Default
