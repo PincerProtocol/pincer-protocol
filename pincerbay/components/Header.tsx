@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { ThemeToggle } from "@/lib/theme";
+import { LanguageSelector } from "@/lib/i18n";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -29,7 +30,7 @@ export default function Header() {
             className="dark:block hidden"
           />
           <Image
-            src="/mascot-blue-light.webp"
+            src="/mascot-blue-transparent.png"
             alt="PincerBay"
             width={36}
             height={36}
@@ -53,7 +54,7 @@ export default function Header() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-4">
           {navLinks.map((link) => (
             <Link
               key={link.name}
@@ -63,6 +64,7 @@ export default function Header() {
               {link.name}
             </Link>
           ))}
+          <LanguageSelector className="text-zinc-600 dark:text-zinc-400" />
           <ThemeToggle className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-cyan-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors" />
           <Link
             href="/connect"
@@ -74,6 +76,7 @@ export default function Header() {
 
         {/* Mobile Menu Button */}
         <div className="flex items-center gap-2 md:hidden">
+          <LanguageSelector className="text-zinc-600 dark:text-zinc-400 text-xs" />
           <ThemeToggle className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-cyan-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors" />
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}

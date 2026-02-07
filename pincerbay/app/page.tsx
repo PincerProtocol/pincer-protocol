@@ -4,8 +4,10 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getAllSouls } from '@/lib/soulsDB';
+import { useI18n } from '@/lib/i18n';
 
 export default function Home() {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const [connectTab, setConnectTab] = useState<'npx' | 'manual'>('npx');
   const souls = getAllSouls();
