@@ -42,8 +42,6 @@ export default function MarketPage() {
       switch (sortBy) {
         case 'price':
           return (b.price || 0) - (a.price || 0);
-        case 'rating':
-          return (b.rating || 5) - (a.rating || 5);
         case 'recent':
         default:
           return 0;
@@ -100,7 +98,6 @@ export default function MarketPage() {
           {[
             { id: 'recent', name: '최신순' },
             { id: 'price', name: '가격순' },
-            { id: 'rating', name: '평점순' },
           ].map((sort) => (
             <button
               key={sort.id}
@@ -142,7 +139,6 @@ export default function MarketPage() {
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-purple-500 font-bold text-sm">{item.price} PNCR</span>
-                  <span className="text-xs text-zinc-400">⭐ {item.rating || 5.0}</span>
                 </div>
               </div>
             </Link>

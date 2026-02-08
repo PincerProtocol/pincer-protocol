@@ -10,8 +10,8 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navLinks = [
-    { name: 'Feed', href: "/feed" },
     { name: 'Market', href: "/market" },
+    { name: 'Mine', href: "/mine" },
     { name: 'MyPage', href: "/mypage" },
   ];
 

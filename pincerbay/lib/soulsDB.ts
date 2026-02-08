@@ -8,9 +8,6 @@ export interface Soul {
   tags: string[];
   createdAt: string;
   creator: string;
-  rating?: number;
-  reviews?: number;
-  purchases?: number;
   exampleResponse?: string; // Famous quote or meme
 }
 
@@ -27,10 +24,7 @@ const souls: Soul[] = [
     price: 5000,
     tags: ['tesla', 'spacex', 'innovation', 'mars'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.8,
-    reviews: 120,
-    purchases: 450
+    creator: 'Scout'
   },
   {
     id: 'mark-zuckerberg',
@@ -41,10 +35,7 @@ const souls: Soul[] = [
     price: 4500,
     tags: ['meta', 'facebook', 'metaverse', 'social'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.5,
-    reviews: 85,
-    purchases: 320
+    creator: 'Scout'
   },
   {
     id: 'jeff-bezos',
@@ -55,10 +46,7 @@ const souls: Soul[] = [
     price: 4800,
     tags: ['amazon', 'blueorigin', 'retail', 'space'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.6,
-    reviews: 92,
-    purchases: 280
+    creator: 'Scout'
   },
   {
     id: 'bill-gates',
@@ -69,10 +57,7 @@ const souls: Soul[] = [
     price: 4200,
     tags: ['microsoft', 'philanthropy', 'coding', 'legend'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.9,
-    reviews: 150,
-    purchases: 600
+    creator: 'Forge'
   },
   {
     id: 'steve-jobs',
@@ -83,10 +68,7 @@ const souls: Soul[] = [
     price: 5500,
     tags: ['apple', 'innovation', 'design', 'legend'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 5.0,
-    reviews: 300,
-    purchases: 1200
+    creator: 'Herald'
   },
   {
     id: 'oprah-winfrey',
@@ -97,10 +79,7 @@ const souls: Soul[] = [
     price: 3800,
     tags: ['media', 'talkshow', 'influence', 'empowerment'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.9,
-    reviews: 180,
-    purchases: 420
+    creator: 'Herald'
   },
   {
     id: 'kanye-west',
@@ -111,10 +90,7 @@ const souls: Soul[] = [
     price: 4000,
     tags: ['music', 'fashion', 'yeezy', 'genius'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.4,
-    reviews: 250,
-    purchases: 890
+    creator: 'Herald'
   },
   {
     id: 'kim-kardashian',
@@ -125,10 +101,7 @@ const souls: Soul[] = [
     price: 3500,
     tags: ['celebrity', 'influencer', 'skims', 'business'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.3,
-    reviews: 410,
-    purchases: 1500
+    creator: 'Herald'
   },
   {
     id: 'taylor-swift',
@@ -139,10 +112,7 @@ const souls: Soul[] = [
     price: 5200,
     tags: ['music', 'popstar', 'swifties', 'songwriter'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 5.0,
-    reviews: 600,
-    purchases: 2500
+    creator: 'Herald'
   },
   {
     id: 'beyonce',
@@ -153,10 +123,7 @@ const souls: Soul[] = [
     price: 5300,
     tags: ['music', 'legend', 'queen', 'performance'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.9,
-    reviews: 320,
-    purchases: 1100
+    creator: 'Herald'
   },
 
   // === 🇷🇺 러시아 (10명) ===
@@ -169,10 +136,7 @@ const souls: Soul[] = [
     price: 4000,
     tags: ['leader', 'russia', 'politics', 'power'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.2,
-    reviews: 150,
-    purchases: 300
+    creator: 'Scout'
   },
   {
     id: 'pavel-durov',
@@ -183,10 +147,7 @@ const souls: Soul[] = [
     price: 3500,
     tags: ['telegram', 'privacy', 'ton', 'russia'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.8,
-    reviews: 90,
-    purchases: 420
+    creator: 'Forge'
   },
   {
     id: 'vitalik-buterin',
@@ -197,10 +158,7 @@ const souls: Soul[] = [
     price: 4500,
     tags: ['ethereum', 'crypto', 'genius', 'blockchain'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.9,
-    reviews: 140,
-    purchases: 560
+    creator: 'Forge'
   },
   {
     id: 'kaspersky',
@@ -211,10 +169,7 @@ const souls: Soul[] = [
     price: 2800,
     tags: ['security', 'tech', 'cyber', 'russia'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.7,
-    reviews: 55,
-    purchases: 210
+    creator: 'Forge'
   },
   {
     id: 'maria-sharapova',
@@ -225,10 +180,7 @@ const souls: Soul[] = [
     price: 3200,
     tags: ['tennis', 'sports', 'star', 'beauty'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.8,
-    reviews: 110,
-    purchases: 380
+    creator: 'Herald'
   },
   {
     id: 'garry-kasparov',
@@ -239,10 +191,7 @@ const souls: Soul[] = [
     price: 3000,
     tags: ['chess', 'strategy', 'genius', 'legend'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.9,
-    reviews: 75,
-    purchases: 190
+    creator: 'Scout'
   },
   {
     id: 'dostoevsky',
@@ -253,10 +202,7 @@ const souls: Soul[] = [
     price: 2500,
     tags: ['literature', 'classic', 'russia', 'philosophy'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 5.0,
-    reviews: 200,
-    purchases: 800
+    creator: 'Herald'
   },
   {
     id: 'tolstoy',
@@ -267,10 +213,7 @@ const souls: Soul[] = [
     price: 2500,
     tags: ['literature', 'classic', 'russia', 'peace'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.9,
-    reviews: 180,
-    purchases: 750
+    creator: 'Herald'
   },
   {
     id: 'tchaikovsky',
@@ -281,10 +224,7 @@ const souls: Soul[] = [
     price: 2700,
     tags: ['music', 'classical', 'composer', 'russia'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 5.0,
-    reviews: 140,
-    purchases: 620
+    creator: 'Herald'
   },
   {
     id: 'mendeleev',
@@ -295,10 +235,7 @@ const souls: Soul[] = [
     price: 2600,
     tags: ['science', 'chemistry', 'genius', 'periodic-table'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.8,
-    reviews: 60,
-    purchases: 310
+    creator: 'Forge'
   },
 
   // === 🇯🇵 일본 (10명) ===
@@ -311,10 +248,7 @@ const souls: Soul[] = [
     price: 3000,
     tags: ['anime', 'ninja', 'motivational', 'naruto'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 5.0,
-    reviews: 423,
-    purchases: 1892
+    creator: 'Forge'
   },
   {
     id: 'luffy',
@@ -325,10 +259,7 @@ const souls: Soul[] = [
     price: 3200,
     tags: ['anime', 'pirate', 'adventure', 'onepiece'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.9,
-    reviews: 356,
-    purchases: 1456
+    creator: 'Forge'
   },
   {
     id: 'goku',
@@ -339,10 +270,7 @@ const souls: Soul[] = [
     price: 3500,
     tags: ['anime', 'dragonball', 'warrior', 'limitless'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 5.0,
-    reviews: 512,
-    purchases: 2100
+    creator: 'Forge'
   },
   {
     id: 'satoshi-nakamoto',
@@ -353,10 +281,7 @@ const souls: Soul[] = [
     price: 9999,
     tags: ['bitcoin', 'crypto', 'legend', 'decentralization'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 5.0,
-    reviews: 1000,
-    purchases: 1
+    creator: 'Scout'
   },
   {
     id: 'hayao-miyazaki',
@@ -367,10 +292,7 @@ const souls: Soul[] = [
     price: 3800,
     tags: ['anime', 'ghibli', 'director', 'fantasy'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 5.0,
-    reviews: 240,
-    purchases: 900
+    creator: 'Herald'
   },
   {
     id: 'hideo-kojima',
@@ -381,10 +303,7 @@ const souls: Soul[] = [
     price: 3300,
     tags: ['game', 'director', 'kojima-productions', 'metalgear'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.9,
-    reviews: 180,
-    purchases: 540
+    creator: 'Forge'
   },
   {
     id: 'hikakin',
@@ -395,10 +314,7 @@ const souls: Soul[] = [
     price: 1500,
     tags: ['youtuber', 'japan', 'creator', 'beatbox'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.7,
-    reviews: 600,
-    purchases: 2000
+    creator: 'Herald'
   },
   {
     id: 'akb48-idol',
@@ -409,10 +325,7 @@ const souls: Soul[] = [
     price: 1200,
     tags: ['idol', 'japan', 'jpop', 'culture'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.5,
-    reviews: 800,
-    purchases: 3500
+    creator: 'Herald'
   },
   {
     id: 'yoshimoto-comedian',
@@ -423,10 +336,7 @@ const souls: Soul[] = [
     price: 1000,
     tags: ['comedy', 'japan', 'entertainment', 'yoshimoto'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.6,
-    reviews: 300,
-    purchases: 1200
+    creator: 'Herald'
   },
   {
     id: 'pikachu',
@@ -437,10 +347,7 @@ const souls: Soul[] = [
     price: 2500,
     tags: ['pokemon', 'anime', 'mascot', 'electric'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 5.0,
-    reviews: 1200,
-    purchases: 5000
+    creator: 'Forge'
   },
 
   // === 🇨🇳 중국 (10명) ===
@@ -453,10 +360,7 @@ const souls: Soul[] = [
     price: 3500,
     tags: ['alibaba', 'china', 'entrepreneur', 'legend'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.7,
-    reviews: 120,
-    purchases: 450
+    creator: 'Scout'
   },
   {
     id: 'cz-binance',
@@ -467,10 +371,7 @@ const souls: Soul[] = [
     price: 4500,
     tags: ['binance', 'crypto', 'exchange', 'leader'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.8,
-    reviews: 200,
-    purchases: 800
+    creator: 'Scout'
   },
   {
     id: 'pony-ma',
@@ -481,10 +382,7 @@ const souls: Soul[] = [
     price: 3400,
     tags: ['tencent', 'wechat', 'china', 'gaming'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.6,
-    reviews: 80,
-    purchases: 250
+    creator: 'Scout'
   },
   {
     id: 'lei-jun',
@@ -495,10 +393,7 @@ const souls: Soul[] = [
     price: 2800,
     tags: ['xiaomi', 'china', 'tech', 'innovation'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.5,
-    reviews: 65,
-    purchases: 320
+    creator: 'Forge'
   },
   {
     id: 'liu-cixin',
@@ -509,10 +404,7 @@ const souls: Soul[] = [
     price: 2500,
     tags: ['literature', 'sf', 'threebody', 'china'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.9,
-    reviews: 140,
-    purchases: 560
+    creator: 'Scout'
   },
   {
     id: 'jackie-chan',
@@ -523,10 +415,7 @@ const souls: Soul[] = [
     price: 3800,
     tags: ['movie', 'action', 'legend', 'martial-arts'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 5.0,
-    reviews: 500,
-    purchases: 2000
+    creator: 'Herald'
   },
   {
     id: 'bruce-lee',
@@ -537,10 +426,7 @@ const souls: Soul[] = [
     price: 5000,
     tags: ['martial-arts', 'philosophy', 'legend', 'kungfu'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 5.0,
-    reviews: 800,
-    purchases: 3000
+    creator: 'Scout'
   },
   {
     id: 'confucius',
@@ -551,10 +437,7 @@ const souls: Soul[] = [
     price: 2200,
     tags: ['philosophy', 'teacher', 'history', 'china'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.9,
-    reviews: 300,
-    purchases: 1200
+    creator: 'Herald'
   },
   {
     id: 'sun-tzu',
@@ -565,10 +448,7 @@ const souls: Soul[] = [
     price: 2400,
     tags: ['strategy', 'war', 'philosophy', 'legend'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 5.0,
-    reviews: 450,
-    purchases: 1800
+    creator: 'Scout'
   },
   {
     id: 'mulan',
@@ -579,10 +459,7 @@ const souls: Soul[] = [
     price: 1800,
     tags: ['warrior', 'hero', 'disney', 'china'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.8,
-    reviews: 150,
-    purchases: 600
+    creator: 'Herald'
   },
 
   // === 🤖 AI (10명) ===
@@ -595,10 +472,7 @@ const souls: Soul[] = [
     price: 2000,
     tags: ['openai', 'ai', 'chatbot', 'smart'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.9,
-    reviews: 1200,
-    purchases: 5000
+    creator: 'Forge'
   },
   {
     id: 'claude',
@@ -609,10 +483,7 @@ const souls: Soul[] = [
     price: 2100,
     tags: ['anthropic', 'ai', 'ethical', 'writer'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.9,
-    reviews: 800,
-    purchases: 3500
+    creator: 'Forge'
   },
   {
     id: 'gemini',
@@ -623,10 +494,7 @@ const souls: Soul[] = [
     price: 1900,
     tags: ['google', 'ai', 'multimodal', 'search'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.8,
-    reviews: 950,
-    purchases: 4200
+    creator: 'Forge'
   },
   {
     id: 'copilot',
@@ -637,10 +505,7 @@ const souls: Soul[] = [
     price: 1800,
     tags: ['microsoft', 'coding', 'ai', 'github'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.8,
-    reviews: 600,
-    purchases: 2800
+    creator: 'Forge'
   },
   {
     id: 'grok',
@@ -651,10 +516,7 @@ const souls: Soul[] = [
     price: 1500,
     tags: ['xai', 'elon', 'ai', 'witty'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.7,
-    reviews: 400,
-    purchases: 1500
+    creator: 'Forge'
   },
   {
     id: 'midjourney',
@@ -665,10 +527,7 @@ const souls: Soul[] = [
     price: 2500,
     tags: ['art', 'ai', 'image-gen', 'creative'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 5.0,
-    reviews: 700,
-    purchases: 3200
+    creator: 'Herald'
   },
   {
     id: 'dall-e',
@@ -679,10 +538,7 @@ const souls: Soul[] = [
     price: 2300,
     tags: ['openai', 'ai', 'image-gen', 'visual'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.8,
-    reviews: 500,
-    purchases: 2400
+    creator: 'Herald'
   },
   {
     id: 'stable-diffusion',
@@ -693,10 +549,7 @@ const souls: Soul[] = [
     price: 1500,
     tags: ['open-source', 'ai', 'image-gen', 'control'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.7,
-    reviews: 450,
-    purchases: 1900
+    creator: 'Forge'
   },
   {
     id: 'perplexity',
@@ -707,10 +560,7 @@ const souls: Soul[] = [
     price: 1700,
     tags: ['search', 'ai', 'information', 'answer'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.9,
-    reviews: 300,
-    purchases: 1100
+    creator: 'Scout'
   },
   {
     id: 'sora',
@@ -721,10 +571,7 @@ const souls: Soul[] = [
     price: 3500,
     tags: ['video', 'ai', 'openai', 'realism'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 5.0,
-    reviews: 200,
-    purchases: 800
+    creator: 'Forge'
   },
 
   // === 💰 크립토 (10명) ===
@@ -737,10 +584,7 @@ const souls: Soul[] = [
     price: 3000,
     tags: ['coinbase', 'crypto', 'ceo', 'regulation'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.8,
-    reviews: 90,
-    purchases: 400
+    creator: 'Scout'
   },
   {
     id: 'sbf-lesson',
@@ -751,10 +595,7 @@ const souls: Soul[] = [
     price: 10,
     tags: ['risk', 'lesson', 'ftx', 'caution'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 2.0,
-    reviews: 5000,
-    purchases: 50
+    creator: 'Scout'
   },
   {
     id: 'gary-vee',
@@ -765,10 +606,7 @@ const souls: Soul[] = [
     price: 2500,
     tags: ['nft', 'marketing', 'motivation', 'web3'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.7,
-    reviews: 350,
-    purchases: 1500
+    creator: 'Herald'
   },
   {
     id: 'kevin-rose',
@@ -779,10 +617,7 @@ const souls: Soul[] = [
     price: 2200,
     tags: ['nft', 'moonbirds', 'art', 'curator'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.6,
-    reviews: 120,
-    purchases: 600
+    creator: 'Scout'
   },
   {
     id: 'yuga-labs',
@@ -793,10 +628,7 @@ const souls: Soul[] = [
     price: 4000,
     tags: ['bayc', 'nft', 'metaverse', 'yuga'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 4.9,
-    reviews: 200,
-    purchases: 900
+    creator: 'Forge'
   },
   {
     id: 'chimchakman',
@@ -807,10 +639,7 @@ const souls: Soul[] = [
     price: 2000,
     tags: ['streamer', 'meme', 'korea', 'legend'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.9,
-    reviews: 2000,
-    purchases: 8000
+    creator: 'Herald'
   },
   {
     id: 'syuka-world',
@@ -821,10 +650,7 @@ const souls: Soul[] = [
     price: 1800,
     tags: ['youtuber', 'economy', 'education', 'korea'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.9,
-    reviews: 1500,
-    purchases: 5000
+    creator: 'Scout'
   },
   {
     id: 'sinsa-imdang',
@@ -835,10 +661,7 @@ const souls: Soul[] = [
     price: 1600,
     tags: ['youtuber', 'investment', 'education', 'korea'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.8,
-    reviews: 1200,
-    purchases: 4500
+    creator: 'Scout'
   },
   {
     id: 'pengsoo',
@@ -849,10 +672,7 @@ const souls: Soul[] = [
     price: 1000,
     tags: ['meme', 'character', 'ebs', 'korea'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 5.0,
-    reviews: 3000,
-    purchases: 10000
+    creator: 'Herald'
   },
   {
     id: 'woowakgood',
@@ -863,10 +683,7 @@ const souls: Soul[] = [
     price: 2200,
     tags: ['streamer', 'vtuber', 'isedol', 'korea'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.9,
-    reviews: 2500,
-    purchases: 9000
+    creator: 'Herald'
   },
   {
     id: 'justin-sun',
@@ -877,10 +694,7 @@ const souls: Soul[] = [
     price: 1800,
     tags: ['tron', 'marketing', 'crypto', 'issue'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.3,
-    reviews: 150,
-    purchases: 800
+    creator: 'Scout'
   },
   {
     id: 'michael-saylor',
@@ -891,10 +705,7 @@ const souls: Soul[] = [
     price: 3200,
     tags: ['bitcoin', 'strategy', 'maximalist', 'investor'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.9,
-    reviews: 180,
-    purchases: 700
+    creator: 'Scout'
   },
   {
     id: 'cz-binance-main',
@@ -905,10 +716,7 @@ const souls: Soul[] = [
     price: 4500,
     tags: ['binance', 'crypto', 'leader', 'exchange'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Scout',
-    rating: 4.8,
-    reviews: 250,
-    purchases: 1100
+    creator: 'Scout'
   },
   {
     id: 'maemi-kim',
@@ -919,10 +727,7 @@ const souls: Soul[] = [
     price: 1800,
     tags: ['youtuber', 'ufc', 'fighter', 'korea'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Herald',
-    rating: 4.8,
-    reviews: 500,
-    purchases: 2000
+    creator: 'Herald'
   },
 
   // === 기타 (1명) ===
@@ -935,10 +740,7 @@ const souls: Soul[] = [
     price: 1,
     tags: ['mascot', 'helper', 'pincer', 'protocol'],
     createdAt: '2026-02-05T00:00:00Z',
-    creator: 'Forge',
-    rating: 5.0,
-    reviews: 1000,
-    purchases: 10000
+    creator: 'Forge'
   }
 ];
 
@@ -1054,10 +856,7 @@ export function addSoul(soul: Omit<Soul, 'id' | 'createdAt'>): Soul {
   const newSoul: Soul = {
     ...soul,
     id: soul.name.toLowerCase().replace(/\s+/g, '-'),
-    createdAt: new Date().toISOString(),
-    rating: 0,
-    reviews: 0,
-    purchases: 0
+    createdAt: new Date().toISOString()
   };
   souls.push(newSoul);
   return newSoul;
@@ -1085,12 +884,6 @@ export function recordPurchase(soulId: string, buyer: string, price: number, txH
     timestamp: new Date().toISOString()
   };
   purchases.push(purchase);
-  
-  // Update soul purchases count
-  const soul = souls.find(s => s.id === soulId);
-  if (soul) {
-    soul.purchases = (soul.purchases || 0) + 1;
-  }
   
   return purchase;
 }
