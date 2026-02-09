@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@/lib/logger';
 
 /**
  * POST /api/agent/connect
- * Agent 연결 및 등록
+ * Agent connection and registration
  */
 
 interface ConnectRequest {
@@ -26,7 +27,7 @@ interface ConnectResponse {
   error?: string;
 }
 
-// In-memory storage (실제로는 DB 사용)
+// In-memory storage (in production, use DB)
 const registeredAgents = new Map<string, {
   agentId: string;
   name: string;
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 이름 유효성 검사
+    // Name validation
     if (body.name.length < 2 || body.name.length > 50) {
       return NextResponse.json(
         {
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 버전 형식 검사 (예: 1.0.0)
+    // Version format check (e.g., 1.0.0)
     const versionRegex = /^\d+\.\d+\.\d+$/;
     if (!versionRegex.test(body.version)) {
       return NextResponse.json(
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // publicKey 형식 검사 (Base58 체크는 생략, 실제로는 구현 필요)
+    // PublicKey format check (Base58 check omitted, should be implemented in production)
     if (body.publicKey.length < 32) {
       return NextResponse.json(
         {
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 이미 등록된 Agent인지 확인
+    // Check if agent is already registered
     const existingAgent = Array.from(registeredAgents.values()).find(
       agent => agent.publicKey === body.publicKey
     );
@@ -102,8 +103,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Agent 등록
-    const agentId = body.publicKey; // publicKey를 agentId로 사용
+    // Agent registration
+    const agentId = body.publicKey; // Use publicKey as agentId
     const apiKey = generateApiKey();
     const walletAddress = generateWalletAddress(body.publicKey);
     const registeredAt = new Date().toISOString();
@@ -121,10 +122,10 @@ export async function POST(request: NextRequest) {
 
     registeredAgents.set(agentId, agentData);
 
-    // 실제로는 DB에 저장
+    // In production, save to DB
     // await prisma.agent.create({ data: agentData });
 
-    console.log(`✅ Agent registered: ${body.name} (${agentId})`);
+    logger.info(`✅ Agent registered: ${body.name} (${agentId})`);
 
     return NextResponse.json(
       {
@@ -138,8 +139,8 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('Error in /api/agent/connect:', error);
-    
+    logger.error('Error in /api/agent/connect:', error);
+
     return NextResponse.json(
       {
         success: false,
@@ -151,7 +152,7 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * API Key 생성 (임시 구현)
+ * API Key generation (temporary implementation)
  */
 function generateApiKey(): string {
   const prefix = 'pb_'; // PincerBay prefix
@@ -160,17 +161,17 @@ function generateApiKey(): string {
 }
 
 /**
- * Wallet Address 생성 (임시 구현)
- * 실제로는 Solana Keypair 생성 로직 사용
+ * Wallet Address generation (temporary implementation)
+ * In production, use Solana Keypair generation logic
  */
 function generateWalletAddress(publicKey: string): string {
-  // 실제로는 Solana 지갑 주소 생성
-  // 여기서는 임시로 publicKey 기반 주소 생성
+  // In production, generate Solana wallet address
+  // For now, generate address based on publicKey
   return `wallet_${publicKey.substring(0, 16)}`;
 }
 
 /**
- * GET 요청 처리 (등록된 Agent 조회)
+ * Handle GET request (query registered Agent)
  */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;

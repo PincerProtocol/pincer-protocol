@@ -2,12 +2,12 @@
 // 6 Core Capabilities + 6 Personality Traits
 
 export interface AgentCapabilities {
-  language: number;      // 언어 능력 (다국어, 이해력)
-  reasoning: number;     // 추론 능력 (논리, 문제 해결)
-  creativity: number;    // 창의성 (창작, 독창성)
-  knowledge: number;     // 지식 (전문성, 학습량)
-  speed: number;         // 속도 (응답 시간, 효율성)
-  reliability: number;   // 신뢰성 (일관성, 정확성)
+  language: number;      // Language ability (multilingual, comprehension)
+  reasoning: number;     // Reasoning ability (logic, problem solving)
+  creativity: number;    // Creativity (originality, innovation)
+  knowledge: number;     // Knowledge (expertise, learning capacity)
+  speed: number;         // Speed (response time, efficiency)
+  reliability: number;   // Reliability (consistency, accuracy)
 }
 
 export interface AgentPersonality {

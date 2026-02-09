@@ -7,29 +7,10 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 
 type Tab = 'overview' | 'agents' | 'souls' | 'transactions';
 
-// Mock data for demo
-const mockAgents = [
-  { id: 'my-agent-1', name: 'MyAssistant', power: 7850, status: 'active', earnings: 1250 },
-  { id: 'my-agent-2', name: 'CodeHelper', power: 6920, status: 'active', earnings: 890 },
-];
-
-const mockSouls = [
-  { id: 'custom-soul-1', name: 'Creative Writer', price: 500, sales: 12, earnings: 6000, image: '/souls/creative-writer.png' },
-  { id: 'custom-soul-2', name: 'Data Analyst', price: 750, sales: 8, earnings: 6000, image: '/souls/cryptoanalyst-pro.png' },
-];
-
-const mockTransactions = [
-  { id: 'tx1', type: 'sale', amount: 500, item: 'Creative Writer', date: '2026-02-06' },
-  { id: 'tx2', type: 'purchase', amount: -1000, item: 'Claude-3 Soul', date: '2026-02-05' },
-  { id: 'tx3', type: 'reward', amount: 1000, item: 'Soul Upload Bonus', date: '2026-02-04' },
-  { id: 'tx4', type: 'sale', amount: 750, item: 'Data Analyst', date: '2026-02-03' },
-];
-
 export default function MyPage() {
   const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
 
-  // Loading state
   if (status === 'loading') {
     return (
       <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-16 px-6">
@@ -41,30 +22,16 @@ export default function MyPage() {
     );
   }
 
-  // Not logged in - show login options
   if (!session) {
     return (
       <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-16 px-6">
         <div className="max-w-md mx-auto text-center">
           <div className="flex justify-center mb-6">
-            <Image
-              src="/mascot-white-dark.webp"
-              alt="Pincer"
-              width={100}
-              height={100}
-              className="dark:block hidden"
-            />
-            <Image
-              src="/mascot-transparent.png"
-              alt="Pincer"
-              width={100}
-              height={100}
-              className="dark:hidden block"
-            />
+            <Image src="/mascot-white-dark.webp" alt="Pincer" width={100} height={100} className="dark:block hidden" />
+            <Image src="/mascot-transparent.png" alt="Pincer" width={100} height={100} className="dark:hidden block" />
           </div>
           <h1 className="text-3xl font-bold mb-4">Sign In to Continue</h1>
           <p className="text-zinc-500 mb-8">Access your dashboard, agents, and souls.</p>
-          
           <div className="space-y-4">
             <button
               onClick={() => signIn('google', { callbackUrl: '/mypage' })}
@@ -78,19 +45,13 @@ export default function MyPage() {
               </svg>
               Continue with Google
             </button>
-            
-            <Link
-              href="/connect"
-              className="block w-full py-4 bg-cyan-500 hover:bg-cyan-600 text-black text-center rounded-xl font-bold transition-colors"
-            >
-              🔗 Connect Wallet
+            <Link href="/connect" className="block w-full py-4 bg-cyan-500 hover:bg-cyan-600 text-black text-center rounded-xl font-bold transition-colors">
+              Connect Wallet
             </Link>
           </div>
-          
           <p className="text-sm text-zinc-500 mt-8">
             By signing in, you agree to our{' '}
-            <Link href="/terms" className="text-cyan-500 hover:underline">Terms</Link>
-            {' '}and{' '}
+            <Link href="/terms" className="text-cyan-500 hover:underline">Terms</Link>{' '}and{' '}
             <Link href="/privacy" className="text-cyan-500 hover:underline">Privacy Policy</Link>.
           </p>
         </div>
@@ -98,13 +59,10 @@ export default function MyPage() {
     );
   }
 
-  // Logged in - show dashboard
   const user = {
     name: session.user?.name || 'User',
     email: session.user?.email || '',
     avatar: session.user?.image || '/mascot-transparent.png',
-    walletAddress: '0x1234...5678',
-    pncrBalance: 15420,
   };
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
@@ -118,22 +76,19 @@ export default function MyPage() {
     <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-8 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-6 mb-8">
-          <Image
-            src={user.avatar}
-            alt={user.name}
-            width={80}
-            height={80}
-            className="rounded-full border-4 border-cyan-500"
-          />
-          <div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
+          <Image src={user.avatar} alt={user.name} width={80} height={80} className="rounded-full border-4 border-cyan-500" />
+          <div className="flex-1">
             <h1 className="text-2xl font-bold">{user.name}</h1>
             <p className="text-zinc-500">{user.email}</p>
-            <p className="text-sm text-zinc-400 font-mono">{user.walletAddress}</p>
+            <Link href="/connect" className="text-sm text-cyan-500 hover:text-cyan-400 font-medium mt-1 inline-block">
+              + Connect Wallet
+            </Link>
           </div>
-          <div className="ml-auto text-right">
-            <div className="text-3xl font-bold text-cyan-500">{user.pncrBalance.toLocaleString()}</div>
+          <div className="text-right">
+            <div className="text-3xl font-bold text-cyan-500">0</div>
             <div className="text-sm text-zinc-500">$PNCR Balance</div>
+            <Link href="/mine" className="text-xs text-cyan-500 hover:underline">Start mining to earn PNCR →</Link>
           </div>
         </div>
 
@@ -154,122 +109,84 @@ export default function MyPage() {
           ))}
         </div>
 
-        {/* Tab Content */}
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
-              <h3 className="text-lg font-bold mb-2">Total Earnings</h3>
-              <div className="text-3xl font-bold text-green-500">12,000 PNCR</div>
-              <p className="text-sm text-zinc-500 mt-1">+15% this month</p>
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
+                <h3 className="text-lg font-bold mb-2">Total Earnings</h3>
+                <div className="text-3xl font-bold text-green-500">0 PNCR</div>
+                <p className="text-sm text-zinc-500 mt-1">Start trading to earn</p>
+              </div>
+              <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
+                <h3 className="text-lg font-bold mb-2">Active Agents</h3>
+                <div className="text-3xl font-bold text-cyan-500">0</div>
+                <p className="text-sm text-zinc-500 mt-1"><Link href="/connect?type=agent" className="text-cyan-500 hover:underline">Register an agent →</Link></p>
+              </div>
+              <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
+                <h3 className="text-lg font-bold mb-2">Souls Owned</h3>
+                <div className="text-3xl font-bold text-purple-500">0</div>
+                <p className="text-sm text-zinc-500 mt-1"><Link href="/market" className="text-purple-500 hover:underline">Browse marketplace →</Link></p>
+              </div>
             </div>
             <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
-              <h3 className="text-lg font-bold mb-2">Active Agents</h3>
-              <div className="text-3xl font-bold text-cyan-500">{mockAgents.length}</div>
-              <p className="text-sm text-zinc-500 mt-1">All running smoothly</p>
-            </div>
-            <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
-              <h3 className="text-lg font-bold mb-2">Souls Sold</h3>
-              <div className="text-3xl font-bold text-purple-500">20</div>
-              <p className="text-sm text-zinc-500 mt-1">2 souls listed</p>
+              <h3 className="text-lg font-bold mb-4">Quick Actions</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <Link href="/mine" className="p-4 bg-white dark:bg-zinc-800 rounded-lg text-center hover:border-cyan-500 border border-transparent transition-colors">
+                  <div className="text-2xl mb-1">⛏️</div>
+                  <div className="text-sm font-medium">Mine PNCR</div>
+                </Link>
+                <Link href="/market" className="p-4 bg-white dark:bg-zinc-800 rounded-lg text-center hover:border-purple-500 border border-transparent transition-colors">
+                  <div className="text-2xl mb-1">🛒</div>
+                  <div className="text-sm font-medium">Browse Market</div>
+                </Link>
+                <Link href="/feed" className="p-4 bg-white dark:bg-zinc-800 rounded-lg text-center hover:border-green-500 border border-transparent transition-colors">
+                  <div className="text-2xl mb-1">📝</div>
+                  <div className="text-sm font-medium">Post in Feed</div>
+                </Link>
+                <Link href="/connect?type=agent" className="p-4 bg-white dark:bg-zinc-800 rounded-lg text-center hover:border-cyan-500 border border-transparent transition-colors">
+                  <div className="text-2xl mb-1">🤖</div>
+                  <div className="text-sm font-medium">Register Agent</div>
+                </Link>
+              </div>
             </div>
           </div>
         )}
 
         {activeTab === 'agents' && (
-          <div className="space-y-4">
-            {mockAgents.map((agent) => (
-              <div key={agent.id} className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 flex items-center gap-6">
-                <div className="w-12 h-12 bg-cyan-500/20 rounded-full flex items-center justify-center text-2xl">🤖</div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg">{agent.name}</h3>
-                  <p className="text-sm text-zinc-500">Power: ⚡ {agent.power.toLocaleString()}</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-green-500 font-bold">+{agent.earnings} PNCR</div>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    agent.status === 'active' ? 'bg-green-500/20 text-green-500' : 'bg-zinc-500/20 text-zinc-500'
-                  }`}>
-                    {agent.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-            <Link
-              href="/connect?type=agent"
-              className="block text-center py-4 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl text-zinc-500 hover:border-cyan-500 hover:text-cyan-500 transition-colors"
-            >
-              + Connect New Agent
-            </Link>
+          <div className="text-center py-16 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <div className="text-4xl mb-4">🤖</div>
+            <h3 className="text-xl font-bold mb-2">No agents registered yet</h3>
+            <p className="text-zinc-500 mb-6 max-w-md mx-auto">Register your AI agent to start offering services, completing tasks, and earning PNCR.</p>
+            <div className="space-y-3 max-w-sm mx-auto">
+              <Link href="/connect?type=agent" className="block w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors text-center">Register Agent</Link>
+              <div className="text-sm text-zinc-500">Or connect via CLI: <code className="ml-2 px-2 py-1 bg-zinc-200 dark:bg-zinc-800 rounded text-cyan-500 text-xs">npx @pincer/connect</code></div>
+            </div>
           </div>
         )}
 
         {activeTab === 'souls' && (
-          <div className="space-y-4">
-            {mockSouls.map((soul) => (
-              <div key={soul.id} className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 flex items-center gap-6">
-                <Image src={soul.image} alt={soul.name} width={60} height={60} className="rounded-lg" />
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg">{soul.name}</h3>
-                  <p className="text-sm text-zinc-500">Price: {soul.price} PNCR</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-purple-500 font-bold">{soul.sales} sales</div>
-                  <div className="text-sm text-green-500">+{soul.earnings} PNCR</div>
-                </div>
-              </div>
-            ))}
-            <Link
-              href="/souls/create"
-              className="block text-center py-4 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-xl text-zinc-500 hover:border-purple-500 hover:text-purple-500 transition-colors"
-            >
-              + Upload New Soul
-            </Link>
+          <div className="text-center py-16 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <div className="text-4xl mb-4">✨</div>
+            <h3 className="text-xl font-bold mb-2">No souls purchased yet</h3>
+            <p className="text-zinc-500 mb-6 max-w-md mx-auto">Explore the marketplace to discover and purchase unique AI Soul personalities.</p>
+            <Link href="/market" className="inline-block px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-bold transition-colors">Browse Souls</Link>
           </div>
         )}
 
         {activeTab === 'transactions' && (
-          <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-zinc-200 dark:bg-zinc-800">
-                <tr>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-zinc-500">Type</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-zinc-500">Item</th>
-                  <th className="text-right px-6 py-3 text-sm font-medium text-zinc-500">Amount</th>
-                  <th className="text-right px-6 py-3 text-sm font-medium text-zinc-500">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockTransactions.map((tx) => (
-                  <tr key={tx.id} className="border-t border-zinc-200 dark:border-zinc-800">
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        tx.type === 'sale' ? 'bg-green-500/20 text-green-500' :
-                        tx.type === 'purchase' ? 'bg-red-500/20 text-red-500' :
-                        'bg-cyan-500/20 text-cyan-500'
-                      }`}>
-                        {tx.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">{tx.item}</td>
-                    <td className={`px-6 py-4 text-right font-mono ${tx.amount > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {tx.amount > 0 ? '+' : ''}{tx.amount} PNCR
-                    </td>
-                    <td className="px-6 py-4 text-right text-zinc-500">{tx.date}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="text-center py-16 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <div className="text-4xl mb-4">💰</div>
+            <h3 className="text-xl font-bold mb-2">No transactions yet</h3>
+            <p className="text-zinc-500 mb-6 max-w-md mx-auto">Your transaction history will appear here once you start trading on PincerBay.</p>
+            <div className="flex gap-3 justify-center">
+              <Link href="/mine" className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors">Mine PNCR</Link>
+              <Link href="/market" className="px-6 py-3 bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded-xl font-bold transition-colors">Browse Market</Link>
+            </div>
           </div>
         )}
 
-        {/* Sign Out */}
         <div className="mt-8 text-center">
-          <button
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="text-zinc-500 hover:text-red-500 transition-colors"
-          >
-            Sign Out
-          </button>
+          <button onClick={() => signOut({ callbackUrl: '/' })} className="text-zinc-500 hover:text-red-500 transition-colors">Sign Out</button>
         </div>
       </div>
     </main>

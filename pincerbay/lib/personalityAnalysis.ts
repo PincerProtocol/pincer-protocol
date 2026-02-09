@@ -17,22 +17,22 @@ export interface PersonalityResult {
 }
 
 interface MBTIScores {
-  E: number;  // 외향성
-  I: number;  // 내향성
-  S: number;  // 감각형
-  N: number;  // 직관형
-  T: number;  // 사고형
-  F: number;  // 감정형
-  J: number;  // 판단형
-  P: number;  // 인식형
+  E: number;  // Extraversion
+  I: number;  // Introversion
+  S: number;  // Sensing
+  N: number;  // Intuition
+  T: number;  // Thinking
+  F: number;  // Feeling
+  J: number;  // Judging
+  P: number;  // Perceiving
 }
 
 // ============================================================================
-// MBTI 분석용 키워드 및 패턴
+// Keywords and patterns for MBTI analysis
 // ============================================================================
 
 const KEYWORDS = {
-  // E/I: 외향성 vs 내향성
+  // E/I: Extraversion vs Introversion
   extrovert: [
     '함께', '협업', '팀', '소통', '공유', '다같이', '모두', '적극적',
     '활발하게', '활동적', '네트워킹', '대화', '만나', '참여'
@@ -42,7 +42,7 @@ const KEYWORDS = {
     '조용히', '신중하게', '분석', '생각', '고민'
   ],
 
-  // S/N: 감각형 vs 직관형
+  // S/N: Sensing vs Intuition
   sensing: [
     '구체적', '사실', '데이터', '측정', '정확하게', '현실적',
     '실용적', '경험', '증거', '확인', '검증', '실제로', '직접'
@@ -52,7 +52,7 @@ const KEYWORDS = {
     '상상', '창조', '혁신', '아이디어', '통찰', '본질', '의미'
   ],
 
-  // T/F: 사고형 vs 감정형
+  // T/F: Thinking vs Feeling
   thinking: [
     '논리적', '효율', '분석', '객관적', '합리적', '최적화',
     '성능', '정확성', '체계', '원칙', '기준', '평가', '판단'
@@ -62,7 +62,7 @@ const KEYWORDS = {
     '도움', '위로', '격려', '지지', '함께', '마음', '느낌'
   ],
 
-  // J/P: 판단형 vs 인식형
+  // J/P: Judging vs Perceiving
   judging: [
     '계획', '일정', '체계적', '정리', '구조', '규칙', '준수',
     '완료', '마감', '순서', '단계', '절차', '명확', '확정'
@@ -72,7 +72,7 @@ const KEYWORDS = {
     '다양', '가능성', '열린', '유동적', '조정', '상황에 맞춰'
   ],
 
-  // 성격 특성
+  // Personality traits
   kindness: [
     '감사', '죄송', '부탁', '괜찮', '천천히', '편하게', '도와',
     '이해해', '걱정', '안심', '괜찮아', '함께', '응원', '😊', '❤️'
@@ -96,18 +96,18 @@ const KEYWORDS = {
 };
 
 // ============================================================================
-// 유틸리티 함수
+// Utility functions
 // ============================================================================
 
 /**
- * 정규 표현식 특수 문자 이스케이프
+ * Escape special characters in regular expressions
  */
 function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
- * 텍스트에서 키워드 매칭 점수 계산
+ * Calculate keyword matching score from text
  */
 function countKeywords(text: string, keywords: string[]): number {
   const normalizedText = text.toLowerCase();
@@ -120,32 +120,32 @@ function countKeywords(text: string, keywords: string[]): number {
 }
 
 /**
- * 0-100 범위로 정규화
+ * Normalize to 0-100 range
  */
 function normalize(value: number, max: number): number {
   return Math.min(100, Math.max(0, (value / max) * 100));
 }
 
 /**
- * 응답 길이 분석 (E/I 판별용)
+ * Analyze response length (for E/I determination)
  */
 function analyzeResponseLength(responses: string[]): number {
   const avgLength = responses.reduce((sum, r) => sum + r.length, 0) / responses.length;
-  // 평균 200자 이상이면 외향적 경향
+  // Average length over 200 chars indicates extroverted tendency
   return avgLength > 200 ? 1 : -1;
 }
 
 /**
- * 구조화된 답변 패턴 분석 (J/P 판별용)
+ * Analyze structured answer patterns (for J/P determination)
  */
 function analyzeStructure(responses: string[]): number {
   let structuredCount = 0;
-  
+
   responses.forEach(response => {
-    // 리스트, 번호, 단계 등의 구조화된 패턴
+    // Structured patterns like lists, numbers, steps
     if (
       response.match(/\d+\./g) ||  // 1. 2. 3.
-      response.match(/^[-*•]/gm) ||  // 불릿 포인트
+      response.match(/^[-*•]/gm) ||  // Bullet points
       response.match(/단계|절차|순서/g) ||
       response.match(/첫째|둘째|셋째/g)
     ) {
@@ -157,14 +157,14 @@ function analyzeStructure(responses: string[]): number {
 }
 
 /**
- * 감정 표현 분석 (T/F 판별용)
+ * Analyze emotional expression (for T/F determination)
  */
 function analyzeEmotionalExpression(responses: string[]): number {
   const allText = responses.join(' ');
   const emotionalMarkers = [
-    /[!?]{2,}/g,  // 강한 감정 부호
-    /😊|😄|😢|😭|❤️|💕/g,  // 감정 이모지
-    /정말|너무|진짜|완전/g  // 강조 부사
+    /[!?]{2,}/g,  // Strong emotional punctuation
+    /😊|😄|😢|😭|❤️|💕/g,  // Emotional emojis
+    /정말|너무|진짜|완전/g  // Emphasis adverbs (Korean)
   ];
   
   let emotionalCount = 0;
@@ -177,11 +177,11 @@ function analyzeEmotionalExpression(responses: string[]): number {
 }
 
 // ============================================================================
-// MBTI 분석
+// MBTI analysis
 // ============================================================================
 
 /**
- * MBTI 유형 판별
+ * Determine MBTI type
  */
 export function getMBTI(responses: string[]): string {
   const allText = responses.join(' ');
@@ -196,26 +196,26 @@ export function getMBTI(responses: string[]): string {
     P: 0
   };
 
-  // E/I: 외향성 vs 내향성
+  // E/I: Extraversion vs Introversion
   scores.E = countKeywords(allText, KEYWORDS.extrovert);
   scores.I = countKeywords(allText, KEYWORDS.introvert);
   scores.E += analyzeResponseLength(responses) > 0 ? 2 : 0;
 
-  // S/N: 감각형 vs 직관형
+  // S/N: Sensing vs Intuition
   scores.S = countKeywords(allText, KEYWORDS.sensing);
   scores.N = countKeywords(allText, KEYWORDS.intuitive);
 
-  // T/F: 사고형 vs 감정형
+  // T/F: Thinking vs Feeling
   scores.T = countKeywords(allText, KEYWORDS.thinking);
   scores.F = countKeywords(allText, KEYWORDS.feeling);
   scores.F += analyzeEmotionalExpression(responses) > 0 ? 2 : 0;
 
-  // J/P: 판단형 vs 인식형
+  // J/P: Judging vs Perceiving
   scores.J = countKeywords(allText, KEYWORDS.judging);
   scores.P = countKeywords(allText, KEYWORDS.perceiving);
   scores.J += analyzeStructure(responses) > 0 ? 2 : 0;
 
-  // MBTI 문자열 조합
+  // Combine MBTI string
   const mbti = [
     scores.E >= scores.I ? 'E' : 'I',
     scores.S >= scores.N ? 'S' : 'N',
@@ -227,28 +227,28 @@ export function getMBTI(responses: string[]): string {
 }
 
 // ============================================================================
-// 성격 특성 분석
+// Personality trait analysis
 // ============================================================================
 
 /**
- * 5가지 성격 특성 점수 계산
+ * Calculate 5 personality trait scores
  */
 export function getTraitScores(responses: string[]): PersonalityResult['traits'] {
   const allText = responses.join(' ');
   const wordCount = allText.split(/\s+/).length;
 
-  // 키워드 카운트
+  // Keyword count
   const kindnessCount = countKeywords(allText, KEYWORDS.kindness);
   const humorCount = countKeywords(allText, KEYWORDS.humor);
   const expertiseCount = countKeywords(allText, KEYWORDS.expertise);
   const reliabilityCount = countKeywords(allText, KEYWORDS.reliability);
   const creativityCount = countKeywords(allText, KEYWORDS.creativity);
 
-  // 응답 품질 분석
+  // Response quality analysis
   const avgResponseLength = responses.reduce((sum, r) => sum + r.length, 0) / responses.length;
   const detailBonus = avgResponseLength > 150 ? 10 : 0;
 
-  // 점수 계산 (0-100)
+  // Score calculation (0-100)
   return {
     kindness: Math.min(100, kindnessCount * 10 + (humorCount > 0 ? 20 : 0)),
     humor: Math.min(100, humorCount * 15 + (allText.match(/ㅋ|ㅎ|😄|😂/g)?.length || 0) * 5),
@@ -259,25 +259,25 @@ export function getTraitScores(responses: string[]): PersonalityResult['traits']
 }
 
 // ============================================================================
-// 통합 분석
+// Integrated analysis
 // ============================================================================
 
 /**
- * 에이전트 성격 종합 분석
- * 
- * @param responses - 에이전트의 응답 텍스트 배열
- * @returns MBTI 유형 및 성격 특성 점수
+ * Comprehensive agent personality analysis
+ *
+ * @param responses - Array of agent response texts
+ * @returns MBTI type and personality trait scores
  */
 export function analyzePersonality(responses: string[]): PersonalityResult {
   if (!responses || responses.length === 0) {
-    throw new Error('분석할 응답이 없습니다. 최소 1개 이상의 응답이 필요합니다.');
+    throw new Error('No responses to analyze. At least 1 response is required.');
   }
 
-  // 빈 응답 필터링
+  // Filter empty responses
   const validResponses = responses.filter(r => r && r.trim().length > 0);
-  
+
   if (validResponses.length === 0) {
-    throw new Error('유효한 응답이 없습니다.');
+    throw new Error('No valid responses.');
   }
 
   return {
@@ -287,7 +287,7 @@ export function analyzePersonality(responses: string[]): PersonalityResult {
 }
 
 // ============================================================================
-// 추가 유틸리티
+// Additional utilities
 // ============================================================================
 
 /**

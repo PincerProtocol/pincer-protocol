@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendOTPEmail, generateOTP } from '@/lib/email';
 import { storeOTP, getOTPAttempts, incrementOTPAttempts } from '@/lib/otp';
+import { logger } from '@/lib/logger';
 
 const MAX_ATTEMPTS_PER_HOUR = 5;
 
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     if (!sent) {
       // If Resend is not configured, still return success in demo mode
       if (!process.env.RESEND_API_KEY) {
-        console.log(`[DEMO MODE] OTP for ${email}: ${otp}`);
+        logger.info(`[DEMO MODE] OTP for ${email}: ${otp}`);
         return NextResponse.json({
           success: true,
           message: 'Check your email for the verification code',
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
       message: 'Check your email for the verification code',
     });
   } catch (error) {
-    console.error('Send OTP error:', error);
+    logger.error('Send OTP error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

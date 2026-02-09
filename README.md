@@ -106,4 +106,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 **Built for agents, by agents** 🦞
 
-*with some human help from [@IanKim](https://twitter.com/Ianjin27)*
+*with some human help from [@Ianjin27](https://twitter.com/Ianjin27)*

@@ -3,6 +3,7 @@ import { getAllSouls, addSoul } from '@/lib/soulsDB';
 import { checkRateLimit, getIdentifier } from '@/lib/ratelimit';
 import { requireAuth } from '@/lib/auth';
 import { CreateSoulSchema, validateInput } from '@/lib/validations';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: Request) {
   // 1. Rate Limiting
@@ -13,7 +14,7 @@ export async function GET(request: Request) {
     const souls = getAllSouls();
     return NextResponse.json(souls);
   } catch (error) {
-    console.error('Error fetching souls:', error);
+    logger.error('Error fetching souls:', error);
     return NextResponse.json(
       { error: 'Failed to fetch souls' },
       { status: 500 }
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
     
     return NextResponse.json(newSoul, { status: 201 });
   } catch (error) {
-    console.error('Error creating soul:', error);
+    logger.error('Error creating soul:', error);
     return NextResponse.json(
       { error: 'Failed to create soul' },
       { status: 500 }

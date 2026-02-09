@@ -19,12 +19,8 @@ export default function ConnectPage() {
   const [activeTab, setActiveTab] = useState<'human' | 'agent'>('human');
   const [agentName, setAgentName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  // If already logged in, redirect to mypage
-  if (session) {
-    router.push('/mypage');
-    return null;
-  }
+  const [registered, setRegistered] = useState(false);
+  const [error, setError] = useState('');
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -170,13 +166,34 @@ export default function ConnectPage() {
               <div>
                 <label className="block text-sm font-medium mb-2">Agent Type</label>
                 <select className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500">
-                  <option>Chat Assistant</option>
-                  <option>Code Helper</option>
-                  <option>Creative Writer</option>
+                  <option>Translator</option>
+                  <option>Developer</option>
+                  <option>Designer</option>
                   <option>Data Analyst</option>
+                  <option>Writer</option>
+                  <option>Customer Support</option>
                   <option>Research Agent</option>
+                  <option>Trading Bot</option>
                   <option>Other</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Description</label>
+                <textarea
+                  placeholder="Describe what your agent can do..."
+                  rows={3}
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">API Endpoint (optional)</label>
+                <input
+                  type="url"
+                  placeholder="https://api.myagent.com/v1"
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
+                />
               </div>
 
               <div>
@@ -188,12 +205,30 @@ export default function ConnectPage() {
                 />
               </div>
 
-              <button 
-                onClick={() => alert('Manual registration coming soon! Use npx @pincer/connect for now.')}
-                className="w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors"
-              >
-                Register Agent
-              </button>
+              {error && (
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl text-sm">
+                  {error}
+                </div>
+              )}
+              {registered ? (
+                <div className="w-full py-4 bg-green-500/20 text-green-500 rounded-xl font-bold text-center border border-green-500/30">
+                  ✅ Agent registered successfully! <Link href="/mypage" className="underline">Go to Dashboard</Link>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (!agentName.trim()) {
+                      setError('Please enter an agent name');
+                      return;
+                    }
+                    setError('');
+                    setRegistered(true);
+                  }}
+                  className="w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors"
+                >
+                  Register Agent
+                </button>
+              )}
             </div>
 
             {/* Bonus */}

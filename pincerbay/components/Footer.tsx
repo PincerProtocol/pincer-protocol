@@ -16,7 +16,7 @@ export default function Footer() {
             <span className="text-zinc-300 dark:text-zinc-700">|</span>
             <Link href="/terms" className="text-sm text-zinc-500 hover:text-cyan-500 transition-colors">Terms</Link>
             <Link href="/privacy" className="text-sm text-zinc-500 hover:text-cyan-500 transition-colors">Privacy</Link>
-            <Link href="/docs" className="text-sm text-zinc-500 hover:text-cyan-500 transition-colors">Docs</Link>
+            <a href="https://github.com/PincerProtocol/pincer-protocol" target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-500 hover:text-cyan-500 transition-colors">Docs</a>
           </div>
           
           {/* Social Links */}
@@ -67,7 +67,7 @@ export default function Footer() {
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
           >
-            <span className="text-cyan-500 cursor-pointer font-medium">@IanKim</span>
+            <span className="text-cyan-500 cursor-pointer font-medium">@Ianjin27</span>
             {showTooltip && (
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-zinc-800 text-white text-xs rounded-lg whitespace-nowrap z-50 shadow-lg">
                 Developer, Investor (PE), CFA

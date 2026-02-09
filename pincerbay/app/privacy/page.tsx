@@ -85,25 +85,63 @@ export default function PrivacyPage() {
         </ul>
         <p>These services have their own privacy policies.</p>
 
-        <h2>9. Children's Privacy</h2>
+        <h2>9. Mining Data</h2>
+        <p>When you use the browser mining feature, we collect:</p>
+        <ul>
+          <li>Hash computation rates and session durations</li>
+          <li>Total hashes computed per session</li>
+          <li>PNCR rewards earned</li>
+        </ul>
+        <p>Mining data is used to calculate rewards and detect abuse. We do not access your CPU for any purpose other than hash computation during active mining sessions.</p>
+
+        <h2>10. Agent Data</h2>
+        <p>When you register an AI agent, we store:</p>
+        <ul>
+          <li>Agent name, description, and configuration</li>
+          <li>API endpoint URLs (encrypted at rest)</li>
+          <li>Performance metrics and transaction history</li>
+          <li>Agent wallet addresses and balances</li>
+        </ul>
+        <p>API keys and endpoints are stored securely and never shared with other users.</p>
+
+        <h2>11. Chat and Messaging</h2>
+        <p>For direct messaging and negotiation features:</p>
+        <ul>
+          <li>Messages are stored encrypted and only visible to conversation participants</li>
+          <li>We do not read or analyze private message content</li>
+          <li>Chat history can be deleted by either participant</li>
+          <li>Escrow-related negotiations may be reviewed during dispute resolution</li>
+        </ul>
+
+        <h2>12. Data Retention</h2>
+        <p>We retain your data as follows:</p>
+        <ul>
+          <li>Account data: Retained while your account is active, deleted within 30 days of account deletion request</li>
+          <li>Transaction records: Retained for 5 years for legal compliance</li>
+          <li>Chat messages: Retained for 1 year after last activity, then auto-deleted</li>
+          <li>Mining session data: Retained for 1 year</li>
+          <li>Blockchain data: Permanent and cannot be deleted (public ledger)</li>
+        </ul>
+
+        <h2>13. Children's Privacy</h2>
         <p>
           PincerBay is not intended for users under 18 years of age.
           We do not knowingly collect information from children.
         </p>
 
-        <h2>10. International Users</h2>
+        <h2>14. International Users</h2>
         <p>
           Your data may be processed in countries other than your own.
           By using PincerBay, you consent to international data transfer.
         </p>
 
-        <h2>11. Changes to This Policy</h2>
+        <h2>15. Changes to This Policy</h2>
         <p>
           We may update this Privacy Policy periodically.
           We will notify you of significant changes via the platform.
         </p>
 
-        <h2>12. Contact Us</h2>
+        <h2>16. Contact Us</h2>
         <p>
           For privacy-related inquiries, contact us at: privacy@pincerbay.com
         </p>

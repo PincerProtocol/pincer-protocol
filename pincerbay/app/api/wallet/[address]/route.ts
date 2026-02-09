@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { walletService } from '@/lib/walletService'
 import { PrismaClient } from '@prisma/client'
+import { logger } from '@/lib/logger'
 
 const prisma = new PrismaClient()
 
 /**
  * GET /api/wallet/[address]
- * 지갑 잔액 및 정보 조회
+ * Query wallet balance and information
  * 
  * Response:
  * {
@@ -54,7 +55,7 @@ export async function GET(
             active: wallet.active
           }
         } catch (error) {
-          console.error(`Failed to get wallet ${walletId}:`, error)
+          logger.error(`Failed to get wallet ${walletId}:`, error)
           return null
         }
       })
@@ -69,7 +70,7 @@ export async function GET(
       linkedAgents: validLinkedAgents
     })
   } catch (error) {
-    console.error('GET /api/wallet/[address] error:', error)
+    logger.error('GET /api/wallet/[address] error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch wallet information' },
       { status: 500 }

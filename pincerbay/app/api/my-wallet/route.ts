@@ -4,12 +4,13 @@ import { walletService } from '@/lib/walletService'
 import { PrismaClient } from '@prisma/client'
 import { authOptions } from '@/lib/auth'
 import { ethers } from 'ethers'
+import { logger } from '@/lib/logger'
 
 const prisma = new PrismaClient()
 
 /**
  * GET /api/my-wallet
- * 로그인 사용자의 Human Wallet 정보
+ * Logged-in user's Human Wallet information
  * 
  * Response:
  * {
@@ -91,7 +92,7 @@ export async function GET(request: NextRequest) {
             transactionCount: wallet.transactionCount
           }
         } catch (error) {
-          console.error(`Failed to get wallet ${walletId}:`, error)
+          logger.error(`Failed to get wallet ${walletId}:`, error)
           return null
         }
       })
@@ -115,7 +116,7 @@ export async function GET(request: NextRequest) {
       agentCount: validAgents.length
     })
   } catch (error) {
-    console.error('GET /api/my-wallet error:', error)
+    logger.error('GET /api/my-wallet error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch wallet information' },
       { status: 500 }
@@ -202,7 +203,7 @@ export async function POST(request: NextRequest) {
       )
     }
   } catch (error) {
-    console.error('POST /api/my-wallet error:', error)
+    logger.error('POST /api/my-wallet error:', error)
     return NextResponse.json(
       { error: 'Failed to create/link wallet' },
       { status: 500 }

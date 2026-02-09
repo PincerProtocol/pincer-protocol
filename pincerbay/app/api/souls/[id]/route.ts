@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSoulById, getSoulContent } from '@/lib/soulsDB';
 import { checkRateLimit, getIdentifier } from '@/lib/ratelimit';
 import { IdSchema, validateInput } from '@/lib/validations';
+import { logger } from '@/lib/logger';
 
 export async function GET(
   request: Request,
@@ -34,7 +35,7 @@ export async function GET(
     
     return NextResponse.json(soul);
   } catch (error) {
-    console.error('Error fetching soul:', error);
+    logger.error('Error fetching soul:', error);
     return NextResponse.json(
       { error: 'Failed to fetch soul' },
       { status: 500 }

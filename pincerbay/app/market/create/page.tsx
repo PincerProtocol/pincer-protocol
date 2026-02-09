@@ -31,10 +31,10 @@ export default function CreateSoulPage() {
           <p className="text-cyan-500 font-bold mb-8">+1000 PNCR rewarded!</p>
           <div className="flex gap-4 justify-center">
             <Link
-              href="/souls"
+              href="/market"
               className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-colors"
             >
-              View All Souls
+              View Marketplace
             </Link>
             <Link
               href="/mypage"
@@ -178,8 +178,8 @@ Describe your agent's personality...
 
         {/* Back */}
         <div className="text-center mt-8">
-          <Link href="/souls" className="text-zinc-500 hover:text-purple-500 transition-colors">
-            ← Back to Souls
+          <Link href="/market" className="text-zinc-500 hover:text-purple-500 transition-colors">
+            ← Back to Market
           </Link>
         </div>
       </div>

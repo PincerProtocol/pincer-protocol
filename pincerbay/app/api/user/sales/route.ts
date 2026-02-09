@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 export async function GET() {
   try {
@@ -27,7 +28,7 @@ export async function GET() {
 
     return NextResponse.json(sales);
   } catch (error) {
-    console.error('Sales API error:', error);
+    logger.error('Sales API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

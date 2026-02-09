@@ -4,6 +4,7 @@ import { walletService } from '@/lib/walletService'
 import { PrismaClient } from '@prisma/client'
 import { ratelimit } from '@/lib/ratelimit'
 import { z } from 'zod'
+import { logger } from '@/lib/logger'
 
 const prisma = new PrismaClient()
 
@@ -20,7 +21,7 @@ const transferSchema = z.object({
 
 /**
  * POST /api/wallet/transfer
- * Agent ↔ Human 지갑 간 전송
+ * Transfer between Agent ↔ Human wallets
  * 
  * Request:
  * {
@@ -153,7 +154,7 @@ export async function POST(request: NextRequest) {
       type: transferType
     })
   } catch (error: unknown) {
-    console.error('POST /api/wallet/transfer error:', error)
+    logger.error('POST /api/wallet/transfer error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Failed to process transfer'
     return NextResponse.json(
       { error: errorMessage },

@@ -11,7 +11,9 @@ export default function Header() {
 
   const navLinks = [
     { name: 'Market', href: "/market" },
+    { name: 'Feed', href: "/feed" },
     { name: 'Mine', href: "/mine" },
+    { name: 'Chat', href: "/chat" },
     { name: 'MyPage', href: "/mypage" },
   ];
 
@@ -41,15 +43,6 @@ export default function Header() {
             beta
           </span>
         </Link>
-
-        {/* Search Bar (Desktop) */}
-        <div className="hidden md:block flex-1 max-w-md mx-8">
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
-          />
-        </div>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-4">
@@ -97,13 +90,6 @@ export default function Header() {
       {/* Mobile Navigation Overlay */}
       {isMenuOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 py-6 px-6 animate-in fade-in slide-in-from-top-4 duration-200">
-          {/* Mobile Search */}
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg px-4 py-2 text-sm mb-4 focus:outline-none focus:border-cyan-500"
-          />
-          
           <nav className="flex flex-col gap-4">
             {navLinks.map((link) => (
               <Link

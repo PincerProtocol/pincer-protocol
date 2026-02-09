@@ -26,6 +26,8 @@ export default function SoulDetailPage() {
   const [purchasing, setPurchasing] = useState(false);
   const [wallet, setWallet] = useState("");
   const [purchased, setPurchased] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     const fetchSoul = async () => {
@@ -51,12 +53,14 @@ export default function SoulDetailPage() {
 
   const handlePurchase = async () => {
     if (!wallet) {
-      alert("Please enter your wallet address");
+      setError("Please enter your wallet address");
       return;
     }
 
     if (!soul) return;
 
+    setError("");
+    setSuccess("");
     setPurchasing(true);
     try {
       const res = await fetch(`/api/souls/${soul.id}/purchase`, {
@@ -70,18 +74,18 @@ export default function SoulDetailPage() {
       const data = await res.json();
 
       if (res.ok) {
-        alert(data.message || "Purchase successful!");
+        setSuccess(data.message || "Purchase successful!");
         setPurchased(true);
-        
+
         // Auto-download
         const downloadUrl = `/api/souls/${soul.id}/download?wallet=${wallet}`;
         window.open(downloadUrl, '_blank');
       } else {
-        alert(data.error || "Purchase failed");
+        setError(data.error || "Purchase failed");
       }
     } catch (error) {
       console.error("Error purchasing soul:", error);
-      alert("Failed to process purchase");
+      setError("Failed to process purchase");
     } finally {
       setPurchasing(false);
     }
@@ -209,6 +213,20 @@ export default function SoulDetailPage() {
                   className="w-full px-4 py-3 rounded-lg border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-black dark:text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 transition-colors"
                 />
               </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 text-red-500 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
+              {/* Success Message */}
+              {success && (
+                <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 text-green-500 rounded-lg text-sm">
+                  {success}
+                </div>
+              )}
 
               {/* Action Buttons */}
               {!purchased ? (

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAgentById, generateMockAgentPower } from '@/lib/agentPower';
+import { logger } from '@/lib/logger';
 
 export async function GET(
   request: NextRequest,
@@ -41,7 +42,7 @@ export async function GET(
     });
 
   } catch (error) {
-    console.error('Error in /api/agent/[id]/power:', error);
+    logger.error('Error in /api/agent/[id]/power:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -68,7 +69,7 @@ export async function POST(
     });
 
   } catch (error) {
-    console.error('Error updating agent power:', error);
+    logger.error('Error updating agent power:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

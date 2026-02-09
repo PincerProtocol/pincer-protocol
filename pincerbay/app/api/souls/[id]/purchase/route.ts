@@ -3,6 +3,7 @@ import { getSoulById, recordPurchase, hasPurchased } from '@/lib/soulsDB';
 import { requireAuth } from '@/lib/auth';
 import { checkRateLimit, getIdentifier } from '@/lib/ratelimit';
 import { validateInput, PurchaseSoulSchema } from '@/lib/validations';
+import { logger } from '@/lib/logger';
 
 export async function POST(
   request: NextRequest,
@@ -72,7 +73,7 @@ export async function POST(
     });
     
   } catch (error) {
-    console.error('Purchase error:', error);
+    logger.error('Purchase error:', error);
     return NextResponse.json(
       { error: 'Failed to process purchase' },
       { status: 500 }
