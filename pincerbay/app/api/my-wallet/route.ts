@@ -78,12 +78,13 @@ export async function GET(request: NextRequest) {
           
           // Get agent metadata from database
           const agentWallet = await prisma.agentWallet.findFirst({
-            where: { agentId: wallet.agentId }
+            where: { agentId: wallet.agentId },
+            include: { agent: true }
           })
           
           return {
             agentId: wallet.agentId,
-            agentName: agentWallet?.agentName || wallet.agentId,
+            agentName: agentWallet?.agent?.name || wallet.agentId,
             walletId,
             balance: wallet.balance,
             dailyLimit: wallet.dailyLimit,

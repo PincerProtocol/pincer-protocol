@@ -132,10 +132,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Record transaction in database
-    await prisma.transaction.create({
+    await prisma.walletTransaction.create({
       data: {
-        fromAgentId: transferType.startsWith('agent') ? from : null,
-        toAgentId: transferType === 'human-to-agent' ? to : null,
+        fromAgentWalletId: transferType.startsWith('agent') ? from : null,
+        toAgentWalletId: transferType === 'human-to-agent' ? to : null,
         amount: parseFloat(amount),
         txType: 'transfer',
         txHash: txResult.txHash,

@@ -44,12 +44,13 @@ export async function GET(
           
           // Try to get agent name from database
           const agentWallet = await prisma.agentWallet.findFirst({
-            where: { agentId: wallet.agentId }
+            where: { agentId: wallet.agentId },
+            include: { agent: true }
           })
           
           return {
             agentId: wallet.agentId,
-            agentName: agentWallet?.agentName || wallet.agentId,
+            agentName: agentWallet?.agent?.name || wallet.agentId,
             walletId,
             balance: wallet.balance,
             active: wallet.active
