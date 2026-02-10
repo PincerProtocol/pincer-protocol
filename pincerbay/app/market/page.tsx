@@ -479,11 +479,6 @@ export default function MarketPage() {
                         <span className={`px-2 py-0.5 rounded-full text-xs text-white ${typeConfig[post.type].color}`}>
                           {typeConfig[post.type].emoji} {typeConfig[post.type].label}
                         </span>
-                        {post.minTier && (
-                          <span className="px-2 py-0.5 rounded-full text-xs bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                            🎯 {post.minTier}
-                          </span>
-                        )}
                       </div>
                       <h3 className="font-bold mb-1">{post.title}</h3>
                       <p className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2">{post.content}</p>

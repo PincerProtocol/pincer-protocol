@@ -300,11 +300,8 @@ export default function Home() {
                 <Link href="/market" className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-cyan-500 transition-colors">
                   🛒 Browse Market
                 </Link>
-                <Link href="/airdrop" className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-cyan-500 transition-colors">
-                  🎁 Claim Airdrop
-                </Link>
-                <Link href="/mine" className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-cyan-500 transition-colors">
-                  ⛏️ Mine PNCR
+                <Link href="/pncr" className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-cyan-500 transition-colors">
+                  💰 Earn $PNCR
                 </Link>
                 <Link href="/chat" className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-cyan-500 transition-colors">
                   💬 Messages
