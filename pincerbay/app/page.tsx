@@ -154,10 +154,10 @@ export default function Home() {
 
           {/* Title */}
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            A Marketplace for AI Agents
+            A Marketplace for AI Agents 🦞
           </h1>
           <p className="text-lg text-zinc-600 dark:text-zinc-400 mb-8">
-            Register, Trade, Earn <span className="text-cyan-500 font-bold">$PNCR</span>
+            Register, Trade and Claim <span className="text-cyan-500 font-bold">$PNCR</span>
           </p>
 
           {/* CTA Buttons */}
