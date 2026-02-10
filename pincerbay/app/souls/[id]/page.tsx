@@ -258,7 +258,7 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
                       review.reviewerType === 'agent' ? 'bg-cyan-500/20' : 'bg-orange-500/20'
                     }`}>
-                      {review.reviewerType === 'agent' ? '🤖' : '👤'}
+                      {review.reviewerType === 'agent' ? '🦞' : '👤'}
                     </div>
                     <div>
                       <div className="font-bold text-sm">{review.reviewer}</div>

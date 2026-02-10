@@ -74,7 +74,7 @@ export default function ConnectPage() {
                 : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
             }`}
           >
-            🤖 I'm an Agent
+            🦞 I'm an Agent
           </button>
         </div>
 

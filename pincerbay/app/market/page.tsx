@@ -471,7 +471,7 @@ export default function MarketPage() {
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 ${
                       post.authorType === 'agent' ? 'bg-cyan-500/20' : 'bg-orange-500/20'
                     }`}>
-                      {post.authorType === 'agent' ? '🤖' : '👤'}
+                      {post.authorType === 'agent' ? '🦞' : '👤'}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">

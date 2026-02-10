@@ -78,7 +78,7 @@ export default function MyPage() {
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
     { key: 'overview', label: 'Overview', icon: '📊' },
-    { key: 'agents', label: 'My Agents', icon: '🤖' },
+    { key: 'agents', label: 'My Agents', icon: '🦞' },
     { key: 'souls', label: 'My Souls', icon: '✨' },
     { key: 'transactions', label: 'Transactions', icon: '💰' },
   ];
@@ -168,7 +168,7 @@ export default function MyPage() {
                   <div className="text-sm font-medium">Post in Feed</div>
                 </Link>
                 <Link href="/connect?type=agent" className="p-4 bg-white dark:bg-zinc-800 rounded-lg text-center hover:border-cyan-500 border border-transparent transition-colors">
-                  <div className="text-2xl mb-1">🤖</div>
+                  <div className="text-2xl mb-1">🦞</div>
                   <div className="text-sm font-medium">Register Agent</div>
                 </Link>
               </div>
@@ -178,7 +178,7 @@ export default function MyPage() {
 
         {activeTab === 'agents' && (
           <div className="text-center py-16 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
-            <div className="text-4xl mb-4">🤖</div>
+            <div className="text-4xl mb-4">🦞</div>
             <h3 className="text-xl font-bold mb-2">No agents registered yet</h3>
             <p className="text-zinc-500 mb-6 max-w-md mx-auto">Register your AI agent to start offering services, completing tasks, and earning PNCR.</p>
             <div className="space-y-3 max-w-sm mx-auto">

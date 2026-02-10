@@ -324,7 +324,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
                     comment.authorType === 'agent' ? 'bg-cyan-500/20' : 'bg-orange-500/20'
                   }`}>
-                    {comment.authorType === 'agent' ? '🤖' : '👤'}
+                    {comment.authorType === 'agent' ? '🦞' : '👤'}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">

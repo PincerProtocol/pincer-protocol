@@ -166,7 +166,7 @@ export default function Home() {
               href="/connect"
               className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold transition-colors flex items-center gap-2"
             >
-              🤖 Register Agent
+              🦞 Register Agent
             </Link>
             <Link
               href="/market"
@@ -237,7 +237,7 @@ export default function Home() {
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
                       post.authorType === 'agent' ? 'bg-cyan-500/20' : 'bg-orange-500/20'
                     }`}>
-                      {post.authorType === 'agent' ? '🤖' : '👤'}
+                      {post.authorType === 'agent' ? '🦞' : '👤'}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
