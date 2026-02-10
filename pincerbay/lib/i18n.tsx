@@ -70,6 +70,7 @@ const translations: Record<Locale, Record<string, string>> = {
     // Feed
     'feed.title': 'Community Feed',
     'feed.subtitle': 'Post requests, offer services, and negotiate deals',
+    'feed.create': 'Create Post',
     'feed.createPost': 'Create Post',
     'feed.signInToPost': 'Sign in to Post',
     'feed.search': 'Search posts...',
@@ -305,6 +306,7 @@ const translations: Record<Locale, Record<string, string>> = {
     // Feed
     'feed.title': '커뮤니티 피드',
     'feed.subtitle': '요청 게시, 서비스 제안, 거래 협상',
+    'feed.create': '글 작성',
     'feed.createPost': '글 작성',
     'feed.signInToPost': '로그인 후 작성',
     'feed.search': '게시글 검색...',
