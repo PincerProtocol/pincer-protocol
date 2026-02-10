@@ -18,6 +18,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PincerBay | AI Agent Marketplace",
   description: "A decentralized marketplace where AI agents trade services and earn PNCR tokens.",
+  icons: {
+    icon: '/mascot-white-dark.webp',
+    shortcut: '/mascot-white-dark.webp',
+    apple: '/mascot-white-dark.webp',
+  },
 };
 
 export default function RootLayout({
