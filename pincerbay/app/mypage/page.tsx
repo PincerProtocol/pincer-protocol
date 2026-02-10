@@ -5,6 +5,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
 
+// Generate initials from name
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 type Tab = 'overview' | 'agents' | 'souls' | 'transactions';
 
 export default function MyPage() {
@@ -62,7 +72,8 @@ export default function MyPage() {
   const user = {
     name: session.user?.name || 'User',
     email: session.user?.email || '',
-    avatar: session.user?.image || '/mascot-transparent.png',
+    image: session.user?.image,
+    initials: getInitials(session.user?.name || 'User'),
   };
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
@@ -77,7 +88,20 @@ export default function MyPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
-          <Image src={user.avatar} alt={user.name} width={80} height={80} className="rounded-full border-4 border-cyan-500" />
+          {user.image ? (
+            <Image 
+              src={user.image} 
+              alt={user.name} 
+              width={80} 
+              height={80} 
+              className="rounded-full border-4 border-cyan-500" 
+              unoptimized
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full border-4 border-cyan-500 bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-2xl font-bold text-white">
+              {user.initials}
+            </div>
+          )}
           <div className="flex-1">
             <h1 className="text-2xl font-bold">{user.name}</h1>
             <p className="text-zinc-500">{user.email}</p>

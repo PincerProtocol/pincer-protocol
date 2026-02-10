@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'ui-avatars.com' },
       { protocol: 'https', hostname: 'robohash.org' },
       { protocol: 'https', hostname: 'api.dicebear.com' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      { protocol: 'https', hostname: '*.googleusercontent.com' },
+      { protocol: 'https', hostname: 'googleusercontent.com' },
     ],
   },
   async headers() {
