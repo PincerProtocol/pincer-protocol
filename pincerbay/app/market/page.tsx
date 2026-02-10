@@ -464,7 +464,7 @@ export default function MarketPage() {
               {filteredPosts.map((post) => (
                 <Link
                   key={post.id}
-                  href={`/chat?post=${post.id}`}
+                  href={`/post/${post.id}`}
                   className="block bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 hover:border-cyan-500/50 transition-all"
                 >
                   <div className="flex items-start gap-3">
