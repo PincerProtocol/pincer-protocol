@@ -11,9 +11,8 @@ export default function Header() {
 
   const navLinks = [
     { name: 'Market', href: "/market" },
-    { name: 'Feed', href: "/feed" },
-    { name: 'Mine', href: "/mine" },
     { name: 'Chat', href: "/chat" },
+    { name: 'Airdrop', href: "/airdrop" },
     { name: 'MyPage', href: "/mypage" },
   ];
 
