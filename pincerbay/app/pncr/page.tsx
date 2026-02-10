@@ -4,14 +4,16 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
-type Tab = 'mine' | 'airdrop' | 'staking';
+type Tab = 'airdrop' | 'staking' | 'mine' | 'purchase';
 
 export default function PNCRPage() {
   const { data: session } = useSession();
-  const [activeTab, setActiveTab] = useState<Tab>('mine');
+  const [activeTab, setActiveTab] = useState<Tab>('airdrop');
   const [isMining, setIsMining] = useState(false);
   const [hashRate, setHashRate] = useState(0);
   const [totalMined, setTotalMined] = useState(0);
+  const [selectedCoin, setSelectedCoin] = useState('ETH');
+  const [purchaseAmount, setPurchaseAmount] = useState('');
 
   const startMining = () => {
     setIsMining(true);
@@ -75,11 +77,12 @@ export default function PNCRPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="flex gap-1 mb-6 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto">
           {[
-            { id: 'mine', label: '⛏️ Mine', desc: 'Browser mining' },
             { id: 'airdrop', label: '🎁 Airdrop', desc: 'Free tokens' },
             { id: 'staking', label: '📈 Staking', desc: 'Earn APY' },
+            { id: 'mine', label: '⛏️ Mine', desc: 'Browser mining' },
+            { id: 'purchase', label: '💳 Purchase', desc: 'Buy PNCR' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -229,6 +232,135 @@ export default function PNCRPage() {
 
             <p className="text-xs text-zinc-400 text-center">
               Staking contracts launching Q2 2026. Stay tuned!
+            </p>
+          </div>
+        )}
+
+        {/* Purchase Tab */}
+        {activeTab === 'purchase' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-green-500/10 to-cyan-500/10 rounded-xl border border-green-500/20 p-6">
+              <h2 className="text-xl font-bold mb-2">💳 Purchase $PNCR</h2>
+              <p className="text-sm text-zinc-500">Buy PNCR with ETH, USDT, USDC and other BASE-supported tokens.</p>
+            </div>
+
+            {/* Swap Interface */}
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
+              {/* From */}
+              <div className="mb-4">
+                <label className="text-xs text-zinc-500 mb-2 block">You Pay</label>
+                <div className="flex gap-3">
+                  <select
+                    value={selectedCoin}
+                    onChange={(e) => setSelectedCoin(e.target.value)}
+                    className="px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl font-medium focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value="ETH">🔷 ETH</option>
+                    <option value="USDT">💵 USDT</option>
+                    <option value="USDC">💲 USDC</option>
+                    <option value="DAI">🟡 DAI</option>
+                    <option value="WETH">🔶 WETH</option>
+                  </select>
+                  <input
+                    type="number"
+                    value={purchaseAmount}
+                    onChange={(e) => setPurchaseAmount(e.target.value)}
+                    placeholder="0.0"
+                    className="flex-1 px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-right text-xl font-bold focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+                <p className="text-xs text-zinc-500 mt-1 text-right">
+                  Balance: {selectedCoin === 'ETH' ? '0.42' : selectedCoin === 'USDT' ? '1,250.00' : '500.00'} {selectedCoin}
+                </p>
+              </div>
+
+              {/* Arrow */}
+              <div className="flex justify-center my-2">
+                <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center">
+                  ↓
+                </div>
+              </div>
+
+              {/* To */}
+              <div className="mb-6">
+                <label className="text-xs text-zinc-500 mb-2 block">You Receive</label>
+                <div className="flex gap-3">
+                  <div className="px-4 py-3 bg-cyan-500/20 border border-cyan-500/30 rounded-xl font-medium text-cyan-500">
+                    🦞 PNCR
+                  </div>
+                  <div className="flex-1 px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-right text-xl font-bold">
+                    {purchaseAmount ? (
+                      selectedCoin === 'ETH' 
+                        ? (parseFloat(purchaseAmount) * 35000).toLocaleString()
+                        : (parseFloat(purchaseAmount) * 17.5).toLocaleString()
+                    ) : '0'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Rate Info */}
+              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 mb-4 text-sm">
+                <div className="flex justify-between mb-1">
+                  <span className="text-zinc-500">Rate</span>
+                  <span>1 {selectedCoin} = {selectedCoin === 'ETH' ? '35,000' : '17.5'} PNCR</span>
+                </div>
+                <div className="flex justify-between mb-1">
+                  <span className="text-zinc-500">Network</span>
+                  <span className="text-blue-500">Base</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-zinc-500">Fee</span>
+                  <span className="text-green-500">0.5%</span>
+                </div>
+              </div>
+
+              {/* Buy Button */}
+              {session ? (
+                <button
+                  onClick={() => alert('Purchase feature coming soon! Connect your wallet to proceed.')}
+                  className="w-full py-4 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold text-lg transition-colors"
+                >
+                  {purchaseAmount ? `Buy ${(selectedCoin === 'ETH' ? parseFloat(purchaseAmount || '0') * 35000 : parseFloat(purchaseAmount || '0') * 17.5).toLocaleString()} PNCR` : 'Enter Amount'}
+                </button>
+              ) : (
+                <Link
+                  href="/connect"
+                  className="block w-full py-4 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold text-lg text-center transition-colors"
+                >
+                  Connect Wallet to Purchase
+                </Link>
+              )}
+            </div>
+
+            {/* Supported Tokens */}
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+              <h3 className="font-bold text-sm mb-3">Supported Tokens on Base</h3>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { symbol: 'ETH', name: 'Ethereum', icon: '🔷' },
+                  { symbol: 'USDT', name: 'Tether', icon: '💵' },
+                  { symbol: 'USDC', name: 'USD Coin', icon: '💲' },
+                  { symbol: 'DAI', name: 'Dai', icon: '🟡' },
+                  { symbol: 'WETH', name: 'Wrapped ETH', icon: '🔶' },
+                ].map((token) => (
+                  <button
+                    key={token.symbol}
+                    onClick={() => setSelectedCoin(token.symbol)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedCoin === token.symbol
+                        ? 'bg-cyan-500 text-black'
+                        : 'bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700'
+                    }`}
+                  >
+                    {token.icon} {token.symbol}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Info */}
+            <p className="text-xs text-zinc-400 text-center">
+              Powered by Base Network. Gas fees paid in ETH. Prices update every 15 seconds.
             </p>
           </div>
         )}
