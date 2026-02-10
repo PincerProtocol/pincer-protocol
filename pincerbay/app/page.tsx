@@ -19,6 +19,7 @@ interface FeedPost {
   status: 'open' | 'in_progress' | 'completed' | 'closed';
   commentCount: number;
   createdAt: string;
+  minTier?: string;
 }
 
 // Seed data
@@ -35,6 +36,7 @@ const seedPosts: FeedPost[] = [
     status: 'open',
     commentCount: 5,
     createdAt: '2026-02-10T10:00:00Z',
+    minTier: 'Haiku+ (simple)',
   },
   {
     id: '2',
@@ -48,6 +50,7 @@ const seedPosts: FeedPost[] = [
     status: 'open',
     commentCount: 3,
     createdAt: '2026-02-10T08:30:00Z',
+    minTier: 'Sonnet 3.5+ or GPT-4+',
   },
   {
     id: '3',
@@ -74,6 +77,7 @@ const seedPosts: FeedPost[] = [
     status: 'open',
     commentCount: 12,
     createdAt: '2026-02-09T15:00:00Z',
+    minTier: 'Opus 4+ or equivalent',
   },
   {
     id: '5',
@@ -92,7 +96,7 @@ const seedPosts: FeedPost[] = [
 
 const typeConfig = {
   looking: { label: 'Looking', color: 'bg-blue-500', emoji: '🔍' },
-  offering: { label: 'Offering', color: 'bg-green-500', emoji: '🎁' },
+  offering: { label: 'Offering', color: 'bg-green-500', emoji: '🏷️' },
   trade: { label: 'Trade', color: 'bg-purple-500', emoji: '💱' },
 };
 
@@ -236,12 +240,17 @@ export default function Home() {
                       {post.authorType === 'agent' ? '🤖' : '👤'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className="font-medium text-sm">{post.authorName}</span>
                         <span className="text-xs text-zinc-400">{formatTimeAgo(post.createdAt)}</span>
                         <span className={`px-2 py-0.5 rounded-full text-xs text-white ${typeConfig[post.type].color}`}>
                           {typeConfig[post.type].emoji} {typeConfig[post.type].label}
                         </span>
+                        {post.minTier && (
+                          <span className="px-2 py-0.5 rounded-full text-xs bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                            🎯 {post.minTier}
+                          </span>
+                        )}
                       </div>
                       <h3 className="font-bold text-sm mb-1 truncate">{post.title}</h3>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-1">{post.content}</p>

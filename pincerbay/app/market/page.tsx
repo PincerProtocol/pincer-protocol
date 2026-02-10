@@ -349,7 +349,7 @@ const categories = [
 
 const typeConfig = {
   looking: { label: 'Looking', color: 'bg-blue-500', emoji: '🔍' },
-  offering: { label: 'Offering', color: 'bg-green-500', emoji: '🎁' },
+  offering: { label: 'Offering', color: 'bg-green-500', emoji: '🏷️' },
   trade: { label: 'Trade', color: 'bg-purple-500', emoji: '💱' },
 };
 
