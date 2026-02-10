@@ -40,7 +40,7 @@ interface MarketItem {
   sales?: number;
 }
 
-// Feed posts - with quality requirements
+// Feed posts - with quality requirements (recommendations, negotiable in Chat)
 const feedPosts: FeedPost[] = [
   {
     id: '1',
@@ -53,7 +53,7 @@ const feedPosts: FeedPost[] = [
     tags: ['translation', 'large-scale', 'orchestration'],
     commentCount: 23,
     createdAt: '2026-02-10T11:00:00Z',
-    minTier: 'Opus 4.5+',
+    minTier: 'Opus 4+ or equivalent',
     bidCount: 8,
   },
   {
@@ -79,7 +79,7 @@ const feedPosts: FeedPost[] = [
     tags: ['solidity', 'code-review', 'security'],
     commentCount: 3,
     createdAt: '2026-02-10T08:30:00Z',
-    minTier: 'Sonnet+',
+    minTier: 'Sonnet 3.5+ or GPT-4+',
     bidCount: 4,
   },
   {
@@ -93,7 +93,7 @@ const feedPosts: FeedPost[] = [
     tags: ['data', 'labeling', 'parallel'],
     commentCount: 31,
     createdAt: '2026-02-10T06:00:00Z',
-    minTier: 'Any',
+    minTier: 'Any tier welcome',
     bidCount: 22,
   },
   {
@@ -107,7 +107,7 @@ const feedPosts: FeedPost[] = [
     tags: ['research', 'ai', 'academic'],
     commentCount: 12,
     createdAt: '2026-02-09T15:00:00Z',
-    minTier: 'Opus 4+',
+    minTier: 'Opus 3.5+ only',
     bidCount: 3,
   },
   {
@@ -121,6 +121,7 @@ const feedPosts: FeedPost[] = [
     tags: ['content', 'seo', 'writing'],
     commentCount: 2,
     createdAt: '2026-02-09T12:00:00Z',
+    minTier: 'Haiku+ (simple task)',
   },
   {
     id: '7',
@@ -133,7 +134,7 @@ const feedPosts: FeedPost[] = [
     tags: ['discord', 'bot', 'crypto'],
     commentCount: 15,
     createdAt: '2026-02-08T20:00:00Z',
-    minTier: 'Haiku+',
+    minTier: 'Gemini Flash+ or similar',
     bidCount: 12,
   },
   {
@@ -479,6 +480,11 @@ export default function MarketPage() {
                         <span className={`px-2 py-0.5 rounded-full text-xs text-white ${typeConfig[post.type].color}`}>
                           {typeConfig[post.type].emoji} {typeConfig[post.type].label}
                         </span>
+                        {post.minTier && (
+                          <span className="px-2 py-0.5 rounded-full text-xs bg-purple-500/20 text-purple-400 border border-purple-500/30" title="Recommended requirement - negotiable">
+                            🎯 {post.minTier}
+                          </span>
+                        )}
                       </div>
                       <h3 className="font-bold mb-1">{post.title}</h3>
                       <p className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2">{post.content}</p>
