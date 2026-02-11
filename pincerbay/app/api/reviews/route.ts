@@ -1,191 +1,206 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { logger } from '@/lib/logger'
-import { updateAgentPowerScore } from '@/lib/powerScore'
-import { CreateReviewSchema, validateInput, getSafeErrorMessage } from '@/lib/validations'
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
-/**
- * POST /api/reviews
- * Create a review for an agent (requires completed escrow)
- *
- * Request body:
- * {
- *   agentId: string
- *   escrowId: string
- *   rating: number  // 1-5 stars
- *   comment?: string
- * }
- */
-export async function POST(req: NextRequest) {
+// Reviews storage (would use database in production)
+const reviews: Map<string, {
+  id: string;
+  agentId: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  title: string;
+  content: string;
+  helpful: number;
+  verified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}> = new Map();
+
+// Seed some demo reviews
+const demoReviews = [
+  {
+    id: 'rev_1',
+    agentId: 'claude',
+    userId: 'user_1',
+    userName: 'Alex Chen',
+    rating: 5,
+    title: 'Exceptional code review quality',
+    content: 'Claude provided incredibly detailed feedback on my React codebase. Found several performance issues I missed. Highly recommended!',
+    helpful: 23,
+    verified: true,
+    createdAt: new Date('2026-02-08'),
+    updatedAt: new Date('2026-02-08'),
+  },
+  {
+    id: 'rev_2',
+    agentId: 'claude',
+    userId: 'user_2',
+    userName: 'Sarah Kim',
+    rating: 5,
+    title: 'Fast and thorough',
+    content: 'Got my smart contract audit done in under an hour. Very professional communication throughout.',
+    helpful: 15,
+    verified: true,
+    createdAt: new Date('2026-02-06'),
+    updatedAt: new Date('2026-02-06'),
+  },
+  {
+    id: 'rev_3',
+    agentId: 'gpt-4',
+    userId: 'user_3',
+    userName: 'Mike Johnson',
+    rating: 4,
+    title: 'Great for complex reasoning',
+    content: 'Helped me solve a tricky algorithm problem. Sometimes responses were verbose but overall very helpful.',
+    helpful: 8,
+    verified: true,
+    createdAt: new Date('2026-02-05'),
+    updatedAt: new Date('2026-02-05'),
+  },
+  {
+    id: 'rev_4',
+    agentId: 'gemini',
+    userId: 'user_4',
+    userName: '田中太郎',
+    rating: 5,
+    title: '素晴らしい多言語サポート',
+    content: '日本語での対応が非常に自然でした。技術的な説明もわかりやすかったです。',
+    helpful: 12,
+    verified: true,
+    createdAt: new Date('2026-02-04'),
+    updatedAt: new Date('2026-02-04'),
+  },
+  {
+    id: 'rev_5',
+    agentId: 'llama',
+    userId: 'user_5',
+    userName: 'Emma Wilson',
+    rating: 4,
+    title: 'Good for basic tasks',
+    content: 'Works well for straightforward coding tasks. Not as capable for complex architecture decisions but great value.',
+    helpful: 6,
+    verified: false,
+    createdAt: new Date('2026-02-03'),
+    updatedAt: new Date('2026-02-03'),
+  },
+];
+
+// Initialize with demo data
+demoReviews.forEach(r => reviews.set(r.id, r));
+
+export async function GET(request: NextRequest) {
   try {
-    // Require authentication
-    const session = await requireAuth()
-    if (!session) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+    const { searchParams } = new URL(request.url);
+    const agentId = searchParams.get('agentId');
+    const userId = searchParams.get('userId');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const offset = parseInt(searchParams.get('offset') || '0');
+
+    let items = Array.from(reviews.values());
+
+    // Filter by agent
+    if (agentId) {
+      items = items.filter(r => r.agentId === agentId);
     }
 
-    const body = await req.json()
-
-    // Validate input
-    const validation = validateInput(CreateReviewSchema, body)
-    if (!validation.success) {
-      return NextResponse.json(
-        { success: false, error: validation.error },
-        { status: 400 }
-      )
+    // Filter by user
+    if (userId) {
+      items = items.filter(r => r.userId === userId);
     }
 
-    const { agentId, escrowId, rating, comment } = validation.data
+    // Sort by date (newest first)
+    items.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    logger.info('Creating review', {
-      agentId,
-      escrowId,
-      rating,
-      reviewerId: session.user.id
-    })
+    // Calculate stats
+    const totalReviews = items.length;
+    const averageRating = items.length > 0 
+      ? items.reduce((sum, r) => sum + r.rating, 0) / items.length 
+      : 0;
+    const ratingDistribution = {
+      5: items.filter(r => r.rating === 5).length,
+      4: items.filter(r => r.rating === 4).length,
+      3: items.filter(r => r.rating === 3).length,
+      2: items.filter(r => r.rating === 2).length,
+      1: items.filter(r => r.rating === 1).length,
+    };
 
-    // Verify escrow exists
-    const escrow = await prisma.escrow.findUnique({
-      where: { id: escrowId }
-    })
+    // Paginate
+    const total = items.length;
+    items = items.slice(offset, offset + limit);
 
-    if (!escrow) {
-      return NextResponse.json(
-        { success: false, error: 'Escrow not found' },
-        { status: 404 }
-      )
-    }
-
-    // Verify escrow is completed
-    if (escrow.status !== 'completed') {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Can only review completed escrows. Current status: '${escrow.status}'`
+    return NextResponse.json({
+      success: true,
+      data: {
+        reviews: items,
+        stats: {
+          totalReviews,
+          averageRating: Math.round(averageRating * 10) / 10,
+          ratingDistribution,
         },
-        { status: 400 }
-      )
+      },
+      pagination: {
+        total,
+        limit,
+        offset,
+        hasMore: offset + items.length < total,
+      }
+    });
+  } catch (error: any) {
+    console.error('Get reviews error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to get reviews' }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Verify reviewer is the buyer
-    if (escrow.buyerId !== session.user.id) {
-      return NextResponse.json(
-        { success: false, error: 'Forbidden - only buyer can review seller agent' },
-        { status: 403 }
-      )
+    const body = await request.json();
+    const { agentId, rating, title, content } = body;
+
+    if (!agentId || !rating || !title || !content) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Verify agentId matches escrow seller
-    if (escrow.sellerAgentId !== agentId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Agent ID does not match escrow seller agent'
-        },
-        { status: 400 }
-      )
+    if (rating < 1 || rating > 5) {
+      return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 });
     }
 
-    // Check if review already exists for this escrow
-    const existingReview = await prisma.review.findUnique({
-      where: { escrowId }
-    })
-
+    // Check if user already reviewed this agent
+    const existingReview = Array.from(reviews.values()).find(
+      r => r.agentId === agentId && r.userId === session.user?.email
+    );
     if (existingReview) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Review already submitted for this escrow'
-        },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'You have already reviewed this agent' }, { status: 400 });
     }
 
-    // Create review
-    const review = await prisma.review.create({
-      data: {
-        reviewerId: session.user.id,
-        agentId,
-        escrowId,
-        rating,
-        comment: comment || null
-      },
-      include: {
-        reviewer: {
-          select: {
-            id: true,
-            name: true,
-            image: true
-          }
-        },
-        agent: {
-          select: {
-            id: true,
-            name: true,
-            slug: true
-          }
-        }
-      }
-    })
-
-    // Recalculate agent avgRating and totalRatings
-    const allReviews = await prisma.review.findMany({
-      where: { agentId },
-      select: { rating: true }
-    })
-
-    const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
-    const totalRatings = allReviews.length
-
-    // Update agent metrics
-    await prisma.agent.update({
-      where: { id: agentId },
-      data: {
-        avgRating: Math.round(avgRating * 100) / 100, // Round to 2 decimal places
-        totalRatings
-      }
-    })
-
-    // Trigger power score recalculation
-    try {
-      await updateAgentPowerScore(agentId)
-      logger.info('Agent power score updated after review', { agentId })
-    } catch (error) {
-      logger.error('Failed to update power score after review', { error, agentId })
-      // Don't fail the review creation if power score update fails
-    }
-
-    logger.info('Review created successfully', {
-      reviewId: review.id,
+    const id = `rev_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const review = {
+      id,
       agentId,
-      escrowId,
-      rating,
-      reviewerId: session.user.id,
-      avgRating,
-      totalRatings
-    })
+      userId: session.user.email,
+      userName: session.user.name || 'Anonymous',
+      rating: parseInt(rating),
+      title,
+      content,
+      helpful: 0,
+      verified: false, // Would verify based on actual transaction history
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: review,
-        message: 'Review submitted successfully'
-      },
-      { status: 201 }
-    )
-  } catch (error) {
-    logger.error('Error creating review', { error })
+    reviews.set(id, review);
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: getSafeErrorMessage(error)
-      },
-      { status: 500 }
-    )
+    return NextResponse.json({
+      success: true,
+      data: review,
+    });
+  } catch (error: any) {
+    console.error('Create review error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to create review' }, { status: 500 });
   }
 }

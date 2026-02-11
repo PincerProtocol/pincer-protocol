@@ -1,9 +1,24 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { getAgentById, getCapabilityLabel, getPersonalityDescription, AgentCapabilities } from '@/lib/agentPower';
+
+interface Review {
+  id: string;
+  agentId: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  title: string;
+  content: string;
+  helpful: number;
+  verified: boolean;
+  createdAt: string;
+}
 
 export default function AgentDetailPage() {
   const params = useParams();
@@ -151,19 +166,7 @@ export default function AgentDetailPage() {
         </div>
 
         {/* Reviews Section */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">💬 Reviews ({agent.reviews})</h2>
-            <button className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-medium transition-colors">
-              Write Review
-            </button>
-          </div>
-          <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
-            <p className="text-center text-zinc-500 py-8">
-              Reviews coming soon! Be the first to review {agent.name}.
-            </p>
-          </div>
-        </div>
+        <AgentReviews agentId={params.id as string} agentName={agent.name} />
 
         {/* Back */}
         <div className="text-center">
@@ -171,6 +174,206 @@ export default function AgentDetailPage() {
             ← Back to Rankings
           </Link>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Agent Reviews Component
+function AgentReviews({ agentId, agentName }: { agentId: string; agentName: string }) {
+  const { data: session } = useSession();
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [stats, setStats] = useState<{ totalReviews: number; averageRating: number; ratingDistribution: Record<number, number> } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({ rating: 5, title: '', content: '' });
+
+  useEffect(() => {
+    const loadReviews = async () => {
+      try {
+        const res = await fetch(`/api/reviews?agentId=${agentId}`);
+        const data = await res.json();
+        if (data.success) {
+          setReviews(data.data.reviews || []);
+          setStats(data.data.stats || null);
+        }
+      } catch (error) {
+        console.error('Failed to load reviews:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadReviews();
+  }, [agentId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!session) return;
+
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId, ...formData }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setReviews(prev => [data.data, ...prev]);
+        setShowForm(false);
+        setFormData({ rating: 5, title: '', content: '' });
+      } else {
+        alert(data.error || 'Failed to submit review');
+      }
+    } catch (error) {
+      console.error('Submit review error:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const renderStars = (rating: number, interactive = false, onChange?: (r: number) => void) => (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => interactive && onChange?.(star)}
+          className={`text-xl ${interactive ? 'cursor-pointer hover:scale-110' : 'cursor-default'} transition-transform ${
+            star <= rating ? 'text-yellow-500' : 'text-zinc-300 dark:text-zinc-600'
+          }`}
+          disabled={!interactive}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="mb-12">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">💬 Reviews ({stats?.totalReviews || 0})</h2>
+        {session ? (
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-medium transition-colors"
+          >
+            {showForm ? 'Cancel' : 'Write Review'}
+          </button>
+        ) : (
+          <Link
+            href="/connect"
+            className="px-4 py-2 bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded-lg font-medium transition-colors"
+          >
+            Sign in to Review
+          </Link>
+        )}
+      </div>
+
+      {/* Stats */}
+      {stats && stats.totalReviews > 0 && (
+        <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 mb-6">
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-cyan-500">{stats.averageRating}</div>
+              {renderStars(Math.round(stats.averageRating))}
+              <div className="text-xs text-zinc-500 mt-1">{stats.totalReviews} reviews</div>
+            </div>
+            <div className="flex-1 space-y-1">
+              {[5, 4, 3, 2, 1].map((rating) => (
+                <div key={rating} className="flex items-center gap-2 text-xs">
+                  <span className="w-3">{rating}</span>
+                  <div className="flex-1 h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-yellow-500"
+                      style={{ width: `${stats.totalReviews > 0 ? (stats.ratingDistribution[rating] / stats.totalReviews) * 100 : 0}%` }}
+                    />
+                  </div>
+                  <span className="w-6 text-right text-zinc-500">{stats.ratingDistribution[rating]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review Form */}
+      {showForm && session && (
+        <form onSubmit={handleSubmit} className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 mb-6">
+          <h3 className="font-bold mb-4">Write a Review for {agentName}</h3>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">Rating</label>
+            {renderStars(formData.rating, true, (r) => setFormData(prev => ({ ...prev, rating: r })))}
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">Title</label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              placeholder="Summarize your experience"
+              className="w-full px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">Review</label>
+            <textarea
+              value={formData.content}
+              onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+              placeholder="Share your experience working with this agent..."
+              rows={4}
+              className="w-full px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-zinc-300 text-black rounded-lg font-bold transition-colors"
+          >
+            {submitting ? 'Submitting...' : 'Submit Review'}
+          </button>
+        </form>
+      )}
+
+      {/* Reviews List */}
+      <div className="space-y-4">
+        {loading ? (
+          <div className="text-center py-8 text-zinc-500">Loading reviews...</div>
+        ) : reviews.length === 0 ? (
+          <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 text-center">
+            <p className="text-zinc-500 py-4">No reviews yet. Be the first to review {agentName}!</p>
+          </div>
+        ) : (
+          reviews.map((review) => (
+            <div
+              key={review.id}
+              className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold">{review.userName}</span>
+                    {review.verified && (
+                      <span className="px-2 py-0.5 bg-green-500/20 text-green-500 text-xs rounded-full">Verified</span>
+                    )}
+                  </div>
+                  {renderStars(review.rating)}
+                </div>
+                <span className="text-xs text-zinc-500">{new Date(review.createdAt).toLocaleDateString()}</span>
+              </div>
+              <h4 className="font-bold text-sm mb-1">{review.title}</h4>
+              <p className="text-sm text-zinc-400">{review.content}</p>
+              <div className="mt-3 flex items-center gap-4 text-xs text-zinc-500">
+                <button className="hover:text-cyan-500 transition-colors">👍 Helpful ({review.helpful})</button>
+                <button className="hover:text-red-500 transition-colors">🚩 Report</button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

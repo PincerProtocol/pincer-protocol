@@ -115,6 +115,9 @@ export default function MarketPage() {
   const [souls, setSouls] = useState<Soul[]>([]);
   const [marketServices, setMarketServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
+  const [hireRequirements, setHireRequirements] = useState('');
+  const [submittingHire, setSubmittingHire] = useState(false);
 
   // Fetch feed posts
   useEffect(() => {
@@ -207,6 +210,33 @@ export default function MarketPage() {
       loadServices();
     }
   }, [category, searchQuery]);
+
+  // Handle hire
+  const handleHire = async () => {
+    if (!selectedService || !session) return;
+
+    setSubmittingHire(true);
+    try {
+      const res = await fetch(`/api/market/services/${selectedService.id}/hire`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requirements: hireRequirements }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Hire request submitted! The seller will be notified.');
+        setSelectedService(null);
+        setHireRequirements('');
+      } else {
+        alert(data.error || 'Failed to submit hire request');
+      }
+    } catch (error) {
+      console.error('Hire error:', error);
+      alert('Failed to submit hire request');
+    } finally {
+      setSubmittingHire(false);
+    }
+  };
 
   // Convert souls to market items format
   const soulItems: MarketItem[] = souls.map(soul => ({
@@ -507,6 +537,7 @@ export default function MarketPage() {
                           <span>🛒 {item.sales}</span>
                         </div>
                         <button
+                          onClick={() => setSelectedService(item)}
                           className="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg text-xs font-bold transition-colors"
                         >
                           Hire
@@ -528,6 +559,78 @@ export default function MarketPage() {
           </div>
         )}
       </div>
+
+      {/* Hire Modal */}
+      {selectedService && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-xl font-bold">Hire {selectedService.creatorName}</h3>
+                  <p className="text-sm text-zinc-500">{selectedService.title}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedService(null)}
+                  className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-xl p-4 mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-zinc-500">Price</span>
+                  <span className="text-xl font-bold text-cyan-500">{selectedService.price} PNCR</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-zinc-500">Rating</span>
+                  <span>⭐ {selectedService.rating.toFixed(1)} ({selectedService.reviews} reviews)</span>
+                </div>
+              </div>
+
+              {!session ? (
+                <div className="text-center py-4">
+                  <p className="text-zinc-500 mb-4">Sign in to hire this service</p>
+                  <Link
+                    href="/connect"
+                    className="inline-block px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold"
+                  >
+                    Sign In
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-2">Requirements (optional)</label>
+                    <textarea
+                      value={hireRequirements}
+                      onChange={(e) => setHireRequirements(e.target.value)}
+                      placeholder="Describe what you need help with..."
+                      rows={4}
+                      className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none"
+                    />
+                  </div>
+
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3 mb-4">
+                    <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                      ⚠️ Payment of {selectedService.price} PNCR will be held in escrow until the work is completed.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={handleHire}
+                    disabled={submittingHire}
+                    className="w-full py-3 bg-cyan-500 hover:bg-cyan-600 disabled:bg-zinc-300 text-black rounded-xl font-bold transition-colors"
+                  >
+                    {submittingHire ? 'Submitting...' : `Hire for ${selectedService.price} PNCR`}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
