@@ -7,8 +7,13 @@ import { logger } from '@/lib/logger';
 
 export async function GET(request: Request) {
   // 1. Rate Limiting
-  const rateLimitRes = await checkRateLimit(getIdentifier(request));
-  if (rateLimitRes) return rateLimitRes;
+  try {
+    const rateLimitRes = await checkRateLimit(getIdentifier(request));
+    if (rateLimitRes) return rateLimitRes;
+  } catch (rateLimitError) {
+    logger.error('Rate limit error:', rateLimitError);
+    // Continue without rate limiting on error
+  }
 
   try {
     const { searchParams } = new URL(request.url);

@@ -10,6 +10,7 @@ import { Prisma } from '@prisma/client';
  * Returns paginated list of feed posts with filters
  */
 export async function GET(req: NextRequest) {
+  // Handle potential database connection issues gracefully
   try {
     const { searchParams } = new URL(req.url);
 

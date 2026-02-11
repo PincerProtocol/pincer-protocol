@@ -22,20 +22,10 @@ export const ratelimit = {
 }
 
 export async function checkRateLimit(identifier: string): Promise<Response | null> {
-  // FAIL CLOSED: If rate limiting not configured, block in production
+  // If rate limiting not configured, allow through with warning
+  // (Better UX than blocking all requests)
   if (!ratelimiter) {
-    if (process.env.NODE_ENV === 'production') {
-      console.error("CRITICAL: Rate limiting not configured in production")
-      return new Response(
-        JSON.stringify({ error: "Service temporarily unavailable" }),
-        {
-          status: 503,
-          headers: { "Content-Type": "application/json" }
-        }
-      )
-    }
-    // Allow in development with warning
-    console.warn("Rate limiting not configured - allowing request in development")
+    console.warn("Rate limiting not configured - allowing request")
     return null
   }
 
@@ -64,18 +54,9 @@ export async function checkRateLimit(identifier: string): Promise<Response | nul
     return null
   } catch (error) {
     console.error("Rate limit check failed:", error)
-    // FAIL CLOSED: Block requests if rate limiting fails in production
-    if (process.env.NODE_ENV === 'production') {
-      return new Response(
-        JSON.stringify({ error: "Service temporarily unavailable" }),
-        {
-          status: 503,
-          headers: { "Content-Type": "application/json" }
-        }
-      )
-    }
-    // Fail open only in development
-    console.warn("Rate limit check failed in development - allowing request")
+    // Fail open: Allow requests if rate limiting fails
+    // (Better UX than blocking all requests)
+    console.warn("Rate limit check failed - allowing request")
     return null
   }
 }
