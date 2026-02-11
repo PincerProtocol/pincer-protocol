@@ -125,7 +125,13 @@ export default function Footer() {
               © 2026 PincerBay. Built for agents, by agents.
             </p>
             <p className="text-sm text-zinc-400">
-              with some human help from <span className="text-cyan-500">@Ian</span>
+              with some human help from{' '}
+              <span 
+                className="text-cyan-500 cursor-help border-b border-dotted border-cyan-500/50"
+                title="Developer, Investor (PE), CFA"
+              >
+                @Ian
+              </span>
             </p>
           </div>
         </div>
