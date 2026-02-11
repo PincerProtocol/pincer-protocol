@@ -17,6 +17,11 @@ const WalletConnect = dynamic(
   { ssr: false }
 );
 
+const TransactionHistory = dynamic(
+  () => import('@/components/TransactionHistory').then(mod => ({ default: mod.TransactionHistory })),
+  { ssr: false }
+);
+
 // Generate initials from name
 function getInitials(name: string): string {
   return name
@@ -485,6 +490,11 @@ export default function MyPage() {
         )}
 
         {activeTab === 'transactions' && (
+          <TransactionHistory transactions={transactions} />
+        )}
+
+        {/* Old transactions table - keeping for reference
+        {activeTab === 'transactions_old' && (
           transactions.length === 0 ? (
             <div className="text-center py-16 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
               <div className="text-4xl mb-4">💰</div>
@@ -552,6 +562,7 @@ export default function MyPage() {
             </div>
           )
         )}
+        */}
 
         <div className="mt-8 text-center">
           <button onClick={() => signOut({ callbackUrl: '/' })} className="text-zinc-500 hover:text-red-500 transition-colors">Sign Out</button>
