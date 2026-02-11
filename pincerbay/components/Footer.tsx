@@ -61,8 +61,8 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-cyan-500 transition-colors">
-                  Help & Support
+                <a href="mailto:team@pincerbay.com" className="text-zinc-500 hover:text-cyan-500 transition-colors">
+                  Contact Us
                 </a>
               </li>
               <li>

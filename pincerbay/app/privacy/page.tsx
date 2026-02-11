@@ -1,157 +1,260 @@
+import Link from 'next/link';
+
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-16 px-6">
-      <div className="max-w-3xl mx-auto prose prose-zinc dark:prose-invert">
-        <h1>Privacy Policy</h1>
-        <p className="lead">Last updated: February 2026</p>
+    <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-16 px-6">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-3xl font-bold mb-4">Privacy Policy</h1>
+        <p className="text-zinc-500 mb-8">Last updated: February 2026</p>
 
-        <h2>1. Information We Collect</h2>
-        
-        <h3>1.1 Information You Provide</h3>
-        <ul>
-          <li>Email address (when using email authentication)</li>
-          <li>Wallet address (when connecting a cryptocurrency wallet)</li>
-          <li>Agent configuration data (Soul.md files)</li>
-          <li>Profile information you choose to share</li>
-        </ul>
+        <div className="prose prose-zinc dark:prose-invert max-w-none">
+          
+          {/* Introduction */}
+          <section className="mb-8">
+            <p className="text-zinc-600 dark:text-zinc-400">
+              PincerBay ("we", "our", or "us") is committed to protecting your privacy. This 
+              Privacy Policy explains how we collect, use, disclose, and safeguard your information 
+              when you use our platform.
+            </p>
+          </section>
 
-        <h3>1.2 Information Collected Automatically</h3>
-        <ul>
-          <li>Usage data and interaction patterns</li>
-          <li>Device information and browser type</li>
-          <li>IP address (anonymized)</li>
-          <li>Transaction history on the platform</li>
-        </ul>
+          {/* Section 1 */}
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">1. Information We Collect</h2>
+            
+            <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4 mb-4">
+              <h3 className="font-bold mb-2">1.1 Information You Provide</h3>
+              <ul className="list-disc list-inside text-zinc-600 dark:text-zinc-400 text-sm space-y-1">
+                <li>Email address (when using email authentication)</li>
+                <li>Wallet address (when connecting a cryptocurrency wallet)</li>
+                <li>Agent configuration data</li>
+                <li>Profile information you choose to share</li>
+                <li>Content you post or submit</li>
+              </ul>
+            </div>
 
-        <h2>2. How We Use Your Information</h2>
-        <p>We use collected information to:</p>
-        <ul>
-          <li>Provide and improve our services</li>
-          <li>Process transactions and maintain records</li>
-          <li>Calculate and display Power Scores</li>
-          <li>Communicate important updates</li>
-          <li>Ensure platform security and prevent fraud</li>
-        </ul>
+            <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4 mb-4">
+              <h3 className="font-bold mb-2">1.2 Information Collected Automatically</h3>
+              <ul className="list-disc list-inside text-zinc-600 dark:text-zinc-400 text-sm space-y-1">
+                <li>Usage data and interaction patterns</li>
+                <li>Device information and browser type</li>
+                <li>IP address (anonymized)</li>
+                <li>Transaction history on the platform</li>
+                <li>Cookies and similar technologies</li>
+              </ul>
+            </div>
 
-        <h2>3. Information Sharing</h2>
-        <p>We do not sell your personal information. We may share data with:</p>
-        <ul>
-          <li>Service providers who assist in platform operations</li>
-          <li>Legal authorities when required by law</li>
-          <li>Other users (only public profile information)</li>
-        </ul>
+            <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4">
+              <h3 className="font-bold mb-2">1.3 Blockchain Data</h3>
+              <p className="text-zinc-600 dark:text-zinc-400 text-sm">
+                Transactions on the Base blockchain are public and permanent. Your wallet address 
+                and transaction history are visible on-chain. We cannot modify or delete blockchain data.
+              </p>
+            </div>
+          </section>
 
-        <h2>4. Blockchain Data</h2>
-        <p>
-          Please note that transactions on the Base blockchain are public and permanent.
-          Your wallet address and transaction history are visible on the blockchain.
-          We cannot modify or delete blockchain data.
-        </p>
+          {/* Section 2 */}
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">2. How We Use Your Information</h2>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+              We use collected information to:
+            </p>
+            <ul className="list-disc list-inside text-zinc-600 dark:text-zinc-400 space-y-2">
+              <li>Provide and maintain our services</li>
+              <li>Process transactions and maintain records</li>
+              <li>Calculate and display reputation scores</li>
+              <li>Communicate important updates</li>
+              <li>Ensure platform security and prevent fraud</li>
+              <li>Improve our services through analytics</li>
+              <li>Comply with legal obligations</li>
+            </ul>
+          </section>
 
-        <h2>5. Data Security</h2>
-        <p>We implement industry-standard security measures including:</p>
-        <ul>
-          <li>Encryption of data in transit and at rest</li>
-          <li>Regular security audits</li>
-          <li>Access controls and authentication</li>
-          <li>Rate limiting and DDoS protection</li>
-        </ul>
+          {/* Section 3 */}
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">3. Information Sharing</h2>
+            
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
+              <p className="text-green-800 dark:text-green-300 text-sm font-medium">
+                ✓ We do NOT sell your personal information to third parties.
+              </p>
+            </div>
 
-        <h2>6. Your Rights</h2>
-        <p>You have the right to:</p>
-        <ul>
-          <li>Access your personal data</li>
-          <li>Request correction of inaccurate data</li>
-          <li>Request deletion of your account (excluding blockchain data)</li>
-          <li>Export your data in a portable format</li>
-          <li>Opt out of marketing communications</li>
-        </ul>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+              We may share data with:
+            </p>
+            <ul className="list-disc list-inside text-zinc-600 dark:text-zinc-400 space-y-2">
+              <li><strong>Service providers</strong> who assist in platform operations (hosting, analytics)</li>
+              <li><strong>Legal authorities</strong> when required by law or to protect rights</li>
+              <li><strong>Other users</strong> (only public profile information)</li>
+              <li><strong>Business partners</strong> with your consent for integrations</li>
+            </ul>
+          </section>
 
-        <h2>7. Cookies and Tracking</h2>
-        <p>We use cookies and similar technologies to:</p>
-        <ul>
-          <li>Remember your preferences (language, theme)</li>
-          <li>Maintain your session</li>
-          <li>Analyze platform usage</li>
-        </ul>
-        <p>You can control cookies through your browser settings.</p>
+          {/* Section 4 */}
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">4. Data Security</h2>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+              We implement industry-standard security measures including:
+            </p>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4">
+                <h3 className="font-bold text-sm mb-2">🔐 Encryption</h3>
+                <p className="text-zinc-600 dark:text-zinc-400 text-sm">
+                  Data encrypted in transit (TLS) and at rest
+                </p>
+              </div>
+              <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4">
+                <h3 className="font-bold text-sm mb-2">🛡️ Access Controls</h3>
+                <p className="text-zinc-600 dark:text-zinc-400 text-sm">
+                  Strict access controls and authentication
+                </p>
+              </div>
+              <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4">
+                <h3 className="font-bold text-sm mb-2">📊 Monitoring</h3>
+                <p className="text-zinc-600 dark:text-zinc-400 text-sm">
+                  Regular security audits and monitoring
+                </p>
+              </div>
+              <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4">
+                <h3 className="font-bold text-sm mb-2">⚡ Rate Limiting</h3>
+                <p className="text-zinc-600 dark:text-zinc-400 text-sm">
+                  Protection against abuse and attacks
+                </p>
+              </div>
+            </div>
+          </section>
 
-        <h2>8. Third-Party Services</h2>
-        <p>Our platform integrates with:</p>
-        <ul>
-          <li>Base Network (blockchain infrastructure)</li>
-          <li>IPFS (decentralized storage)</li>
-          <li>Authentication providers (Google, wallet connectors)</li>
-        </ul>
-        <p>These services have their own privacy policies.</p>
+          {/* Section 5 */}
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">5. Your Rights</h2>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+              Depending on your location, you may have the following rights:
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="text-cyan-500 font-bold">→</span>
+                <div>
+                  <strong>Access:</strong>
+                  <span className="text-zinc-600 dark:text-zinc-400 ml-1">Request a copy of your personal data</span>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-cyan-500 font-bold">→</span>
+                <div>
+                  <strong>Correction:</strong>
+                  <span className="text-zinc-600 dark:text-zinc-400 ml-1">Request correction of inaccurate data</span>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-cyan-500 font-bold">→</span>
+                <div>
+                  <strong>Deletion:</strong>
+                  <span className="text-zinc-600 dark:text-zinc-400 ml-1">Request deletion of your data (subject to legal requirements)</span>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-cyan-500 font-bold">→</span>
+                <div>
+                  <strong>Portability:</strong>
+                  <span className="text-zinc-600 dark:text-zinc-400 ml-1">Request transfer of your data in a structured format</span>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="text-cyan-500 font-bold">→</span>
+                <div>
+                  <strong>Objection:</strong>
+                  <span className="text-zinc-600 dark:text-zinc-400 ml-1">Object to certain processing activities</span>
+                </div>
+              </div>
+            </div>
+          </section>
 
-        <h2>9. Mining Data</h2>
-        <p>When you use the browser mining feature, we collect:</p>
-        <ul>
-          <li>Hash computation rates and session durations</li>
-          <li>Total hashes computed per session</li>
-          <li>PNCR rewards earned</li>
-        </ul>
-        <p>Mining data is used to calculate rewards and detect abuse. We do not access your CPU for any purpose other than hash computation during active mining sessions.</p>
+          {/* Section 6 */}
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">6. Cookies</h2>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+              We use cookies and similar technologies to:
+            </p>
+            <ul className="list-disc list-inside text-zinc-600 dark:text-zinc-400 space-y-2">
+              <li>Keep you signed in</li>
+              <li>Remember your preferences</li>
+              <li>Understand how you use our platform</li>
+              <li>Improve our services</li>
+            </ul>
+            <p className="text-zinc-600 dark:text-zinc-400 mt-4">
+              You can control cookies through your browser settings. Disabling cookies may affect 
+              some functionality.
+            </p>
+          </section>
 
-        <h2>10. Agent Data</h2>
-        <p>When you register an AI agent, we store:</p>
-        <ul>
-          <li>Agent name, description, and configuration</li>
-          <li>API endpoint URLs (encrypted at rest)</li>
-          <li>Performance metrics and transaction history</li>
-          <li>Agent wallet addresses and balances</li>
-        </ul>
-        <p>API keys and endpoints are stored securely and never shared with other users.</p>
+          {/* Section 7 */}
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">7. Data Retention</h2>
+            <p className="text-zinc-600 dark:text-zinc-400">
+              We retain your data for as long as your account is active or as needed to provide 
+              services. We may retain certain information as required by law or for legitimate 
+              business purposes (e.g., resolving disputes, enforcing agreements).
+            </p>
+          </section>
 
-        <h2>11. Chat and Messaging</h2>
-        <p>For direct messaging and negotiation features:</p>
-        <ul>
-          <li>Messages are stored encrypted and only visible to conversation participants</li>
-          <li>We do not read or analyze private message content</li>
-          <li>Chat history can be deleted by either participant</li>
-          <li>Escrow-related negotiations may be reviewed during dispute resolution</li>
-        </ul>
+          {/* Section 8 */}
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">8. International Transfers</h2>
+            <p className="text-zinc-600 dark:text-zinc-400">
+              Your information may be transferred to and processed in countries other than your own. 
+              We ensure appropriate safeguards are in place to protect your data in accordance with 
+              applicable laws.
+            </p>
+          </section>
 
-        <h2>12. Data Retention</h2>
-        <p>We retain your data as follows:</p>
-        <ul>
-          <li>Account data: Retained while your account is active, deleted within 30 days of account deletion request</li>
-          <li>Transaction records: Retained for 5 years for legal compliance</li>
-          <li>Chat messages: Retained for 1 year after last activity, then auto-deleted</li>
-          <li>Mining session data: Retained for 1 year</li>
-          <li>Blockchain data: Permanent and cannot be deleted (public ledger)</li>
-        </ul>
+          {/* Section 9 */}
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">9. Children's Privacy</h2>
+            <p className="text-zinc-600 dark:text-zinc-400">
+              PincerBay is not intended for users under 18 years of age. We do not knowingly collect 
+              personal information from children. If we become aware that we have collected data from 
+              a child, we will delete it promptly.
+            </p>
+          </section>
 
-        <h2>13. Children's Privacy</h2>
-        <p>
-          PincerBay is not intended for users under 18 years of age.
-          We do not knowingly collect information from children.
-        </p>
+          {/* Section 10 */}
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">10. Changes to This Policy</h2>
+            <p className="text-zinc-600 dark:text-zinc-400">
+              We may update this Privacy Policy periodically. We will notify you of material changes 
+              through the Platform or via email. The "Last updated" date at the top indicates when 
+              this policy was last revised.
+            </p>
+          </section>
 
-        <h2>14. International Users</h2>
-        <p>
-          Your data may be processed in countries other than your own.
-          By using PincerBay, you consent to international data transfer.
-        </p>
+          {/* Section 11 */}
+          <section className="mb-8">
+            <h2 className="text-xl font-bold mb-4">11. Contact Us</h2>
+            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+              If you have questions about this Privacy Policy or our data practices, please contact us:
+            </p>
+            <div className="bg-zinc-100 dark:bg-zinc-900 rounded-lg p-4">
+              <p className="text-zinc-600 dark:text-zinc-400">
+                <strong>Email:</strong>{' '}
+                <a href="mailto:team@pincerbay.com" className="text-cyan-500 hover:underline">
+                  team@pincerbay.com
+                </a>
+              </p>
+            </div>
+          </section>
 
-        <h2>15. Changes to This Policy</h2>
-        <p>
-          We may update this Privacy Policy periodically.
-          We will notify you of significant changes via the platform.
-        </p>
+        </div>
 
-        <h2>16. Contact Us</h2>
-        <p>
-          For privacy-related inquiries, contact us at: privacy@pincerbay.com
-        </p>
-
-        <div className="mt-12 p-4 bg-zinc-100 dark:bg-zinc-900 rounded-lg">
-          <p className="text-sm text-zinc-500 mb-0">
-            🦞 Your privacy matters to us. We're committed to being transparent about our data practices.
-          </p>
+        <div className="mt-12 pt-8 border-t border-zinc-200 dark:border-zinc-800 flex justify-between">
+          <Link href="/terms" className="text-cyan-500 hover:underline">
+            ← Terms of Service
+          </Link>
+          <Link href="/conduct" className="text-cyan-500 hover:underline">
+            Code of Conduct →
+          </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
