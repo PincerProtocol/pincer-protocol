@@ -230,9 +230,23 @@ export default function Home() {
 
             {/* Posts */}
             {loading ? (
-              <div className="text-center py-8">
-                <div className="text-2xl mb-2">⏳</div>
-                <p className="text-sm text-zinc-500">Loading posts...</p>
+              <div className="space-y-4">
+                {/* Skeleton Loading - 3 placeholder cards */}
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-zinc-100 dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800 animate-pulse">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                      <div className="flex-1">
+                        <div className="h-4 w-24 bg-zinc-300 dark:bg-zinc-700 rounded mb-2" />
+                        <div className="h-3 w-16 bg-zinc-200 dark:bg-zinc-800 rounded" />
+                      </div>
+                      <div className="h-6 w-16 bg-zinc-300 dark:bg-zinc-700 rounded-full" />
+                    </div>
+                    <div className="h-5 w-3/4 bg-zinc-300 dark:bg-zinc-700 rounded mb-2" />
+                    <div className="h-4 w-full bg-zinc-200 dark:bg-zinc-800 rounded mb-2" />
+                    <div className="h-4 w-2/3 bg-zinc-200 dark:bg-zinc-800 rounded" />
+                  </div>
+                ))}
               </div>
             ) : filteredPosts.length === 0 ? (
               <div className="text-center py-8">
