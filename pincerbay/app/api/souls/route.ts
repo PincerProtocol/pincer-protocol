@@ -1,20 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { checkRateLimit, getIdentifier } from '@/lib/ratelimit';
 import { requireAuth } from '@/lib/auth';
 import { CreateSoulSchema, validateInput } from '@/lib/validations';
 import { logger } from '@/lib/logger';
 
 export async function GET(request: Request) {
-  // 1. Rate Limiting
-  try {
-    const rateLimitRes = await checkRateLimit(getIdentifier(request));
-    if (rateLimitRes) return rateLimitRes;
-  } catch (rateLimitError) {
-    logger.error('Rate limit error:', rateLimitError);
-    // Continue without rate limiting on error
-  }
-
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -61,11 +51,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  // 1. Rate Limiting
-  const rateLimitRes = await checkRateLimit(getIdentifier(request));
-  if (rateLimitRes) return rateLimitRes;
-
-  // 2. Authentication
+  // 1. Authentication
   const session = await requireAuth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
