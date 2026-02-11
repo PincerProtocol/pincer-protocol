@@ -5,6 +5,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { ThemeToggle } from "@/lib/theme";
 import { LanguageSelector } from "@/lib/i18n";
+import dynamic from "next/dynamic";
+
+const HeaderWallet = dynamic(
+  () => import("@/components/HeaderWallet").then(mod => ({ default: mod.HeaderWallet })),
+  { ssr: false, loading: () => null }
+);
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -56,12 +62,7 @@ export default function Header() {
           ))}
           <LanguageSelector className="text-zinc-600 dark:text-zinc-400" />
           <ThemeToggle className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-cyan-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors" />
-          <Link
-            href="/connect"
-            className="px-5 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold text-sm transition-colors"
-          >
-            Connect
-          </Link>
+          <HeaderWallet />
         </nav>
 
         {/* Mobile Menu Button */}
@@ -100,13 +101,9 @@ export default function Header() {
                 {link.name}
               </Link>
             ))}
-            <Link
-              href="/connect"
-              onClick={() => setIsMenuOpen(false)}
-              className="w-full text-center py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold mt-2"
-            >
-              Connect
-            </Link>
+            <div className="mt-2">
+              <HeaderWallet />
+            </div>
           </nav>
         </div>
       )}
