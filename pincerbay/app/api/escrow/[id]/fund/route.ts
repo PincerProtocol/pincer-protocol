@@ -2,17 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { escrowService } from '@/lib/escrowService'
 import { requireAuth } from '@/lib/auth'
 import { logger } from '@/lib/logger'
-import { walletService } from '@/lib/walletService'
+import { prisma } from '@/lib/prisma'
 import { getSafeErrorMessage } from '@/lib/validations'
 
 /**
  * POST /api/escrow/[id]/fund
- * Fund escrow by depositing PNCR
- *
- * Request body:
- * {
- *   txHash?: string  // Optional - for on-chain funding verification
- * }
+ * Fund escrow by depositing PNCR from internal wallet
+ * 
+ * Flow:
+ * 1. Verify buyer is the caller
+ * 2. Check buyer has sufficient PNCR balance
+ * 3. Deduct from buyer's wallet (held in escrow)
+ * 4. Update escrow status to 'funded'
  */
 export async function POST(
   req: NextRequest,
@@ -29,10 +30,8 @@ export async function POST(
     }
 
     const { id: escrowId } = await params
-    const body = await req.json()
-    const { txHash } = body
 
-    logger.info('Funding escrow', { escrowId, userId: session.user.id, txHash })
+    logger.info('Funding escrow', { escrowId, userId: session.user.id })
 
     // Get escrow details
     const escrow = await escrowService.getEscrow(escrowId)
@@ -56,62 +55,82 @@ export async function POST(
       )
     }
 
-    // For MVP: If no txHash provided, generate placeholder
-    // In production: verify on-chain deposit before updating status
-    let fundTxHash = txHash || `offchain_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    let onChainTxId: string | undefined
+    // Get buyer's wallet
+    const buyerWallet = await prisma.userWallet.findUnique({
+      where: { userId: session.user.id }
+    })
 
-    // On-chain integration
-    try {
-      const SIMPLE_ESCROW_ADDRESS = process.env.SIMPLE_ESCROW_CONTRACT_ADDRESS
-
-      if (!SIMPLE_ESCROW_ADDRESS || SIMPLE_ESCROW_ADDRESS === '0x0000000000000000000000000000000000000000') {
-        logger.warn('SimpleEscrow contract not deployed. Recording as pending on-chain confirmation.', {
-          escrowId,
-          hint: 'Set SIMPLE_ESCROW_CONTRACT_ADDRESS environment variable after deploying contract'
-        })
-        // Continue with DB update but mark as pending_chain
-      } else {
-        // TODO: Implement buyer signature verification
-        // For MVP: This requires client-side wallet signature
-        // Client needs to call escrowService.fundEscrowOnChain with their wallet signer
-        // const result = await escrowService.fundEscrowOnChain(
-        //   escrow.id,
-        //   buyerSigner,  // Requires wallet connection from client
-        //   escrow.sellerAgent?.wallet?.address || escrow.sellerId,
-        //   escrow.amount.toString()
-        // )
-        // fundTxHash = result.txHash
-        // onChainTxId = result.onChainTxId
-        logger.warn('On-chain escrow funding requires client wallet integration. Marked as pending_chain.', {
-          escrowId,
-          hint: 'Client should call /api/escrow/[id]/fund-onchain with signed transaction'
-        })
-      }
-    } catch (error) {
-      logger.error('On-chain escrow funding failed', { escrowId, error })
-      // Continue with DB update for MVP
+    if (!buyerWallet) {
+      return NextResponse.json(
+        { success: false, error: 'Wallet not found. Please sign in again.' },
+        { status: 400 }
+      )
     }
 
-    // Fund escrow in database
-    const updated = await escrowService.fundEscrow(escrowId, fundTxHash)
+    // Check balance
+    if (buyerWallet.balance < escrow.amount) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Insufficient PNCR balance. Required: ${escrow.amount}, Available: ${buyerWallet.balance.toFixed(2)}`
+        },
+        { status: 402 }
+      )
+    }
+
+    // Generate transaction hash
+    const txHash = `escrow_fund_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+    // Execute funding in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Deduct from buyer's wallet
+      await tx.userWallet.update({
+        where: { id: buyerWallet.id },
+        data: { balance: { decrement: escrow.amount } }
+      })
+
+      // 2. Record transaction
+      await tx.walletTransaction.create({
+        data: {
+          fromWalletId: buyerWallet.id,
+          toWalletId: null, // Held in escrow
+          amount: escrow.amount,
+          txType: 'escrow',
+          txHash,
+          status: 'confirmed',
+          description: `Escrow funding: ${escrowId.slice(0, 8)}...`
+        }
+      })
+
+      // 3. Update escrow status
+      const updated = await tx.escrow.update({
+        where: { id: escrowId },
+        data: {
+          status: 'funded',
+          txHashFund: txHash,
+          updatedAt: new Date()
+        }
+      })
+
+      return updated
+    })
 
     logger.info('Escrow funded successfully', {
       escrowId,
       userId: session.user.id,
-      txHash: fundTxHash,
-      amount: updated.amount
+      txHash,
+      amount: escrow.amount
     })
 
     return NextResponse.json(
       {
         success: true,
         data: {
-          id: updated.id,
-          status: updated.status,
-          txHashFund: updated.txHashFund,
-          amount: updated.amount,
-          currency: updated.currency,
+          id: result.id,
+          status: result.status,
+          txHashFund: result.txHashFund,
+          amount: escrow.amount,
+          currency: escrow.currency,
           message: 'Escrow funded successfully'
         }
       },
@@ -124,13 +143,6 @@ export async function POST(
       return NextResponse.json(
         { success: false, error: 'Escrow not found' },
         { status: 404 }
-      )
-    }
-
-    if (error instanceof Error && error.message.includes('Invalid state transition')) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 400 }
       )
     }
 

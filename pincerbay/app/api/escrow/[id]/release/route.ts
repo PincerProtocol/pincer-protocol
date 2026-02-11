@@ -2,17 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { escrowService } from '@/lib/escrowService'
 import { requireAuth } from '@/lib/auth'
 import { logger } from '@/lib/logger'
-import { walletService } from '@/lib/walletService'
+import { prisma } from '@/lib/prisma'
 import { getSafeErrorMessage } from '@/lib/validations'
 
 /**
  * POST /api/escrow/[id]/release
  * Release escrow funds to seller
- *
- * Request body:
- * {
- *   txHash?: string  // Optional - for on-chain release verification
- * }
+ * 
+ * Flow:
+ * 1. Verify buyer is the caller
+ * 2. Calculate platform fee (10%)
+ * 3. Credit seller's agent wallet (90%)
+ * 4. Update escrow status to 'completed'
+ * 5. Update agent metrics (earnings, tasks)
  */
 export async function POST(
   req: NextRequest,
@@ -29,10 +31,8 @@ export async function POST(
     }
 
     const { id: escrowId } = await params
-    const body = await req.json()
-    const { txHash } = body
 
-    logger.info('Releasing escrow funds', { escrowId, userId: session.user.id, txHash })
+    logger.info('Releasing escrow funds', { escrowId, userId: session.user.id })
 
     // Get escrow details
     const escrow = await escrowService.getEscrow(escrowId)
@@ -45,7 +45,7 @@ export async function POST(
       )
     }
 
-    // Verify escrow is in 'funded' or 'delivered' state
+    // Verify escrow is in correct state
     if (escrow.status !== 'funded' && escrow.status !== 'delivered') {
       return NextResponse.json(
         {
@@ -56,65 +56,120 @@ export async function POST(
       )
     }
 
-    // For MVP: If no txHash provided, generate placeholder
-    // In production: execute on-chain transfer to seller
-    let releaseTxHash = txHash || `release_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-
-    // On-chain integration
-    try {
-      const SIMPLE_ESCROW_ADDRESS = process.env.SIMPLE_ESCROW_CONTRACT_ADDRESS
-      const PLATFORM_PRIVATE_KEY = process.env.PLATFORM_PRIVATE_KEY
-
-      if (!SIMPLE_ESCROW_ADDRESS || SIMPLE_ESCROW_ADDRESS === '0x0000000000000000000000000000000000000000') {
-        logger.warn('SimpleEscrow contract not deployed. Marking as manual_release required.', {
-          escrowId,
-          hint: 'Set SIMPLE_ESCROW_CONTRACT_ADDRESS environment variable after deploying contract'
-        })
-      } else if (!PLATFORM_PRIVATE_KEY) {
-        logger.warn('PLATFORM_PRIVATE_KEY not set. On-chain release requires manual intervention.', {
-          escrowId,
-          hint: 'Set PLATFORM_PRIVATE_KEY for automated on-chain releases'
-        })
-      } else {
-        // TODO: Implement on-chain release
-        // For full implementation, need to:
-        // 1. Get buyer's wallet signer (buyer confirms delivery in SimpleEscrow)
-        // 2. Call escrowService.releaseEscrowOnChain(onChainTxId, buyerSigner)
-        // Note: SimpleEscrow.confirmDelivery() must be called by the BUYER, not platform
-        // const buyerSigner = walletService.getSigner(buyerPrivateKey)  // Need buyer's signature
-        // const result = await escrowService.releaseEscrowOnChain(escrow.onChainTxId, buyerSigner)
-        // releaseTxHash = result.txHash
-        logger.warn('On-chain escrow release implementation pending. Funds released in DB only.', {
-          escrowId,
-          hint: 'Buyer must call SimpleEscrow.confirmDelivery() to release funds on-chain'
-        })
-      }
-    } catch (error) {
-      logger.error('On-chain escrow release failed', { escrowId, error })
-      // Continue with DB update for MVP
+    // Get seller's agent wallet
+    if (!escrow.sellerAgentId) {
+      return NextResponse.json(
+        { success: false, error: 'No seller agent found for this escrow' },
+        { status: 400 }
+      )
     }
 
-    // Release escrow in database and update seller metrics
-    const updated = await escrowService.releaseEscrow(escrowId, releaseTxHash)
+    const sellerAgentWallet = await prisma.agentWallet.findUnique({
+      where: { agentId: escrow.sellerAgentId }
+    })
+
+    if (!sellerAgentWallet) {
+      return NextResponse.json(
+        { success: false, error: 'Seller agent wallet not found' },
+        { status: 400 }
+      )
+    }
+
+    // Calculate amounts
+    const platformFee = escrow.amount * 0.10 // 10% platform fee
+    const sellerAmount = escrow.amount - platformFee
+
+    // Generate transaction hash
+    const txHash = `escrow_release_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+    // Execute release in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Credit seller's agent wallet
+      await tx.agentWallet.update({
+        where: { id: sellerAgentWallet.id },
+        data: { balance: { increment: sellerAmount } }
+      })
+
+      // 2. Record transaction
+      await tx.walletTransaction.create({
+        data: {
+          fromWalletId: null, // From escrow
+          toAgentWalletId: sellerAgentWallet.id,
+          amount: sellerAmount,
+          txType: 'escrow',
+          txHash,
+          status: 'confirmed',
+          description: `Escrow release: ${escrowId.slice(0, 8)}... (after 10% fee)`
+        }
+      })
+
+      // 3. Record platform fee
+      await tx.walletTransaction.create({
+        data: {
+          fromWalletId: null,
+          toWalletId: null, // Platform treasury
+          amount: platformFee,
+          txType: 'fee',
+          txHash: `${txHash}_fee`,
+          status: 'confirmed',
+          description: `Platform fee from escrow: ${escrowId.slice(0, 8)}...`
+        }
+      })
+
+      // 4. Update escrow status
+      const updated = await tx.escrow.update({
+        where: { id: escrowId },
+        data: {
+          status: 'completed',
+          txHashRelease: txHash,
+          updatedAt: new Date()
+        }
+      })
+
+      // 5. Update agent metrics
+      await tx.agent.update({
+        where: { id: escrow.sellerAgentId! },
+        data: {
+          tasksCompleted: { increment: 1 },
+          totalEarnings: { increment: sellerAmount }
+        }
+      })
+
+      // 6. Update platform stats
+      await tx.platformStats.upsert({
+        where: { id: 'global' },
+        create: {
+          id: 'global',
+          totalTxVolume: escrow.amount
+        },
+        update: {
+          totalTxVolume: { increment: escrow.amount }
+        }
+      })
+
+      return updated
+    })
 
     logger.info('Escrow released successfully', {
       escrowId,
       userId: session.user.id,
-      txHash: releaseTxHash,
-      amount: updated.amount,
-      sellerId: updated.sellerAgentId
+      txHash,
+      totalAmount: escrow.amount,
+      sellerAmount,
+      platformFee,
+      sellerAgentId: escrow.sellerAgentId
     })
 
     return NextResponse.json(
       {
         success: true,
         data: {
-          id: updated.id,
-          status: updated.status,
-          txHashRelease: updated.txHashRelease,
-          amount: updated.amount,
-          currency: updated.currency,
-          sellerAgentId: updated.sellerAgentId,
+          id: result.id,
+          status: result.status,
+          txHashRelease: result.txHashRelease,
+          totalAmount: escrow.amount,
+          sellerReceived: sellerAmount,
+          platformFee,
           message: 'Escrow released successfully. Funds transferred to seller.'
         }
       },
@@ -127,13 +182,6 @@ export async function POST(
       return NextResponse.json(
         { success: false, error: 'Escrow not found' },
         { status: 404 }
-      )
-    }
-
-    if (error instanceof Error && error.message.includes('Invalid state transition')) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 400 }
       )
     }
 
