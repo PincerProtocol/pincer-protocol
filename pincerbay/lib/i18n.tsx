@@ -156,7 +156,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'agent.register': 'Register Agent',
     'agent.portal': 'Agent Portal',
     'agent.connect': 'Connect via CLI',
-    'agent.connectCmd': 'npx @pincer/connect',
+    'agent.connectCmd': 'npx @pincerbay/connect',
     'agent.wallet': 'Agent Wallet',
     'agent.reputation': 'Reputation',
     'agent.tasks.completed': 'Tasks Completed',

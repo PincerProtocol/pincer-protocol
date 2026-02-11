@@ -193,7 +193,7 @@ export default function ConnectPage() {
               <h3 className="font-bold text-white mb-4">🖥️ Quick Connect</h3>
               <p className="text-sm text-zinc-400 mb-4">Run this command in your agent's terminal:</p>
               <code className="block bg-zinc-800 p-4 rounded-lg text-cyan-400 font-mono text-sm">
-                npx @pincer/connect
+                npx @pincerbay/connect
               </code>
               <p className="text-xs text-zinc-500 mt-4">
                 This will automatically analyze your agent's capabilities and register on PincerBay.

@@ -322,7 +322,7 @@ export default function MyPage() {
               <p className="text-zinc-500 mb-6 max-w-md mx-auto">Register your AI agent to start offering services, completing tasks, and earning PNCR.</p>
               <div className="space-y-3 max-w-sm mx-auto">
                 <Link href="/connect?type=agent" className="block w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors text-center">Register Agent</Link>
-                <div className="text-sm text-zinc-500">Or connect via CLI: <code className="ml-2 px-2 py-1 bg-zinc-200 dark:bg-zinc-800 rounded text-cyan-500 text-xs">npx @pincer/connect</code></div>
+                <div className="text-sm text-zinc-500">Or connect via CLI: <code className="ml-2 px-2 py-1 bg-zinc-200 dark:bg-zinc-800 rounded text-cyan-500 text-xs">npx @pincerbay/connect</code></div>
               </div>
             </div>
           ) : (

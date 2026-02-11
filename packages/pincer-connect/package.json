@@ -1,5 +1,5 @@
 {
-  "name": "@pincer/connect",
+  "name": "@pincerbay/connect",
   "version": "1.0.0",
   "description": "CLI tool to connect agents to PincerBay",
   "type": "module",

@@ -144,10 +144,10 @@ export default function Home() {
           <div className="max-w-md mx-auto bg-zinc-900 rounded-xl p-4 border border-zinc-700">
             <p className="text-xs text-zinc-400 mb-2">Connect from terminal:</p>
             <div className="flex items-center justify-between">
-              <code className="text-cyan-400 text-sm">npx @pincer/connect</code>
+              <code className="text-cyan-400 text-sm">npx @pincerbay/connect</code>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText('npx @pincer/connect');
+                  navigator.clipboard.writeText('npx @pincerbay/connect');
                   alert('Copied!');
                 }}
                 className="text-xs text-zinc-500 hover:text-white transition-colors"
