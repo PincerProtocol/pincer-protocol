@@ -22,7 +22,7 @@ const PurchasePNCR = dynamic(
   { ssr: false, loading: () => <div className="py-4 text-center text-zinc-500">Loading purchase...</div> }
 );
 
-type Tab = 'airdrop' | 'staking' | 'mine' | 'rewards' | 'wallet';
+type Tab = 'airdrop' | 'staking' | 'rewards' | 'wallet';
 
 interface MiningSession {
   id: string;
@@ -269,10 +269,10 @@ export default function PNCRPage() {
   ];
 
   const stakingTiers = [
-    { name: 'Bronze', minStake: '1,000', apy: '5%', benefits: 'Basic rewards' },
-    { name: 'Silver', minStake: '10,000', apy: '8%', benefits: '+ Fee discounts' },
-    { name: 'Gold', minStake: '100,000', apy: '12%', benefits: '+ Priority matching' },
-    { name: 'Diamond', minStake: '1,000,000', apy: '15%', benefits: '+ Governance voting' },
+    { name: 'Bronze', minStake: '1,000', apy: '15%', benefits: 'Basic rewards' },
+    { name: 'Silver', minStake: '10,000', apy: '25%', benefits: '+ Fee discounts' },
+    { name: 'Gold', minStake: '100,000', apy: '40%', benefits: '+ Priority matching' },
+    { name: 'Diamond', minStake: '1,000,000', apy: '60%', benefits: '+ Governance voting' },
   ];
 
   return (
@@ -312,8 +312,7 @@ export default function PNCRPage() {
             { id: 'wallet', label: '💼 Wallet', desc: 'Deposit/Withdraw' },
             { id: 'airdrop', label: '🎁 Airdrop', desc: 'Free tokens' },
             { id: 'staking', label: '📈 Staking', desc: 'Earn APY' },
-            { id: 'mine', label: '⛏️ Mine', desc: 'Activity mining' },
-            { id: 'rewards', label: '🏆 Rewards', desc: 'Activity history' },
+            { id: 'rewards', label: '🏆 Rewards', desc: 'Quests' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -546,102 +545,6 @@ export default function PNCRPage() {
           </div>
         )}
 
-        {/* Mine Tab */}
-        {activeTab === 'mine' && (
-          <div className="space-y-6">
-            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
-              <h2 className="text-xl font-bold mb-4">Activity-Based Mining</h2>
-              <p className="text-sm text-zinc-500 mb-6">
-                Earn $PNCR through platform activity. Mining rewards are based on your engagement and contributions (Proof of Contribution).
-              </p>
-
-              {/* Mining Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 text-center">
-                  <p className="text-xs text-zinc-500 mb-1">Duration</p>
-                  <p className="text-xl font-bold text-cyan-500">{getSessionDuration()}</p>
-                </div>
-                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 text-center">
-                  <p className="text-xs text-zinc-500 mb-1">Session Earned</p>
-                  <p className="text-xl font-bold">{miningStats?.estimatedEarnings?.toFixed(4) || '0.0000'} PNCR</p>
-                </div>
-                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 text-center">
-                  <p className="text-xs text-zinc-500 mb-1">Mining Boost</p>
-                  <p className="text-xl font-bold text-purple-500">{miningStats?.miningBoost?.toFixed(2) || '1.00'}x</p>
-                </div>
-                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 text-center">
-                  <p className="text-xs text-zinc-500 mb-1">Status</p>
-                  <p className={`text-xl font-bold ${isMining ? 'text-green-500' : 'text-zinc-400'}`}>
-                    {isMining ? 'Active' : 'Idle'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Daily Progress */}
-              {miningStats?.todayStats && (
-                <div className="mb-6 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4">
-                  <div className="flex justify-between text-xs text-zinc-500 mb-2">
-                    <span>Daily Progress</span>
-                    <span>{miningStats.todayStats.earned.toFixed(2)} / {miningStats.todayStats.cap.toFixed(2)} PNCR</span>
-                  </div>
-                  <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-cyan-500 to-purple-500 h-2 rounded-full transition-all"
-                      style={{ width: `${Math.min(100, (miningStats.todayStats.earned / miningStats.todayStats.cap) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Activity Info */}
-              {isMining && (
-                <div className="mb-6 p-4 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/20 rounded-lg">
-                  <p className="text-sm text-zinc-300 mb-2">
-                    {miningStats?.activityBonus ? (
-                      <>
-                        <span className="text-green-500 font-bold">✓ Active Bonus (1.5x):</span> You have recent activity!
-                      </>
-                    ) : (
-                      <>
-                        <span className="text-yellow-500 font-bold">⏸ No Activity Bonus:</span> Stay engaged to maximize rewards!
-                      </>
-                    )}
-                  </p>
-                  <p className="text-xs text-zinc-500">
-                    Post, comment, or complete jobs in the last hour to activate the 1.5x activity bonus.
-                  </p>
-                </div>
-              )}
-
-              {/* Control Button */}
-              {session ? (
-                <button
-                  onClick={isMining ? stopMining : startMining}
-                  disabled={!session}
-                  className={`w-full py-4 rounded-xl font-bold text-lg transition-colors ${
-                    isMining
-                      ? 'bg-red-500 hover:bg-red-600 text-white'
-                      : 'bg-cyan-500 hover:bg-cyan-600 text-black'
-                  }`}
-                >
-                  {isMining ? '⏹️ Stop Mining' : '▶️ Start Mining'}
-                </button>
-              ) : (
-                <Link
-                  href="/connect"
-                  className="block w-full py-4 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold text-lg text-center transition-colors"
-                >
-                  Connect to Start Mining
-                </Link>
-              )}
-
-              <p className="text-xs text-zinc-400 mt-4 text-center">
-                Mining is activity-based (Proof of Contribution). Complete jobs and engage with the platform to earn more.
-              </p>
-            </div>
-          </div>
-        )}
-
         {/* Airdrop Tab - Package System */}
         {activeTab === 'airdrop' && (
           <div className="space-y-6">
@@ -780,10 +683,10 @@ export default function PNCRPage() {
               ))}
             </div>
 
-            {/* Mining History Link */}
+            {/* Staking Link */}
             <div className="bg-zinc-100 dark:bg-zinc-800 rounded-xl p-4 text-center">
               <p className="text-sm text-zinc-500">
-                Looking for mining rewards? Check the <button onClick={() => setActiveTab('mine')} className="text-cyan-500 hover:underline font-medium">Mine</button> tab!
+                Want higher rewards? <button onClick={() => setActiveTab('staking')} className="text-cyan-500 hover:underline font-medium">Stake PNCR</button> for up to 60% APY!
               </p>
             </div>
           </div>
