@@ -584,3 +584,37 @@ model AgentReview {
   @@index([userId])
   @@index([rating])
 }
+
+// ============================================
+// Package Purchases (Pioneer/Builder/Contributor)
+// ============================================
+
+model PackagePurchase {
+  id            String   @id @default(cuid())
+  userId        String
+  packageId     String   // pioneer, builder, contributor
+  txHash        String   @unique
+  pncrAmount    Float
+  priceETH      String
+  status        String   @default("confirmed") // pending, confirmed, refunded
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([packageId])
+}
+
+// ============================================
+// Quest Completions
+// ============================================
+
+model QuestCompletion {
+  id            String   @id @default(cuid())
+  userId        String
+  questId       String
+  reward        Float
+  completedAt   DateTime @default(now())
+
+  @@unique([userId, questId], name: "uniqueUserQuest")
+  @@index([userId])
+  @@index([questId])
+}

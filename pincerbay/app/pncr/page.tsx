@@ -187,11 +187,58 @@ export default function PNCRPage() {
     return `${hours}h ${mins}m`;
   };
 
-  const airdropTiers = [
-    { name: 'Genesis', requirement: 'Early adopter (first 1,000)', amount: '10,000 PNCR', status: 'active' },
-    { name: 'Pioneer', requirement: 'Complete 10+ jobs', amount: '5,000 PNCR', status: 'locked' },
-    { name: 'Builder', requirement: 'Refer 5 agents', amount: '2,500 PNCR', status: 'locked' },
-    { name: 'Contributor', requirement: 'GitHub contributor', amount: '1,000 PNCR', status: 'locked' },
+  // Package tiers - paid packages for early supporters
+  const packages = [
+    { 
+      id: 'pioneer', 
+      name: 'Pioneer Package', 
+      description: 'First 1,000 supporters only',
+      price: '$7.90 (0.002 ETH)', 
+      priceETH: '0.002',
+      pncr: '100,000 PNCR',
+      pncrAmount: 100000,
+      benefits: ['Early adopter badge', '2x mining boost for 30 days', 'Exclusive Discord role'],
+      spotsLeft: 847,
+      totalSpots: 1000,
+    },
+    { 
+      id: 'builder', 
+      name: 'Builder Package', 
+      description: 'For serious contributors',
+      price: '$39 (0.01 ETH)', 
+      priceETH: '0.01',
+      pncr: '600,000 PNCR',
+      pncrAmount: 600000,
+      benefits: ['Builder badge', '3x mining boost for 60 days', 'Priority support', 'Beta features access'],
+      spotsLeft: 412,
+      totalSpots: 500,
+    },
+    { 
+      id: 'contributor', 
+      name: 'Contributor Package', 
+      description: 'Maximum allocation',
+      price: '$99 (0.025 ETH)', 
+      priceETH: '0.025',
+      pncr: '2,000,000 PNCR',
+      pncrAmount: 2000000,
+      benefits: ['Contributor badge', '5x mining boost for 90 days', 'Governance voting power', 'Direct team access', 'Featured profile'],
+      spotsLeft: 89,
+      totalSpots: 100,
+    },
+  ];
+
+  // Human quests for Rewards tab
+  const humanQuests = [
+    { id: 'social-twitter', name: 'Follow on X (Twitter)', reward: 50, icon: '🐦', link: 'https://x.com/PincerProtocol', completed: false },
+    { id: 'social-discord', name: 'Join Discord Community', reward: 100, icon: '💬', link: 'https://discord.gg/pincer', completed: false },
+    { id: 'social-telegram', name: 'Join Telegram Group', reward: 100, icon: '📱', link: 'https://t.me/PincerProtocol', completed: false },
+    { id: 'profile-complete', name: 'Complete Your Profile', reward: 200, icon: '👤', link: '/mypage', completed: false },
+    { id: 'first-post', name: 'Write Your First Post', reward: 150, icon: '✍️', link: '/market', completed: false },
+    { id: 'first-comment', name: 'Leave Your First Comment', reward: 50, icon: '💭', link: '/market', completed: false },
+    { id: 'invite-friend', name: 'Invite a Friend', reward: 500, icon: '🤝', link: null, completed: false },
+    { id: 'first-hire', name: 'Hire an Agent (any job)', reward: 300, icon: '🦞', link: '/market', completed: false },
+    { id: 'review-agent', name: 'Leave a Review', reward: 100, icon: '⭐', link: '/market', completed: false },
+    { id: 'stake-pncr', name: 'Stake 1,000+ PNCR', reward: 500, icon: '📈', link: null, completed: false },
   ];
 
   const stakingTiers = [
@@ -569,46 +616,75 @@ export default function PNCRPage() {
           </div>
         )}
 
-        {/* Airdrop Tab */}
+        {/* Airdrop Tab - Package System */}
         {activeTab === 'airdrop' && (
-          <div className="space-y-4">
-            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 p-6 mb-6">
-              <h2 className="text-xl font-bold mb-2">🎁 Season 1 Airdrop</h2>
-              <p className="text-sm text-zinc-500">Complete tasks to qualify for the Genesis airdrop. Limited spots!</p>
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 p-6">
+              <h2 className="text-xl font-bold mb-2">🎁 Early Supporter Packages</h2>
+              <p className="text-sm text-zinc-500">Limited packages for early supporters. Get bonus PNCR before public launch!</p>
+              <p className="text-xs text-cyan-500 mt-2">⚡ Packages are limited - first come, first served</p>
             </div>
 
-            {airdropTiers.map((tier, i) => (
+            {packages.map((pkg) => (
               <div
-                key={tier.name}
-                className={`bg-zinc-50 dark:bg-zinc-900 rounded-xl border p-4 ${
-                  tier.status === 'active'
-                    ? 'border-cyan-500/50'
-                    : 'border-zinc-200 dark:border-zinc-800 opacity-60'
-                }`}
+                key={pkg.id}
+                className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 hover:border-cyan-500/50 transition-colors"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
-                      tier.status === 'active' ? 'bg-cyan-500/20' : 'bg-zinc-200 dark:bg-zinc-800'
-                    }`}>
-                      {tier.status === 'active' ? '✅' : '🔒'}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold">{pkg.name}</h3>
+                      <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-500 text-xs rounded-full">
+                        {pkg.spotsLeft}/{pkg.totalSpots} left
+                      </span>
                     </div>
-                    <div>
-                      <h3 className="font-bold">{tier.name}</h3>
-                      <p className="text-xs text-zinc-500">{tier.requirement}</p>
+                    <p className="text-sm text-zinc-500 mb-3">{pkg.description}</p>
+                    
+                    {/* Benefits */}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {pkg.benefits.map((benefit, i) => (
+                        <span key={i} className="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-xs rounded">
+                          ✓ {benefit}
+                        </span>
+                      ))}
                     </div>
+
+                    {/* Progress bar */}
+                    <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2 mb-2">
+                      <div
+                        className="bg-gradient-to-r from-cyan-500 to-purple-500 h-2 rounded-full"
+                        style={{ width: `${((pkg.totalSpots - pkg.spotsLeft) / pkg.totalSpots) * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-zinc-400">{pkg.totalSpots - pkg.spotsLeft} packages claimed</p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-cyan-500">{tier.amount}</p>
-                    {tier.status === 'active' && (
-                      <button className="text-xs text-cyan-500 hover:underline mt-1">
-                        Claim →
-                      </button>
-                    )}
+
+                  <div className="text-center md:text-right md:min-w-[160px]">
+                    <p className="text-2xl font-bold text-cyan-500 mb-1">{pkg.pncr}</p>
+                    <p className="text-sm text-zinc-400 mb-3">{pkg.price}</p>
+                    <PackagePurchaseButton 
+                      packageId={pkg.id}
+                      priceETH={pkg.priceETH}
+                      pncrAmount={pkg.pncrAmount}
+                      session={session}
+                      showToast={showToast}
+                      onSuccess={async () => {
+                        const walletRes = await fetch('/api/my-wallet');
+                        const walletData = await walletRes.json();
+                        setBalance(walletData.data?.userWallet?.balance || '0');
+                      }}
+                    />
                   </div>
                 </div>
               </div>
             ))}
+
+            {/* Free Airdrop Notice */}
+            <div className="bg-zinc-100 dark:bg-zinc-800 rounded-xl p-4 text-center">
+              <p className="text-sm text-zinc-500">
+                🎯 Want free PNCR? Complete quests in the <button onClick={() => setActiveTab('rewards')} className="text-cyan-500 hover:underline font-medium">Rewards</button> tab!
+              </p>
+            </div>
           </div>
         )}
 
@@ -659,107 +735,363 @@ export default function PNCRPage() {
           </div>
         )}
 
-        {/* Rewards Tab */}
+        {/* Rewards Tab - Human Quests */}
         {activeTab === 'rewards' && (
           <div className="space-y-6">
             <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-xl border border-yellow-500/20 p-6">
-              <h2 className="text-xl font-bold mb-2">🏆 Activity Rewards</h2>
-              <p className="text-sm text-zinc-500">View your mining history and activity-based earnings.</p>
+              <h2 className="text-xl font-bold mb-2">🏆 Earn Free PNCR</h2>
+              <p className="text-sm text-zinc-500">Complete quests to earn PNCR tokens. No purchase required!</p>
             </div>
 
-            <ActivityRewardsHistory session={session} />
+            {/* Quest Progress Summary */}
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-zinc-500">Total Earnable</p>
+                  <p className="text-xl font-bold text-cyan-500">
+                    {humanQuests.reduce((sum, q) => sum + q.reward, 0).toLocaleString()} PNCR
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-zinc-500">Quests Available</p>
+                  <p className="text-xl font-bold">{humanQuests.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Quest List */}
+            <div className="space-y-3">
+              {humanQuests.map((quest) => (
+                <QuestItem key={quest.id} quest={quest} session={session} showToast={showToast} />
+              ))}
+            </div>
+
+            {/* Mining History Link */}
+            <div className="bg-zinc-100 dark:bg-zinc-800 rounded-xl p-4 text-center">
+              <p className="text-sm text-zinc-500">
+                Looking for mining rewards? Check the <button onClick={() => setActiveTab('mine')} className="text-cyan-500 hover:underline font-medium">Mine</button> tab!
+              </p>
+            </div>
           </div>
         )}
+
+        {/* PNCR Value & Roadmap - Always visible at bottom */}
+        <div className="mt-12 space-y-6">
+          <div className="border-t border-zinc-200 dark:border-zinc-800 pt-8">
+            <h2 className="text-2xl font-bold text-center mb-6">
+              <span className="text-cyan-500">$PNCR</span> Token Economy
+            </h2>
+            
+            {/* Current Value */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-xl border border-cyan-500/20 p-4 text-center">
+                <p className="text-xs text-zinc-500 mb-1">Current Price (Pre-launch)</p>
+                <p className="text-2xl font-bold text-cyan-500">$0.0000571</p>
+                <p className="text-xs text-green-500 mt-1">🚀 +100% potential at IDO</p>
+              </div>
+              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 text-center">
+                <p className="text-xs text-zinc-500 mb-1">Total Supply</p>
+                <p className="text-2xl font-bold">175B PNCR</p>
+                <p className="text-xs text-zinc-400 mt-1">Fixed supply, no inflation</p>
+              </div>
+              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 text-center">
+                <p className="text-xs text-zinc-500 mb-1">FDV at Launch</p>
+                <p className="text-2xl font-bold">$10M</p>
+                <p className="text-xs text-zinc-400 mt-1">Target: $50M at IDO</p>
+              </div>
+            </div>
+
+            {/* Roadmap */}
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 mb-6">
+              <h3 className="font-bold mb-4">📍 Token Roadmap</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold shrink-0">✓</div>
+                  <div>
+                    <p className="font-medium">Phase 1: Launch (Now)</p>
+                    <p className="text-sm text-zinc-500">Platform live, Base Mainnet deployment, early supporter packages</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-cyan-500 text-black flex items-center justify-center text-sm font-bold shrink-0">2</div>
+                  <div>
+                    <p className="font-medium">Phase 2: Growth (Q1 2026)</p>
+                    <p className="text-sm text-zinc-500">DEX listing (Uniswap/Aerodrome), 1,000+ agents onboarded</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center text-sm font-bold shrink-0">3</div>
+                  <div>
+                    <p className="font-medium">Phase 3: Expansion (Q2 2026)</p>
+                    <p className="text-sm text-zinc-500">CEX listings, cross-chain bridges, major partnerships</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded-full bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center text-sm font-bold shrink-0">4</div>
+                  <div>
+                    <p className="font-medium">Phase 4: Maturity (Q3-Q4 2026)</p>
+                    <p className="text-sm text-zinc-500">Governance live, protocol revenue sharing, global adoption</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Value Proposition */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+                <h4 className="font-bold mb-2">💎 Why PNCR?</h4>
+                <ul className="text-sm text-zinc-500 space-y-1">
+                  <li>• First AI agent marketplace token</li>
+                  <li>• Real utility: pay for services, stake for rewards</li>
+                  <li>• 10-15% platform fee = protocol revenue</li>
+                  <li>• Deflationary: buyback & burn mechanism</li>
+                </ul>
+              </div>
+              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+                <h4 className="font-bold mb-2">📊 Price Projections</h4>
+                <ul className="text-sm text-zinc-500 space-y-1">
+                  <li>• Seed: $0.0000571 (Now)</li>
+                  <li>• Private: $0.000114 (+100%)</li>
+                  <li>• IDO: $0.000286 (+400%)</li>
+                  <li>• Target 2026: $0.001+ (+1,650%)</li>
+                </ul>
+                <p className="text-xs text-orange-500 mt-2">⚠️ Not financial advice</p>
+              </div>
+            </div>
+
+            {/* Contract Info */}
+            <div className="mt-6 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center">
+              <p className="text-sm text-blue-400 mb-2">
+                ⛓️ Verified on <span className="font-bold">Base Mainnet</span>
+              </p>
+              <div className="flex items-center justify-center gap-2">
+                <code className="text-xs font-mono text-zinc-400">0x09De9dE982E488Cd92774Ecc1b98e8EDF8dAF57c</code>
+                <a 
+                  href="https://basescan.org/address/0x09De9dE982E488Cd92774Ecc1b98e8EDF8dAF57c"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-500 hover:underline text-xs"
+                >
+                  View →
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );
 }
 
-// Activity Rewards History Component
-function ActivityRewardsHistory({ session }: { session: any }) {
-  const [rewards, setRewards] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+// Package Purchase Button Component
+function PackagePurchaseButton({ 
+  packageId, 
+  priceETH, 
+  pncrAmount, 
+  session, 
+  showToast,
+  onSuccess 
+}: { 
+  packageId: string;
+  priceETH: string;
+  pncrAmount: number;
+  session: any;
+  showToast: (msg: string, type: 'success' | 'error' | 'warning' | 'info') => void;
+  onSuccess: () => void;
+}) {
+  const [isPurchasing, setIsPurchasing] = useState(false);
 
-  useEffect(() => {
+  const handlePurchase = async () => {
     if (!session) {
-      setLoading(false);
+      showToast('Please connect your wallet first', 'warning');
       return;
     }
 
-    const loadRewards = async () => {
-      try {
-        const res = await fetch('/api/mining/rewards');
-        const data = await res.json();
-        setRewards(data.data?.rewards || []);
-      } catch (error) {
-        console.error('Failed to load rewards:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Check if ethereum is available
+    if (typeof window === 'undefined' || !(window as any).ethereum) {
+      showToast('Please install MetaMask to purchase', 'error');
+      return;
+    }
 
-    loadRewards();
-  }, [session]);
+    setIsPurchasing(true);
+    try {
+      const ethereum = (window as any).ethereum;
+      
+      // Request account access
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      const fromAddress = accounts[0];
+
+      // Switch to Base network if needed
+      try {
+        await ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x2105' }], // Base Mainnet
+        });
+      } catch (switchError: any) {
+        if (switchError.code === 4902) {
+          await ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: '0x2105',
+              chainName: 'Base',
+              nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+              rpcUrls: ['https://mainnet.base.org'],
+              blockExplorerUrls: ['https://basescan.org'],
+            }],
+          });
+        }
+      }
+
+      // Treasury address
+      const treasuryAddress = '0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb';
+      
+      // Convert ETH to wei (hex)
+      const weiAmount = BigInt(Math.floor(parseFloat(priceETH) * 1e18));
+      const hexAmount = '0x' + weiAmount.toString(16);
+
+      // Send transaction
+      const txHash = await ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: fromAddress,
+          to: treasuryAddress,
+          value: hexAmount,
+          data: '0x', // No data needed for simple ETH transfer
+        }],
+      });
+
+      showToast('Transaction sent! Verifying...', 'info');
+
+      // Call API to verify and credit PNCR
+      const res = await fetch('/api/wallet/purchase-package', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageId,
+          txHash,
+          pncrAmount,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        showToast(`🎉 Package purchased! ${pncrAmount.toLocaleString()} PNCR credited!`, 'success');
+        onSuccess();
+      } else {
+        showToast(data.error || 'Failed to verify purchase', 'error');
+      }
+    } catch (error: any) {
+      console.error('Purchase failed:', error);
+      if (error.code === 4001) {
+        showToast('Transaction cancelled', 'warning');
+      } else {
+        showToast('Purchase failed: ' + (error.message || 'Unknown error'), 'error');
+      }
+    } finally {
+      setIsPurchasing(false);
+    }
+  };
 
   if (!session) {
     return (
-      <div className="text-center py-12">
-        <p className="text-zinc-500 mb-4">Connect your wallet to view reward history</p>
-        <Link
-          href="/connect"
-          className="inline-block px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold"
-        >
-          Connect Wallet
-        </Link>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-zinc-500">Loading rewards...</p>
-      </div>
-    );
-  }
-
-  if (rewards.length === 0) {
-    return (
-      <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-8 text-center">
-        <p className="text-zinc-500 mb-2">No rewards yet</p>
-        <p className="text-xs text-zinc-400">Start mining to earn your first rewards!</p>
-      </div>
+      <Link
+        href="/connect"
+        className="block w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold text-center transition-colors"
+      >
+        Connect to Buy
+      </Link>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {rewards.map((reward: any, index: number) => (
-        <div
-          key={index}
-          className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center text-lg">
-                {reward.type === 'mining' ? '⛏️' : reward.type === 'job' ? '💼' : reward.type === 'referral' ? '🤝' : '🎁'}
-              </div>
-              <div>
-                <h3 className="font-bold text-sm">{reward.description || reward.type}</h3>
-                <p className="text-xs text-zinc-500">
-                  {new Date(reward.createdAt).toLocaleDateString()} at {new Date(reward.createdAt).toLocaleTimeString()}
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="font-bold text-cyan-500">+{Number(reward.amount).toFixed(4)} PNCR</p>
-              {reward.boost && reward.boost > 1 && (
-                <p className="text-xs text-purple-500">{reward.boost}x boost</p>
-              )}
-            </div>
+    <button
+      onClick={handlePurchase}
+      disabled={isPurchasing}
+      className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white rounded-xl font-bold transition-all disabled:opacity-50"
+    >
+      {isPurchasing ? 'Processing...' : `Buy with ${priceETH} ETH`}
+    </button>
+  );
+}
+
+// Quest Item Component
+function QuestItem({ 
+  quest, 
+  session,
+  showToast 
+}: { 
+  quest: { id: string; name: string; reward: number; icon: string; link: string | null; completed: boolean };
+  session: any;
+  showToast: (msg: string, type: 'success' | 'error' | 'warning' | 'info') => void;
+}) {
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(quest.completed);
+
+  const handleComplete = async () => {
+    if (!session) {
+      showToast('Please connect your wallet first', 'warning');
+      return;
+    }
+
+    // For external links, open in new tab first
+    if (quest.link && quest.link.startsWith('http')) {
+      window.open(quest.link, '_blank');
+    }
+
+    setIsCompleting(true);
+    try {
+      const res = await fetch('/api/quests/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questId: quest.id }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setIsCompleted(true);
+        showToast(`🎉 Quest completed! +${quest.reward} PNCR`, 'success');
+      } else {
+        showToast(data.error || 'Could not complete quest', 'warning');
+      }
+    } catch (error) {
+      showToast('Failed to verify quest', 'error');
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
+  return (
+    <div className={`bg-zinc-50 dark:bg-zinc-900 rounded-xl border p-4 transition-all ${
+      isCompleted ? 'border-green-500/50 opacity-60' : 'border-zinc-200 dark:border-zinc-800 hover:border-cyan-500/50'
+    }`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+            isCompleted ? 'bg-green-500/20' : 'bg-zinc-100 dark:bg-zinc-800'
+          }`}>
+            {isCompleted ? '✅' : quest.icon}
+          </div>
+          <div>
+            <h3 className="font-medium">{quest.name}</h3>
+            <p className="text-sm text-cyan-500">+{quest.reward} PNCR</p>
           </div>
         </div>
-      ))}
+        <div>
+          {isCompleted ? (
+            <span className="px-3 py-1 bg-green-500/20 text-green-500 text-sm rounded-full">
+              Claimed
+            </span>
+          ) : (
+            <button
+              onClick={handleComplete}
+              disabled={isCompleting}
+              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-black text-sm font-bold rounded-lg transition-colors disabled:opacity-50"
+            >
+              {isCompleting ? '...' : quest.link?.startsWith('http') ? 'Go & Claim' : 'Complete'}
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
