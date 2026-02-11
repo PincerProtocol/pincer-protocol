@@ -78,15 +78,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid recipient address' }, { status: 400 });
     }
 
-    // Verify amount (allow 20% tolerance for ETH price fluctuations)
-    const expectedWei = ethers.parseEther(expectedETH.toFixed(18));
-    const minWei = expectedWei * BigInt(80) / BigInt(100);
-    if (tx.value < minWei) {
-      return NextResponse.json({ 
-        success: false, 
-        error: `Insufficient payment. Expected ~${expectedETH.toFixed(4)} ETH ($${pkg.priceUSD})` 
-      }, { status: 400 });
-    }
+    // Get sender address from transaction
+    const senderAddress = tx.from.toLowerCase();
 
     // Check if txHash already used
     const existingPurchase = await prisma.packagePurchase.findUnique({
@@ -103,11 +96,42 @@ export async function POST(request: NextRequest) {
       include: { wallet: true },
     });
 
-    if (!user || !user.wallet) {
-      return NextResponse.json({ success: false, error: 'Wallet not found' }, { status: 404 });
+    if (!user) {
+      return NextResponse.json({ success: false, error: 'User not found. Please login first.' }, { status: 404 });
+    }
+
+    if (!user.wallet) {
+      return NextResponse.json({ success: false, error: 'Wallet not found. Please connect your wallet first.' }, { status: 404 });
     }
 
     const userWallet = user.wallet;
+
+    // SECURITY: Verify sender is the logged-in user's wallet
+    // This prevents someone from claiming another person's transaction
+    if (userWallet.address && userWallet.address.toLowerCase() !== senderAddress) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Transaction sender does not match your registered wallet. Please use the same MetaMask account.' 
+      }, { status: 403 });
+    }
+
+    // If user doesn't have a registered wallet address, save it now
+    if (!userWallet.address) {
+      await prisma.userWallet.update({
+        where: { id: userWallet.id },
+        data: { address: senderAddress },
+      });
+    }
+
+    // Verify amount (allow 20% tolerance for ETH price fluctuations)
+    const expectedWei = ethers.parseEther(expectedETH.toFixed(18));
+    const minWei = expectedWei * BigInt(80) / BigInt(100);
+    if (tx.value < minWei) {
+      return NextResponse.json({ 
+        success: false, 
+        error: `Insufficient payment. Expected ~${expectedETH.toFixed(4)} ETH ($${pkg.priceUSD})` 
+      }, { status: 400 });
+    }
 
     // Credit PNCR to internal balance only
     // Users can withdraw to on-chain later if needed
