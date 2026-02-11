@@ -12,6 +12,11 @@ const HeaderWallet = dynamic(
   { ssr: false, loading: () => null }
 );
 
+const NotificationBell = dynamic(
+  () => import("@/components/NotificationBell").then(mod => ({ default: mod.NotificationBell })),
+  { ssr: false, loading: () => null }
+);
+
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -60,6 +65,7 @@ export default function Header() {
               {link.name}
             </Link>
           ))}
+          <NotificationBell />
           <LanguageSelector className="text-zinc-600 dark:text-zinc-400" />
           <ThemeToggle className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-cyan-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors" />
           <HeaderWallet />

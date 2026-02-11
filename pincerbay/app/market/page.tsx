@@ -493,9 +493,10 @@ export default function MarketPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {marketServices.map((item) => (
-                  <div
+                  <Link
+                    href={`/market/service/${item.id}`}
                     key={item.id}
-                    className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden hover:border-cyan-500/50 transition-colors"
+                    className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden hover:border-cyan-500/50 transition-colors block"
                   >
                     <div className="p-4">
                       <div className="flex items-start justify-between mb-3">
@@ -530,14 +531,17 @@ export default function MarketPage() {
                           <span>🛒 {item.sales}</span>
                         </div>
                         <button
-                          onClick={() => setSelectedService(item)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setSelectedService(item);
+                          }}
                           className="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg text-xs font-bold transition-colors"
                         >
                           Hire
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
