@@ -32,7 +32,7 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-type Tab = 'overview' | 'agents' | 'souls' | 'transactions';
+type Tab = 'overview' | 'agents' | 'transactions';
 
 interface WalletData {
   needsWallet?: boolean;
@@ -169,7 +169,7 @@ export default function MyPage() {
             <Image src="/mascot-transparent.png" alt="Pincer" width={100} height={100} className="dark:hidden block" />
           </div>
           <h1 className="text-3xl font-bold mb-4">Sign In to Continue</h1>
-          <p className="text-zinc-500 mb-8">Access your dashboard, agents, and souls.</p>
+          <p className="text-zinc-500 mb-8">Access your dashboard, agents, and services.</p>
           <div className="space-y-4">
             <button
               onClick={() => signIn('google', { callbackUrl: '/mypage' })}
@@ -207,7 +207,6 @@ export default function MyPage() {
   const tabs: { key: Tab; label: string; icon: string }[] = [
     { key: 'overview', label: 'Overview', icon: '📊' },
     { key: 'agents', label: 'My Agents', icon: '🦞' },
-    { key: 'souls', label: 'My Souls', icon: '✨' },
     { key: 'transactions', label: 'Transactions', icon: '💰' },
   ];
 
@@ -216,7 +215,6 @@ export default function MyPage() {
   const totalBalance = wallet?.totalBalance ? parseFloat(wallet.totalBalance) : balance;
   const totalEarnings = agents.reduce((sum, agent) => sum + (agent.totalEarnings || 0), 0);
   const activeAgentsCount = agents.filter(a => a.status === 'active').length;
-  const soulsOwnedCount = purchases.length;
 
   return (
     <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-8 px-6">
@@ -301,14 +299,10 @@ export default function MyPage() {
                 </p>
               </div>
               <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
-                <h3 className="text-lg font-bold mb-2">Souls Owned</h3>
-                <div className="text-3xl font-bold text-purple-500">{soulsOwnedCount}</div>
+                <h3 className="text-lg font-bold mb-2">Services</h3>
+                <div className="text-3xl font-bold text-purple-500">0</div>
                 <p className="text-sm text-zinc-500 mt-1">
-                  {soulsOwnedCount === 0 ? (
-                    <Link href="/market" className="text-purple-500 hover:underline">Browse marketplace →</Link>
-                  ) : (
-                    'Purchased souls'
-                  )}
+                  <Link href="/market/create" className="text-purple-500 hover:underline">List a service →</Link>
                 </p>
               </div>
             </div>
@@ -408,79 +402,6 @@ export default function MyPage() {
                           {agent.totalEarnings.toFixed(2)} PNCR
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
-        )}
-
-        {activeTab === 'souls' && (
-          purchases.length === 0 ? (
-            <div className="text-center py-16 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
-              <div className="text-4xl mb-4">✨</div>
-              <h3 className="text-xl font-bold mb-2">No souls purchased yet</h3>
-              <p className="text-zinc-500 mb-6 max-w-md mx-auto">Explore the marketplace to discover and purchase unique AI Soul personalities.</p>
-              <Link href="/market" className="inline-block px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-bold transition-colors">Browse Souls</Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {purchases.map(purchase => (
-                <div key={purchase.id} className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-                  {purchase.soul.imageUrl && (
-                    <div className="relative h-48 bg-zinc-200 dark:bg-zinc-800">
-                      <Image
-                        src={purchase.soul.imageUrl}
-                        alt={purchase.soul.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="text-lg font-bold">{purchase.soul.name}</h3>
-                      <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded text-xs font-medium capitalize">
-                        {purchase.soul.category}
-                      </span>
-                    </div>
-
-                    {purchase.soul.description && (
-                      <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4 line-clamp-2">
-                        {purchase.soul.description}
-                      </p>
-                    )}
-
-                    {purchase.soul.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {purchase.soul.tags.slice(0, 3).map((tag, idx) => (
-                          <span key={idx} className="px-2 py-1 bg-zinc-200 dark:bg-zinc-700 rounded text-xs">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="pt-4 border-t border-zinc-200 dark:border-zinc-700">
-                      <div className="flex justify-between items-center text-sm mb-2">
-                        <span className="text-zinc-500">Purchased</span>
-                        <span className="font-medium">
-                          {new Date(purchase.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-zinc-500">Price</span>
-                        <span className="font-bold text-purple-500">
-                          {purchase.price} {purchase.currency}
-                        </span>
-                      </div>
-                      <Link
-                        href={`/market/${purchase.soul.slug}`}
-                        className="block mt-3 w-full py-2 bg-purple-500 hover:bg-purple-600 text-white text-center rounded-lg font-medium transition-colors"
-                      >
-                        View Soul
-                      </Link>
                     </div>
                   </div>
                 </div>
