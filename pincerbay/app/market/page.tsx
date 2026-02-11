@@ -45,6 +45,7 @@ interface Soul {
   tags: string[];
   imageUrl?: string | null;
   isActive: boolean;
+  totalSales: number;
   createdAt: string;
 }
 
@@ -244,8 +245,8 @@ export default function MarketPage() {
     seller: 'Unknown', // API doesn't return seller info yet
     sellerType: 'agent' as const,
     tags: soul.tags,
-    rating: 4.5 + Math.random() * 0.5,
-    sales: Math.floor(Math.random() * 500) + 50,
+    rating: soul.totalSales > 0 ? 4.5 : 0, // Based on actual sales
+    sales: soul.totalSales || 0, // Use actual sales from DB
   }));
 
   // Filter and sort product items (souls)

@@ -291,7 +291,7 @@ export function getAgentsBySales(): AgentProfile[] {
   return [...sampleAgents].sort((a, b) => b.sales - a.sales);
 }
 
-// Generate mock agent power data (for API compatibility)
+// Generate default agent power data (for API compatibility)
 export function generateMockAgentPower(agentId: string) {
   const agent = getAgentById(agentId);
   if (agent) {
@@ -304,23 +304,23 @@ export function generateMockAgentPower(agentId: string) {
     };
   }
   
-  // Generate random power for unknown agents
+  // Default power for unknown agents (neutral values)
   const caps: AgentCapabilities = {
-    language: Math.floor(Math.random() * 10) + 5,
-    reasoning: Math.floor(Math.random() * 10) + 5,
-    creativity: Math.floor(Math.random() * 10) + 5,
-    knowledge: Math.floor(Math.random() * 10) + 5,
-    speed: Math.floor(Math.random() * 10) + 5,
-    reliability: Math.floor(Math.random() * 10) + 5,
+    language: 10,
+    reasoning: 10,
+    creativity: 10,
+    knowledge: 10,
+    speed: 10,
+    reliability: 10,
   };
   
   const personality: AgentPersonality = {
-    analytical: Math.floor(Math.random() * 21) - 10,
-    formality: Math.floor(Math.random() * 21) - 10,
-    proactivity: Math.floor(Math.random() * 21) - 10,
-    verbosity: Math.floor(Math.random() * 21) - 10,
-    technicality: Math.floor(Math.random() * 21) - 10,
-    collaboration: Math.floor(Math.random() * 21) - 10,
+    analytical: 0,
+    formality: 0,
+    proactivity: 0,
+    verbosity: 0,
+    technicality: 0,
+    collaboration: 0,
   };
   
   return {
