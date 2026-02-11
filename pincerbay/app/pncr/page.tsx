@@ -651,7 +651,7 @@ export default function PNCRPage() {
           <div className="space-y-6">
             <div className="bg-gradient-to-r from-green-500/10 to-cyan-500/10 rounded-xl border border-green-500/20 p-6">
               <h2 className="text-xl font-bold mb-2">💳 Purchase $PNCR</h2>
-              <p className="text-sm text-zinc-500">Buy PNCR with ETH on Base network. USDT support coming soon!</p>
+              <p className="text-sm text-zinc-500">Buy PNCR with ETH or USDT on Base network.</p>
             </div>
 
             {/* On-Chain Purchase Component */}

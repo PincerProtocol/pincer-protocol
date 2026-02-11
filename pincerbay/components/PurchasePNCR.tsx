@@ -9,6 +9,49 @@ import Link from 'next/link';
 const PNCR_ADDRESS = '0x09De9dE982E488Cd92774Ecc1b98e8EDF8dAF57c' as const;
 const TREASURY_ADDRESS = '0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb' as const;
 
+// Base Mainnet USDT (Bridged from Ethereum)
+const USDT_ADDRESS = '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2' as const;
+
+const ERC20_ABI_FULL = [
+  {
+    name: 'balanceOf',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }]
+  },
+  {
+    name: 'allowance',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [
+      { name: 'owner', type: 'address' },
+      { name: 'spender', type: 'address' }
+    ],
+    outputs: [{ name: '', type: 'uint256' }]
+  },
+  {
+    name: 'approve',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'spender', type: 'address' },
+      { name: 'amount', type: 'uint256' }
+    ],
+    outputs: [{ name: '', type: 'bool' }]
+  },
+  {
+    name: 'transfer',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'amount', type: 'uint256' }
+    ],
+    outputs: [{ name: '', type: 'bool' }]
+  }
+] as const;
+
 // PNCR Purchase Contract (simple ETH -> PNCR swap via Treasury)
 // For beta: direct transfer to treasury, manual PNCR distribution
 // For production: integrate with Uniswap or custom swap contract
@@ -130,10 +173,56 @@ export function PurchasePNCR({ showToast }: PurchasePNCRProps) {
       } finally {
         setIsPurchasing(false);
       }
-    } else {
-      // For stablecoins, would need ERC20 approve + transferFrom
-      showToast('USDT purchase coming soon! Use ETH for now.', 'info');
-      setIsPurchasing(false);
+    } else if (selectedToken === 'USDT') {
+      // USDT: ERC20 transfer to Treasury
+      try {
+        const ethereum = (window as any).ethereum;
+        if (!ethereum) {
+          showToast('MetaMask not found', 'error');
+          setIsPurchasing(false);
+          return;
+        }
+
+        // USDT has 6 decimals on Base
+        const usdtAmount = parseUnits(amount, 6);
+
+        // Encode transfer(address,uint256) call
+        const transferFunctionSignature = '0xa9059cbb'; // transfer(address,uint256)
+        const paddedAddress = TREASURY_ADDRESS.slice(2).padStart(64, '0');
+        const paddedAmount = usdtAmount.toString(16).padStart(64, '0');
+        const data = transferFunctionSignature + paddedAddress + paddedAmount;
+
+        const tx = await ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: address,
+            to: USDT_ADDRESS,
+            data: data,
+          }],
+        });
+
+        showToast(`Transaction submitted! Hash: ${tx.slice(0, 10)}...`, 'info');
+        
+        // Record purchase request
+        await fetch('/api/wallet/purchase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            txHash: tx,
+            fromToken: 'USDT',
+            fromAmount: amount,
+            toPNCR: estimatedPNCR,
+            walletAddress: address,
+          }),
+        });
+
+        showToast(`Purchase complete! ${estimatedPNCR.toLocaleString()} PNCR will be credited within 24 hours.`, 'success');
+        setAmount('');
+      } catch (err: any) {
+        showToast(`Transaction failed: ${err.message || 'Unknown error'}`, 'error');
+      } finally {
+        setIsPurchasing(false);
+      }
     }
   };
 
@@ -211,7 +300,6 @@ export function PurchasePNCR({ showToast }: PurchasePNCRProps) {
             <div className="text-2xl mb-1">💵</div>
             <div className="font-bold">USDT</div>
             <div className="text-xs text-zinc-500">1 USDT = {rates.USDT} PNCR</div>
-            <div className="text-xs text-orange-500 mt-1">Coming Soon</div>
           </button>
         </div>
       </div>
@@ -287,7 +375,7 @@ export function PurchasePNCR({ showToast }: PurchasePNCRProps) {
       {/* Purchase Button */}
       <button
         onClick={handlePurchase}
-        disabled={isPurchasing || isPending || isConfirming || !amount || parseFloat(amount) <= 0 || selectedToken === 'USDT'}
+        disabled={isPurchasing || isPending || isConfirming || !amount || parseFloat(amount) <= 0}
         className="w-full py-4 bg-cyan-500 hover:bg-cyan-600 disabled:bg-zinc-300 disabled:dark:bg-zinc-700 text-black disabled:text-zinc-500 rounded-xl font-bold text-lg transition-colors"
       >
         {isPurchasing || isPending || isConfirming ? (
@@ -298,10 +386,8 @@ export function PurchasePNCR({ showToast }: PurchasePNCRProps) {
             </svg>
             Processing...
           </span>
-        ) : selectedToken === 'USDT' ? (
-          'USDT Coming Soon - Use ETH'
         ) : amount ? (
-          `Buy ${estimatedPNCR.toLocaleString()} PNCR`
+          `Buy ${estimatedPNCR.toLocaleString()} PNCR with ${selectedToken}`
         ) : (
           'Enter Amount'
         )}
