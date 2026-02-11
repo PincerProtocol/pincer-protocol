@@ -12,6 +12,11 @@ const DepositPNCR = dynamic(
   { ssr: false, loading: () => <div className="py-4 text-center text-zinc-500">Loading...</div> }
 );
 
+const StakingPNCR = dynamic(
+  () => import('@/components/StakingPNCR').then(mod => ({ default: mod.StakingPNCR })),
+  { ssr: false, loading: () => <div className="py-4 text-center text-zinc-500">Loading staking...</div> }
+);
+
 type Tab = 'airdrop' | 'staking' | 'mine' | 'purchase' | 'rewards' | 'wallet';
 
 interface MiningSession {
@@ -605,36 +610,34 @@ export default function PNCRPage() {
         {/* Staking Tab */}
         {activeTab === 'staking' && (
           <div className="space-y-6">
-            <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-xl border border-yellow-500/20 p-6">
-              <h2 className="text-xl font-bold mb-2">📈 Stake $PNCR</h2>
-              <p className="text-sm text-zinc-500">Lock your tokens to earn rewards and unlock benefits.</p>
+            <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 p-6">
+              <h2 className="text-xl font-bold mb-2">📈 Stake $PNCR On-Chain</h2>
+              <p className="text-sm text-zinc-500">Lock your PNCR to earn rewards. Longer lock periods = higher APY.</p>
+              <p className="text-xs text-cyan-500 mt-2">Contract: 0x4e748d...e79 (Base)</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {stakingTiers.map((tier) => (
-                <div
-                  key={tier.name}
-                  className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold">{tier.name}</h3>
-                    <span className="text-cyan-500 font-bold">{tier.apy} APY</span>
-                  </div>
-                  <p className="text-xs text-zinc-500 mb-2">Min: {tier.minStake} PNCR</p>
-                  <p className="text-xs text-zinc-400">{tier.benefits}</p>
-                  <button
-                    className="w-full mt-3 py-2 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-lg text-sm font-medium transition-colors"
-                    onClick={() => showToast('Staking coming soon!', 'info')}
+            {/* On-Chain Staking Component */}
+            <StakingPNCR />
+
+            {/* Tier Benefits Info */}
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
+              <h3 className="font-bold mb-4">Staking Tiers & Benefits</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {stakingTiers.map((tier) => (
+                  <div
+                    key={tier.name}
+                    className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4"
                   >
-                    Stake
-                  </button>
-                </div>
-              ))}
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-bold">{tier.name}</h4>
+                      <span className="text-purple-500 font-bold">{tier.apy} APY</span>
+                    </div>
+                    <p className="text-xs text-zinc-500 mb-1">Min: {tier.minStake} PNCR</p>
+                    <p className="text-xs text-zinc-400">{tier.benefits}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-
-            <p className="text-xs text-zinc-400 text-center">
-              Staking contracts launching Q2 2026. Stay tuned!
-            </p>
           </div>
         )}
 

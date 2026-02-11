@@ -1,5 +1,5 @@
-// TODO: Replace with actual deployed contract address and ABI
-export const PNCR_STAKING_ADDRESS = '0x0000000000000000000000000000000000000000' as const
+// PNCRStaking Contract - Base Mainnet
+export const PNCR_STAKING_ADDRESS = (process.env.STAKING_CONTRACT_ADDRESS || '0x4e748d2E381fa4A3043F8cfD55B5c31ce13D9E79') as `0x${string}`
 
 export const PNCR_STAKING_ABI = [
   // View functions
