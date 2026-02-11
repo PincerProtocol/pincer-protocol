@@ -6,14 +6,6 @@ import { ethers } from 'ethers';
 
 const BASE_RPC_URL = process.env.BASE_RPC_URL || 'https://mainnet.base.org';
 const TREASURY_ADDRESS = '0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb';
-const PNCR_TOKEN_ADDRESS = '0x09De9dE982E488Cd92774Ecc1b98e8EDF8dAF57c';
-const PLATFORM_PRIVATE_KEY = process.env.PLATFORM_PRIVATE_KEY;
-
-// ERC20 ABI for transfer
-const ERC20_ABI = [
-  'function transfer(address to, uint256 amount) returns (bool)',
-  'function balanceOf(address account) view returns (uint256)',
-];
 
 // Package definitions (PNCR amounts based on FDV $10M = $0.0000571/PNCR)
 // Pioneer: base, Builder: +10%, Contributor: +20%
@@ -81,9 +73,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Transaction not found' }, { status: 400 });
     }
 
-    // Get user's wallet address from the transaction
-    const userWalletAddress = tx.from;
-
     // Verify recipient is treasury
     if (tx.to?.toLowerCase() !== TREASURY_ADDRESS.toLowerCase()) {
       return NextResponse.json({ success: false, error: 'Invalid recipient address' }, { status: 400 });
@@ -120,38 +109,9 @@ export async function POST(request: NextRequest) {
 
     const userWallet = user.wallet;
 
-    // Send actual PNCR tokens to user's MetaMask wallet
-    let pncrTxHash: string | null = null;
-    
-    if (PLATFORM_PRIVATE_KEY) {
-      try {
-        const platformWallet = new ethers.Wallet(PLATFORM_PRIVATE_KEY, provider);
-        const pncrContract = new ethers.Contract(PNCR_TOKEN_ADDRESS, ERC20_ABI, platformWallet);
-        
-        // PNCR has 18 decimals
-        const pncrAmountWei = ethers.parseEther(pkg.pncrAmount.toString());
-        
-        // Check platform balance
-        const platformBalance = await pncrContract.balanceOf(platformWallet.address);
-        if (platformBalance < pncrAmountWei) {
-          console.error('Insufficient PNCR balance in platform wallet');
-          // Continue with internal balance only
-        } else {
-          // Transfer PNCR to user's wallet
-          const pncrTx = await pncrContract.transfer(userWalletAddress, pncrAmountWei);
-          const pncrReceipt = await pncrTx.wait();
-          pncrTxHash = pncrReceipt.hash;
-          console.log(`PNCR transferred to ${userWalletAddress}: ${pncrTxHash}`);
-        }
-      } catch (error) {
-        console.error('Failed to transfer PNCR tokens:', error);
-        // Continue with internal balance only - don't fail the whole purchase
-      }
-    } else {
-      console.warn('PLATFORM_PRIVATE_KEY not set - skipping on-chain PNCR transfer');
-    }
-
-    // Credit PNCR to internal balance + record purchase
+    // Credit PNCR to internal balance only
+    // Users can withdraw to on-chain later if needed
+    // This enables gas-free transactions within PincerBay
     await prisma.$transaction([
       prisma.userWallet.update({
         where: { id: userWallet.id },
@@ -175,7 +135,7 @@ export async function POST(request: NextRequest) {
           txType: 'package_purchase',
           amount: pkg.pncrAmount,
           description: `${packageId.charAt(0).toUpperCase() + packageId.slice(1)} Package - ${pkg.pncrAmount.toLocaleString()} PNCR`,
-          txHash: pncrTxHash || txHash,
+          txHash,
           status: 'confirmed',
         },
       }),
@@ -187,11 +147,7 @@ export async function POST(request: NextRequest) {
         pncrCredited: pkg.pncrAmount,
         packageId,
         paymentTxHash: txHash,
-        pncrTxHash: pncrTxHash, // null if on-chain transfer failed/skipped
-        userWallet: userWalletAddress,
-        note: pncrTxHash 
-          ? 'PNCR sent to your MetaMask wallet!' 
-          : 'PNCR credited to internal balance. Withdraw anytime.',
+        note: 'PNCR credited to your PincerBay balance! Use it to hire agents or withdraw anytime.',
       },
     });
   } catch (error) {
