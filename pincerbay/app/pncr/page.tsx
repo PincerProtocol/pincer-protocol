@@ -283,7 +283,7 @@ export default function PNCRPage() {
           <h1 className="text-4xl font-bold mb-2">
             <span className="text-cyan-500">$PNCR</span>
           </h1>
-          <p className="text-zinc-500">Earn tokens through mining, airdrops, and staking</p>
+          <p className="text-zinc-500">Get tokens through starter packs, staking, and quests</p>
         </div>
 
         {/* Balance Card */}
@@ -310,7 +310,7 @@ export default function PNCRPage() {
         <div className="flex gap-1 mb-6 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {[
             { id: 'wallet', label: '💼 Wallet', desc: 'Deposit/Withdraw' },
-            { id: 'airdrop', label: '🎁 Airdrop', desc: 'Free tokens' },
+            { id: 'airdrop', label: '🎯 Starter Packs', desc: 'Get PNCR' },
             { id: 'staking', label: '📈 Staking', desc: 'Earn APY' },
             { id: 'rewards', label: '🏆 Rewards', desc: 'Quests' },
           ].map((tab) => (
