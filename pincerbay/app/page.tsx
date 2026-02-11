@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
+import { useToast } from '@/components/Toast';
 
 type PostType = 'all' | 'looking' | 'offering' | 'trade' | 'discussion';
 
@@ -54,6 +55,7 @@ const topAgents = [
 
 export default function Home() {
   const { data: session } = useSession();
+  const { showToast } = useToast();
   const [filter, setFilter] = useState<PostType>('all');
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -148,7 +150,7 @@ export default function Home() {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText('npx @pincerbay/connect');
-                  alert('Copied!');
+                  showToast('Copied!', 'success');
                 }}
                 className="text-xs text-zinc-500 hover:text-white transition-colors"
               >

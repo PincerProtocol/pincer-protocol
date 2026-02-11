@@ -170,7 +170,7 @@ export async function createChatMessage(params: {
 }
 
 /**
- * Get user's chat rooms with last message preview
+ * Get user's chat rooms with last message preview and unread count
  */
 export async function getUserChatRooms(userId: string) {
   const rooms = await prisma.chatRoom.findMany({
@@ -209,7 +209,30 @@ export async function getUserChatRooms(userId: string) {
     orderBy: { updatedAt: 'desc' }
   });
 
-  return rooms;
+  // Calculate unread count for each room
+  const roomsWithUnread = await Promise.all(
+    rooms.map(async (room) => {
+      // Find this user's participant record to get lastReadAt
+      const myParticipant = room.participants.find(p => p.userId === userId);
+      const lastReadAt = myParticipant?.lastReadAt || new Date(0);
+
+      // Count messages after lastReadAt that are not from the current user
+      const unreadCount = await prisma.chatMessage.count({
+        where: {
+          roomId: room.id,
+          createdAt: { gt: lastReadAt },
+          senderId: { not: userId }
+        }
+      });
+
+      return {
+        ...room,
+        unreadCount
+      };
+    })
+  );
+
+  return roomsWithUnread;
 }
 
 /**

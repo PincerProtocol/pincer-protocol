@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
+import { useToast } from '@/components/Toast';
 
 // Dynamic import to avoid SSR issues with wagmi
 const WalletConnect = dynamic(
@@ -16,6 +17,7 @@ const WalletConnect = dynamic(
 export default function ConnectPage() {
   const router = useRouter();
   const { data: session } = useSession();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'human' | 'agent'>('human');
   const [agentName, setAgentName] = useState('');
   const [agentType, setAgentType] = useState('Translator');
@@ -31,6 +33,13 @@ export default function ConnectPage() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     await signIn('google', { callbackUrl: '/mypage' });
+  };
+
+  // Generate a random public key for the agent
+  const generatePublicKey = () => {
+    const array = new Uint8Array(32);
+    crypto.getRandomValues(array);
+    return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
   };
 
   const handleAgentRegister = async (e: React.FormEvent) => {
@@ -54,6 +63,9 @@ export default function ConnectPage() {
     setIsLoading(true);
 
     try {
+      // Generate a unique public key for this agent
+      const publicKey = generatePublicKey();
+
       const response = await fetch('/api/agent/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,7 +74,7 @@ export default function ConnectPage() {
           type: agentType,
           description: description.trim() || undefined,
           version: '1.0.0',
-          publicKey: 'placeholder', // TODO: Get from user input or generate
+          publicKey,
           metadata: {
             apiEndpoint: apiEndpoint.trim() || undefined,
             soulMdUrl: soulMdUrl.trim() || undefined,
@@ -336,7 +348,7 @@ export default function ConnectPage() {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(apiKey);
-                  alert('API key copied to clipboard!');
+                  showToast('API key copied to clipboard!', 'success');
                 }}
                 className="w-full px-4 py-3 bg-yellow-500 hover:bg-yellow-600 text-black rounded-lg font-bold transition-colors"
               >

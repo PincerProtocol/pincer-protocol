@@ -7,6 +7,7 @@ import { injected } from 'wagmi/connectors'
 import { SessionProvider } from 'next-auth/react'
 import { ThemeProvider } from '@/lib/theme'
 import { I18nProvider } from '@/lib/i18n'
+import { ToastProvider } from '@/components/Toast'
 
 const config = createConfig({
   chains: [base, baseSepolia],
@@ -26,7 +27,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
             <I18nProvider>
-              {children}
+              <ToastProvider>
+                {children}
+              </ToastProvider>
             </I18nProvider>
           </ThemeProvider>
         </QueryClientProvider>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { useToast } from '@/components/Toast';
 
 type Tab = 'airdrop' | 'staking' | 'mine' | 'purchase' | 'rewards';
 
@@ -26,6 +27,7 @@ interface MiningStats {
 
 export default function PNCRPage() {
   const { data: session } = useSession();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<Tab>('airdrop');
   const [balance, setBalance] = useState('0');
   const [isMining, setIsMining] = useState(false);
@@ -102,12 +104,13 @@ export default function PNCRPage() {
         setMiningSession(data.data);
         setIsMining(true);
         startStatusPolling();
+        showToast('Mining started!', 'success');
       } else {
-        alert(data.error || 'Failed to start mining');
+        showToast(data.error || 'Failed to start mining', 'error');
       }
     } catch (error) {
       console.error('Failed to start mining:', error);
-      alert('Failed to start mining');
+      showToast('Failed to start mining', 'error');
     }
   };
 
@@ -124,7 +127,7 @@ export default function PNCRPage() {
 
       if (data.success) {
         // Show earned PNCR
-        alert(`Mining session complete! Earned ${data.data.earnedPNCR} PNCR`);
+        showToast(`Mining session complete! Earned ${data.data.earnedPNCR} PNCR`, 'success');
 
         // Stop polling
         if (statusIntervalRef.current) {
@@ -141,11 +144,11 @@ export default function PNCRPage() {
         const walletData = await walletRes.json();
         setBalance(walletData.data?.userWallet?.balance || '0');
       } else {
-        alert(data.error || 'Failed to stop mining');
+        showToast(data.error || 'Failed to stop mining', 'error');
       }
     } catch (error) {
       console.error('Failed to stop mining:', error);
-      alert('Failed to stop mining');
+      showToast('Failed to stop mining', 'error');
     }
   };
 
@@ -390,7 +393,7 @@ export default function PNCRPage() {
                   <p className="text-xs text-zinc-400">{tier.benefits}</p>
                   <button
                     className="w-full mt-3 py-2 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-lg text-sm font-medium transition-colors"
-                    onClick={() => alert('Staking coming soon!')}
+                    onClick={() => showToast('Staking coming soon!', 'info')}
                   >
                     Stake
                   </button>
@@ -485,7 +488,7 @@ export default function PNCRPage() {
               {/* Buy Button */}
               {session ? (
                 <button
-                  onClick={() => alert('Purchase feature coming soon! Connect your wallet to proceed.')}
+                  onClick={() => showToast('Purchase feature coming soon! Connect your wallet to proceed.', 'info')}
                   className="w-full py-4 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold text-lg transition-colors"
                 >
                   {purchaseAmount ? `Buy ${(selectedCoin === 'ETH' ? parseFloat(purchaseAmount || '0') * 35000 : parseFloat(purchaseAmount || '0') * 17.5).toLocaleString()} PNCR` : 'Enter Amount'}

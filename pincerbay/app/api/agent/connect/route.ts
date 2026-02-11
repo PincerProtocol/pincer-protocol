@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { randomUUID } from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 import { walletService } from '@/lib/walletService';
+import { generateApiKey, hashApiKey } from '@/lib/crypto';
 
 /**
  * POST /api/agent/connect
@@ -42,12 +42,7 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-/**
- * Generate API key with pb_ prefix
- */
-function generateApiKey(): string {
-  return `pb_${randomUUID()}`;
-}
+// API key generation moved to lib/crypto.ts
 
 export async function POST(request: NextRequest) {
   try {
@@ -175,13 +170,14 @@ export async function POST(request: NextRequest) {
       logger.warn('PLATFORM_PRIVATE_KEY not set, wallet creation queued');
     }
 
-    // Step 6: Generate API key
+    // Step 6: Generate API key and hash it for secure storage
     const apiKey = generateApiKey();
+    const hashedApiKey = hashApiKey(apiKey);
 
-    // Step 7: Store API key in Agent.apiKey (plaintext for MVP)
+    // Step 7: Store hashed API key (secure - user must save plaintext key)
     await prisma.agent.update({
       where: { id: agent.id },
-      data: { apiKey }
+      data: { apiKey: hashedApiKey }
     });
 
     // Step 8: Return response

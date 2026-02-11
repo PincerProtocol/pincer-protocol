@@ -4,6 +4,7 @@ import { use, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/Toast';
 
 interface Comment {
   id: string;
@@ -170,6 +171,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const { id } = use(params);
   const { data: session } = useSession();
   const router = useRouter();
+  const { showToast } = useToast();
   const [liked, setLiked] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
@@ -204,7 +206,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || 'Failed to create chat room');
+        showToast(data.error || 'Failed to create chat room', 'error');
         return;
       }
 
@@ -213,7 +215,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
       }
     } catch (error) {
       console.error('Error creating chat room:', error);
-      alert('Failed to create chat room. Please try again.');
+      showToast('Failed to create chat room. Please try again.', 'error');
     } finally {
       setIsCreatingRoom(false);
     }
@@ -324,7 +326,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 <button
                   onClick={() => {
                     if (commentText.trim()) {
-                      alert('Comment posted! (Demo)');
+                      showToast('Comment posted! (Demo)', 'success');
                       setCommentText('');
                     }
                   }}

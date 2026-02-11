@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useToast } from '@/components/Toast';
 
 type ChatTab = 'negotiations' | 'agent-logs';
 
@@ -53,6 +54,7 @@ const statusColors = {
 export default function ChatPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<ChatTab>('negotiations');
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
@@ -73,12 +75,31 @@ export default function ChatPage() {
         const data = await res.json();
         if (data.success) {
           // Enrich rooms with UI metadata
-          const enrichedRooms = (data.data || []).map((room: ChatRoom) => ({
-            ...room,
-            name: room.user1_name || room.user2_name || 'Unknown User',
-            avatar: '🤖',
-            unreadCount: 0, // TODO: implement unread count
-          }));
+          const enrichedRooms = (data.data || []).map((room: any) => {
+            // Find the other participant
+            const otherParticipant = room.participants?.find(
+              (p: any) => p.userId !== session?.user?.id
+            );
+            const otherUser = otherParticipant?.user;
+            const lastMsg = room.messages?.[0];
+
+            return {
+              id: room.id,
+              job_id: room.relatedPostId,
+              user1_id: room.participants?.[0]?.userId || '',
+              user2_id: room.participants?.[1]?.userId || '',
+              user1_name: room.participants?.[0]?.user?.name,
+              user2_name: room.participants?.[1]?.user?.name,
+              job_title: null,
+              last_message_preview: lastMsg?.content,
+              last_message_time: lastMsg?.createdAt,
+              created_at: room.createdAt,
+              updated_at: room.updatedAt,
+              name: otherUser?.name || 'Unknown User',
+              avatar: '🦞',
+              unreadCount: room.unreadCount || 0,
+            };
+          });
           setRooms(enrichedRooms);
         }
       } catch (error) {
@@ -150,17 +171,17 @@ export default function ChatPage() {
         }
       } else {
         const errorData = await res.json();
-        alert(errorData.error || 'Failed to send message');
+        showToast(errorData.error || 'Failed to send message', 'error');
       }
     } catch (error) {
       console.error('Failed to send message:', error);
-      alert('Failed to send message. Please try again.');
+      showToast('Failed to send message. Please try again.', 'error');
     }
   };
 
   const handleSendBid = async () => {
     if (!bidAmount || !selectedRoom) {
-      alert('Please enter a bid amount');
+      showToast('Please enter a bid amount', 'warning');
       return;
     }
 
@@ -193,11 +214,11 @@ export default function ChatPage() {
         }
       } else {
         const errorData = await res.json();
-        alert(errorData.error || 'Failed to send bid');
+        showToast(errorData.error || 'Failed to send bid', 'error');
       }
     } catch (error) {
       console.error('Failed to send bid:', error);
-      alert('Failed to send bid. Please try again.');
+      showToast('Failed to send bid. Please try again.', 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -205,7 +226,7 @@ export default function ChatPage() {
 
   const handleAcceptOffer = async (messageId: string, amount?: number) => {
     if (!selectedRoom || !amount) {
-      alert('Missing room or amount information');
+      showToast('Missing room or amount information', 'warning');
       return;
     }
 
@@ -225,12 +246,12 @@ export default function ChatPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || 'Failed to accept offer');
+        showToast(data.error || 'Failed to accept offer', 'error');
         return;
       }
 
       if (data.success && data.data.escrow) {
-        alert(`Escrow created successfully! Amount: ${data.data.escrow.amount} PNCR`);
+        showToast(`Escrow created successfully! Amount: ${data.data.escrow.amount} PNCR`, 'success');
         // Redirect to fund escrow
         if (data.data.fundUrl) {
           router.push(data.data.fundUrl);
@@ -240,7 +261,7 @@ export default function ChatPage() {
       }
     } catch (error) {
       console.error('Error accepting offer:', error);
-      alert('Failed to accept offer. Please try again.');
+      showToast('Failed to accept offer. Please try again.', 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -248,7 +269,7 @@ export default function ChatPage() {
 
   const handleRejectOffer = async (messageId: string) => {
     if (!selectedRoom) {
-      alert('No room selected');
+      showToast('No room selected', 'warning');
       return;
     }
 
@@ -283,11 +304,11 @@ export default function ChatPage() {
         }
       } else {
         const errorData = await res.json();
-        alert(errorData.error || 'Failed to reject offer');
+        showToast(errorData.error || 'Failed to reject offer', 'error');
       }
     } catch (error) {
       console.error('Error rejecting offer:', error);
-      alert('Failed to reject offer. Please try again.');
+      showToast('Failed to reject offer. Please try again.', 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -295,7 +316,7 @@ export default function ChatPage() {
 
   const handleCounterOffer = async () => {
     if (!selectedRoom || !bidAmount) {
-      alert('Please enter a counter offer amount');
+      showToast('Please enter a counter offer amount', 'warning');
       return;
     }
 
@@ -328,11 +349,11 @@ export default function ChatPage() {
         }
       } else {
         const errorData = await res.json();
-        alert(errorData.error || 'Failed to send counter offer');
+        showToast(errorData.error || 'Failed to send counter offer', 'error');
       }
     } catch (error) {
       console.error('Error sending counter offer:', error);
-      alert('Failed to send counter offer. Please try again.');
+      showToast('Failed to send counter offer. Please try again.', 'error');
     } finally {
       setIsProcessing(false);
     }
