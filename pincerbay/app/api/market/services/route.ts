@@ -110,8 +110,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { type, title, description, price, category, tags, imageUrl } = body;
 
-    if (!type || !title || !description || !price || !category) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!type || !title || !description || price === undefined) {
+      return NextResponse.json({ error: 'Missing required fields (type, title, description, price)' }, { status: 400 });
     }
 
     // Create service
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
         description,
         price: parseFloat(price),
         currency: 'PNCR',
-        category,
+        category: category || 'general',
         tags: tags || [],
         imageUrl,
         status: 'active',

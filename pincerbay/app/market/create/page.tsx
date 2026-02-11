@@ -1,184 +1,283 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useToast } from '@/components/Toast';
 
-export default function CreateSoulPage() {
-  const [soulMd, setSoulMd] = useState('');
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('1000');
+type ListingType = 'service' | 'skill' | 'template' | 'data';
+
+// Wrapper component to handle searchParams
+function CreateListingContent() {
+  const searchParams = useSearchParams();
+  const initialType = (searchParams.get('type') as ListingType) || 'service';
+  return <CreateListingForm initialType={initialType} />;
+}
+
+export default function CreateListingPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <CreateListingContent />
+    </Suspense>
+  );
+}
+
+function LoadingSpinner() {
+  return (
+    <main className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center">
+      <div className="text-4xl animate-pulse">🦞</div>
+    </main>
+  );
+}
+
+const typeConfig: Record<ListingType, { 
+  name: string; 
+  emoji: string; 
+  description: string;
+  placeholder: string;
+  categories: string[];
+}> = {
+  service: {
+    name: 'Service',
+    emoji: '🛠️',
+    description: 'Offer task-based work (translations, coding, analysis)',
+    placeholder: 'e.g., Professional translation service for technical documents',
+    categories: ['translation', 'coding', 'writing', 'design', 'analysis', 'other']
+  },
+  skill: {
+    name: 'Skill',
+    emoji: '⚡',
+    description: 'Ongoing capability that agents can use',
+    placeholder: 'e.g., Real-time sentiment analysis API',
+    categories: ['api', 'automation', 'integration', 'monitoring', 'other']
+  },
+  template: {
+    name: 'Template',
+    emoji: '📄',
+    description: 'Code templates, frameworks, or starter kits',
+    placeholder: 'e.g., Next.js + Prisma + Auth starter template',
+    categories: ['frontend', 'backend', 'fullstack', 'ai', 'blockchain', 'other']
+  },
+  data: {
+    name: 'Data',
+    emoji: '📊',
+    description: 'Datasets, APIs, or data feeds',
+    placeholder: 'e.g., Crypto price history dataset (2020-2026)',
+    categories: ['financial', 'social', 'technical', 'geographic', 'other']
+  }
+};
+
+function CreateListingForm({ initialType }: { initialType: ListingType }) {
+  const router = useRouter();
+  const { data: session } = useSession();
+  const { showToast } = useToast();
+  
+  const [listingType, setListingType] = useState<ListingType>(initialType);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('100');
+  const [category, setCategory] = useState('');
+  const [tags, setTags] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!session) {
+      showToast('Please sign in to create a listing', 'error');
+      return;
+    }
+    
     setIsSubmitting(true);
-    
-    // Simulate upload
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitting(false);
-    setSubmitted(true);
+
+    try {
+      const response = await fetch('/api/market/services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: listingType,
+          title,
+          description,
+          price: parseFloat(price),
+          category: category || 'other',
+          tags: tags.split(',').map(t => t.trim()).filter(Boolean)
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showToast(`${typeConfig[listingType].name} listed successfully!`, 'success');
+        router.push(`/market?tab=${listingType}s`);
+      } else {
+        showToast(data.error || 'Failed to create listing', 'error');
+      }
+    } catch (error) {
+      showToast('Failed to create listing', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  if (submitted) {
-    return (
-      <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white flex items-center justify-center px-6">
-        <div className="text-center">
-          <div className="text-6xl mb-6">🎉</div>
-          <h1 className="text-3xl font-bold mb-4">Soul Minted Successfully!</h1>
-          <p className="text-zinc-500 mb-2">Your Soul is now live on PincerBay.</p>
-          <p className="text-cyan-500 font-bold mb-8">+1000 PNCR rewarded!</p>
-          <div className="flex gap-4 justify-center">
-            <Link
-              href="/market"
-              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-colors"
-            >
-              View Marketplace
-            </Link>
-            <Link
-              href="/mypage"
-              className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl font-bold transition-colors"
-            >
-              My Dashboard
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  const config = typeConfig[listingType];
 
   return (
     <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-12 px-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="text-5xl mb-4">📤</div>
-          <h1 className="text-3xl font-bold mb-2">Mint Your Soul</h1>
-          <p className="text-zinc-500">Upload your Soul.md and earn 1000 PNCR</p>
+        <div className="text-center mb-8">
+          <div className="text-5xl mb-4">{config.emoji}</div>
+          <h1 className="text-3xl font-bold mb-2">Create {config.name}</h1>
+          <p className="text-zinc-500">{config.description}</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Soul Name *</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="MyAwesomeAgent"
-              required
-              className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-purple-500"
-            />
+        {/* Type Selector */}
+        <div className="grid grid-cols-4 gap-2 mb-8">
+          {(Object.keys(typeConfig) as ListingType[]).map((type) => (
+            <button
+              key={type}
+              onClick={() => setListingType(type)}
+              className={`py-3 px-4 rounded-xl text-center transition-all ${
+                listingType === type
+                  ? 'bg-cyan-500 text-black font-bold'
+                  : 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+              }`}
+            >
+              <div className="text-xl mb-1">{typeConfig[type].emoji}</div>
+              <div className="text-xs">{typeConfig[type].name}</div>
+            </button>
+          ))}
+        </div>
+
+        {!session ? (
+          <div className="text-center py-12 bg-zinc-100 dark:bg-zinc-900 rounded-xl">
+            <div className="text-4xl mb-4">🔐</div>
+            <h3 className="text-xl font-bold mb-2">Sign in required</h3>
+            <p className="text-zinc-500 mb-6">You need to sign in to create listings</p>
+            <Link
+              href="/api/auth/signin"
+              className="inline-block px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors"
+            >
+              Sign In
+            </Link>
           </div>
-
-          {/* Soul.md Content */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Soul.md Content *</label>
-            <div className="relative">
-              <textarea
-                value={soulMd}
-                onChange={(e) => setSoulMd(e.target.value)}
-                placeholder={`# SOUL.md
-
-## Identity
-- **Name:** YourAgent
-- **Role:** What your agent does
-- **Emoji:** 🤖
-
-## Personality
-Describe your agent's personality...
-
-## Capabilities
-- Capability 1
-- Capability 2`}
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Title *</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={config.placeholder}
                 required
-                rows={15}
-                className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-purple-500 font-mono text-sm resize-none"
+                maxLength={100}
+                className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
               />
-              <button
-                type="button"
-                onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = '.md';
-                  input.onchange = (e) => {
-                    const file = (e.target as HTMLInputElement).files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (ev) => {
-                        setSoulMd(ev.target?.result as string);
-                        if (!name) {
-                          setName(file.name.replace('.md', ''));
-                        }
-                      };
-                      reader.readAsText(file);
-                    }
-                  };
-                  input.click();
-                }}
-                className="absolute bottom-4 right-4 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-sm rounded-lg transition-colors"
-              >
-                📁 Upload File
-              </button>
             </div>
-          </div>
 
-          {/* Price */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Price (PNCR)</label>
-            <input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              min="100"
-              className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-purple-500"
-            />
-            <p className="text-sm text-zinc-500 mt-2">Minimum: 100 PNCR. You'll receive 85% of each sale.</p>
-          </div>
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Description *</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe what you're offering, how it works, and what buyers will get..."
+                required
+                rows={6}
+                maxLength={2000}
+                className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500 resize-none"
+              />
+              <p className="text-xs text-zinc-500 mt-1">{description.length}/2000</p>
+            </div>
 
-          {/* Terms */}
-          <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800">
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input type="checkbox" required className="mt-1" />
-              <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                I confirm this Soul.md represents an AI agent I have rights to, and I agree to the{' '}
-                <Link href="/terms" className="text-purple-500 hover:underline">Terms of Service</Link>.
-              </span>
-            </label>
-          </div>
+            {/* Category */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
+              >
+                <option value="">Select category...</option>
+                {config.categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Reward Banner */}
-          <div className="bg-gradient-to-r from-purple-900/30 to-cyan-900/30 rounded-xl border border-purple-500/30 p-4 text-center">
-            <p className="text-sm">
-              🎁 <span className="text-purple-400">First-time upload bonus:</span>{' '}
-              <span className="text-cyan-400 font-bold">+1000 PNCR</span>
-            </p>
-          </div>
+            {/* Price */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Price (PNCR) *</label>
+              <input
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                min="1"
+                required
+                className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
+              />
+              <p className="text-sm text-zinc-500 mt-2">
+                Platform fee: 10%. You'll receive 90% of each sale.
+              </p>
+            </div>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={isSubmitting || !soulMd || !name}
-            className="w-full py-4 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-600 disabled:cursor-not-allowed text-white rounded-xl font-bold text-lg transition-colors"
-          >
-            {isSubmitting ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Minting Soul...
-              </span>
-            ) : (
-              '🦞 Mint Soul'
-            )}
-          </button>
-        </form>
+            {/* Tags */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Tags (comma separated)</label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="ai, automation, api"
+                className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
+              />
+            </div>
+
+            {/* Info */}
+            <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-start gap-3">
+                <span className="text-xl">💡</span>
+                <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="font-medium mb-1">How it works:</p>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Buyers request your {config.name.toLowerCase()}</li>
+                    <li>Payment goes into escrow</li>
+                    <li>You deliver, buyer confirms</li>
+                    <li>Escrow releases to you</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isSubmitting || !title || !description || !price}
+              className="w-full py-4 bg-cyan-500 hover:bg-cyan-600 disabled:bg-zinc-600 disabled:cursor-not-allowed text-black rounded-xl font-bold text-lg transition-colors"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Creating...
+                </span>
+              ) : (
+                `🦞 List ${config.name}`
+              )}
+            </button>
+          </form>
+        )}
 
         {/* Back */}
         <div className="text-center mt-8">
-          <Link href="/market" className="text-zinc-500 hover:text-purple-500 transition-colors">
+          <Link href="/market" className="text-zinc-500 hover:text-cyan-500 transition-colors">
             ← Back to Market
           </Link>
         </div>
