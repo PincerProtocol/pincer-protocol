@@ -123,9 +123,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Verify amount (allow 20% tolerance for ETH price fluctuations)
+    // Verify amount (allow 10% tolerance for ETH price fluctuations)
     const expectedWei = ethers.parseEther(expectedETH.toFixed(18));
-    const minWei = expectedWei * BigInt(80) / BigInt(100);
+    const minWei = expectedWei * BigInt(90) / BigInt(100);
     if (tx.value < minWei) {
       return NextResponse.json({ 
         success: false, 

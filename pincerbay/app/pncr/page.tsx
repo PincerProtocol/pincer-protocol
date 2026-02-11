@@ -22,7 +22,7 @@ const PurchasePNCR = dynamic(
   { ssr: false, loading: () => <div className="py-4 text-center text-zinc-500">Loading purchase...</div> }
 );
 
-type Tab = 'airdrop' | 'staking' | 'mine' | 'purchase' | 'rewards' | 'wallet';
+type Tab = 'airdrop' | 'staking' | 'mine' | 'rewards' | 'wallet';
 
 interface MiningSession {
   id: string;
@@ -307,14 +307,13 @@ export default function PNCRPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto">
+        <div className="flex gap-1 mb-6 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {[
             { id: 'wallet', label: '💼 Wallet', desc: 'Deposit/Withdraw' },
             { id: 'airdrop', label: '🎁 Airdrop', desc: 'Free tokens' },
             { id: 'staking', label: '📈 Staking', desc: 'Earn APY' },
             { id: 'mine', label: '⛏️ Mine', desc: 'Activity mining' },
             { id: 'rewards', label: '🏆 Rewards', desc: 'Activity history' },
-            { id: 'purchase', label: '💳 Purchase', desc: 'Buy PNCR' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -750,19 +749,6 @@ export default function PNCRPage() {
           </div>
         )}
 
-        {/* Purchase Tab */}
-        {activeTab === 'purchase' && (
-          <div className="space-y-6">
-            <div className="bg-gradient-to-r from-green-500/10 to-cyan-500/10 rounded-xl border border-green-500/20 p-6">
-              <h2 className="text-xl font-bold mb-2">💳 Purchase $PNCR</h2>
-              <p className="text-sm text-zinc-500">Buy PNCR with ETH or USDT on Base network.</p>
-            </div>
-
-            {/* On-Chain Purchase Component */}
-            <PurchasePNCR showToast={showToast} />
-          </div>
-        )}
-
         {/* Rewards Tab - Human Quests */}
         {activeTab === 'rewards' && (
           <div className="space-y-6">
@@ -976,6 +962,22 @@ export default function PNCRPage() {
   );
 }
 
+// Token addresses on Base Mainnet
+const TOKENS = {
+  ETH: { symbol: 'ETH', decimals: 18, address: null }, // Native
+  USDT: { symbol: 'USDT', decimals: 6, address: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2' },
+  USDC: { symbol: 'USDC', decimals: 6, address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' },
+};
+
+// ERC20 ABI for transfer
+const ERC20_ABI = [
+  'function transfer(address to, uint256 amount) returns (bool)',
+  'function balanceOf(address account) view returns (uint256)',
+  'function decimals() view returns (uint8)',
+];
+
+type PaymentMethod = 'ETH' | 'USDT' | 'USDC';
+
 // Package Purchase Button Component with Confirmation Modal
 function PackagePurchaseButton({ 
   packageId, 
@@ -997,8 +999,18 @@ function PackagePurchaseButton({
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('ETH');
 
   const treasuryAddress = '0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb';
+
+  // Calculate payment amount based on method
+  const getPaymentAmount = () => {
+    if (paymentMethod === 'ETH') {
+      return `${priceETH} ETH`;
+    }
+    // USDT/USDC are 1:1 with USD
+    return `${priceUSD} ${paymentMethod}`;
+  };
 
   const handlePurchase = async () => {
     if (!session) {
@@ -1054,20 +1066,47 @@ function PackagePurchaseButton({
         }
       }
 
-      // Convert ETH to wei (hex)
-      const weiAmount = BigInt(Math.floor(parseFloat(priceETH) * 1e18));
-      const hexAmount = '0x' + weiAmount.toString(16);
+      let txHash: string;
 
-      // Send transaction
-      const txHash = await ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          from: fromAddress,
-          to: treasuryAddress,
-          value: hexAmount,
-          data: '0x', // No data needed for simple ETH transfer
-        }],
-      });
+      if (paymentMethod === 'ETH') {
+        // Native ETH transfer
+        const weiAmount = BigInt(Math.floor(parseFloat(priceETH) * 1e18));
+        const hexAmount = '0x' + weiAmount.toString(16);
+
+        txHash = await ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: fromAddress,
+            to: treasuryAddress,
+            value: hexAmount,
+            data: '0x',
+          }],
+        });
+      } else {
+        // ERC20 token transfer (USDT/USDC)
+        const token = TOKENS[paymentMethod];
+        const tokenAddress = token.address;
+        const decimals = token.decimals;
+        
+        // Calculate amount with proper decimals (USDT/USDC have 6 decimals)
+        const amount = BigInt(Math.floor(priceUSD * Math.pow(10, decimals)));
+        
+        // Encode transfer function call
+        const transferData = 
+          '0xa9059cbb' + // transfer(address,uint256) selector
+          treasuryAddress.slice(2).padStart(64, '0') + // to address (padded)
+          amount.toString(16).padStart(64, '0'); // amount (padded)
+
+        txHash = await ethereum.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: fromAddress,
+            to: tokenAddress,
+            value: '0x0',
+            data: transferData,
+          }],
+        });
+      }
 
       showToast('Transaction sent! Verifying...', 'info');
 
@@ -1079,6 +1118,7 @@ function PackagePurchaseButton({
           packageId,
           txHash,
           pncrAmount,
+          paymentMethod, // Send payment method to API
         }),
       });
 
@@ -1121,7 +1161,7 @@ function PackagePurchaseButton({
         disabled={isPurchasing}
         className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white rounded-xl font-bold transition-all disabled:opacity-50"
       >
-        {isPurchasing ? 'Processing...' : `Buy with ${priceETH} ETH`}
+        {isPurchasing ? 'Processing...' : `Buy ($${priceUSD})`}
       </button>
 
       {/* Confirmation Modal */}
@@ -1131,6 +1171,26 @@ function PackagePurchaseButton({
             <h3 className="text-xl font-bold mb-4 text-center">⚠️ 결제 확인</h3>
             
             <div className="space-y-4 mb-6">
+              {/* Payment Method Selection */}
+              <div>
+                <p className="text-xs text-zinc-500 mb-2">결제 수단 선택</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['ETH', 'USDT', 'USDC'] as PaymentMethod[]).map((method) => (
+                    <button
+                      key={method}
+                      onClick={() => setPaymentMethod(method)}
+                      className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                        paymentMethod === method
+                          ? 'bg-cyan-500 text-black'
+                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                      }`}
+                    >
+                      {method}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="bg-zinc-800 rounded-lg p-4">
                 <p className="text-xs text-zinc-500 mb-1">받는 주소 (Treasury)</p>
                 <code className="text-sm text-cyan-400 break-all">{treasuryAddress}</code>
@@ -1147,7 +1207,7 @@ function PackagePurchaseButton({
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-zinc-800 rounded-lg p-3 text-center">
                   <p className="text-xs text-zinc-500 mb-1">결제 금액</p>
-                  <p className="font-bold text-white">{priceETH} ETH</p>
+                  <p className="font-bold text-white">{getPaymentAmount()}</p>
                   <p className="text-xs text-zinc-400">(${priceUSD})</p>
                 </div>
                 <div className="bg-zinc-800 rounded-lg p-3 text-center">
