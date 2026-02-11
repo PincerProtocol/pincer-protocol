@@ -4,6 +4,13 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/Toast';
+import dynamic from 'next/dynamic';
+
+// Dynamic import to avoid SSR issues with wagmi
+const DepositPNCR = dynamic(
+  () => import('@/components/DepositPNCR').then(mod => ({ default: mod.DepositPNCR })),
+  { ssr: false, loading: () => <div className="py-4 text-center text-zinc-500">Loading...</div> }
+);
 
 type Tab = 'airdrop' | 'staking' | 'mine' | 'purchase' | 'rewards' | 'wallet';
 
@@ -246,73 +253,96 @@ export default function PNCRPage() {
             <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
               <h2 className="text-xl font-bold mb-4">💰 Deposit PNCR</h2>
               <p className="text-sm text-zinc-500 mb-6">
-                Send PNCR from your MetaMask wallet to deposit into your PincerBay account.
+                Transfer PNCR from your wallet to your PincerBay account.
               </p>
 
-              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 mb-4">
-                <p className="text-xs text-zinc-500 mb-2">Send PNCR to this address on Base network:</p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 text-sm font-mono break-all text-cyan-500">
-                    0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb
-                  </code>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText('0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb');
-                      showToast('Address copied!', 'success');
-                    }}
-                    className="px-3 py-1 bg-zinc-200 dark:bg-zinc-700 rounded text-xs hover:bg-zinc-300 dark:hover:bg-zinc-600"
-                  >
-                    Copy
-                  </button>
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Transaction Hash</label>
-                <input
-                  type="text"
-                  value={depositTxHash}
-                  onChange={(e) => setDepositTxHash(e.target.value)}
-                  placeholder="0x..."
-                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
+              {/* Direct Deposit via MetaMask */}
+              <div className="mb-6">
+                <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-green-500 text-white text-xs rounded">Recommended</span>
+                  Direct Deposit
+                </h3>
+                <DepositPNCR 
+                  onSuccess={async () => {
+                    // Refresh internal balance
+                    const walletRes = await fetch('/api/my-wallet');
+                    const walletData = await walletRes.json();
+                    setBalance(walletData.data?.userWallet?.balance || '0');
+                  }}
                 />
               </div>
 
-              <button
-                onClick={async () => {
-                  if (!depositTxHash.trim()) {
-                    showToast('Please enter a transaction hash', 'warning');
-                    return;
-                  }
-                  setIsProcessingWallet(true);
-                  try {
-                    const res = await fetch('/api/wallet/verify-deposit', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ txHash: depositTxHash.trim() }),
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                      showToast(data.data.message || 'Deposit verified!', 'success');
-                      setDepositTxHash('');
-                      // Refresh balance
-                      const walletRes = await fetch('/api/my-wallet');
-                      const walletData = await walletRes.json();
-                      setBalance(walletData.data?.userWallet?.balance || '0');
-                    } else {
-                      showToast(data.error || 'Verification failed', 'error');
-                    }
-                  } catch (error) {
-                    showToast('Failed to verify deposit', 'error');
-                  } finally {
-                    setIsProcessingWallet(false);
-                  }
-                }}
-                disabled={isProcessingWallet || !depositTxHash.trim()}
-                className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold transition-colors disabled:opacity-50"
-              >
-                {isProcessingWallet ? 'Verifying...' : 'Verify Deposit'}
-              </button>
+              {/* Manual Verification (Collapsible) */}
+              <details className="group">
+                <summary className="cursor-pointer text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
+                  Already sent? Verify manually →
+                </summary>
+                <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                  <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 mb-4">
+                    <p className="text-xs text-zinc-500 mb-2">Treasury address:</p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 text-sm font-mono break-all text-cyan-500">
+                        0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb
+                      </code>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText('0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb');
+                          showToast('Address copied!', 'success');
+                        }}
+                        className="px-3 py-1 bg-zinc-200 dark:bg-zinc-700 rounded text-xs hover:bg-zinc-300 dark:hover:bg-zinc-600"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-2">Transaction Hash</label>
+                    <input
+                      type="text"
+                      value={depositTxHash}
+                      onChange={(e) => setDepositTxHash(e.target.value)}
+                      placeholder="0x..."
+                      className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+
+                  <button
+                    onClick={async () => {
+                      if (!depositTxHash.trim()) {
+                        showToast('Please enter a transaction hash', 'warning');
+                        return;
+                      }
+                      setIsProcessingWallet(true);
+                      try {
+                        const res = await fetch('/api/wallet/verify-deposit', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ txHash: depositTxHash.trim() }),
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                          showToast(data.data.message || 'Deposit verified!', 'success');
+                          setDepositTxHash('');
+                          const walletRes = await fetch('/api/my-wallet');
+                          const walletData = await walletRes.json();
+                          setBalance(walletData.data?.userWallet?.balance || '0');
+                        } else {
+                          showToast(data.error || 'Verification failed', 'error');
+                        }
+                      } catch (error) {
+                        showToast('Failed to verify deposit', 'error');
+                      } finally {
+                        setIsProcessingWallet(false);
+                      }
+                    }}
+                    disabled={isProcessingWallet || !depositTxHash.trim()}
+                    className="w-full py-3 bg-zinc-500 hover:bg-zinc-600 text-white rounded-xl font-bold transition-colors disabled:opacity-50"
+                  >
+                    {isProcessingWallet ? 'Verifying...' : 'Verify Manual Deposit'}
+                  </button>
+                </div>
+              </details>
             </div>
 
             {/* Withdraw Section */}
