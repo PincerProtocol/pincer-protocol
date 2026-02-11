@@ -188,6 +188,7 @@ export default function PNCRPage() {
   };
 
   // Package tiers - paid packages for early supporters (FDV $10M = $0.0000571/PNCR)
+  // Builder +10% bonus, Contributor +20% bonus
   const packages = [
     { 
       id: 'pioneer', 
@@ -207,9 +208,9 @@ export default function PNCRPage() {
       description: 'For serious contributors',
       price: '$39 (0.01 ETH)', 
       priceETH: '0.01',
-      pncr: '683,000 PNCR',
-      pncrAmount: 683000,
-      benefits: ['Builder badge', '3x mining boost for 60 days', 'Priority support', 'Beta features access'],
+      pncr: '751,000 PNCR',
+      pncrAmount: 751000,
+      benefits: ['Builder badge', '3x mining boost for 60 days', 'Priority support', 'Beta features access', '+10% bonus'],
       spotsLeft: 412,
       totalSpots: 500,
     },
@@ -219,9 +220,9 @@ export default function PNCRPage() {
       description: 'Maximum allocation',
       price: '$99 (0.025 ETH)', 
       priceETH: '0.025',
-      pncr: '1,733,000 PNCR',
-      pncrAmount: 1733000,
-      benefits: ['Contributor badge', '5x mining boost for 90 days', 'Governance voting power', 'Direct team access', 'Featured profile'],
+      pncr: '2,080,000 PNCR',
+      pncrAmount: 2080000,
+      benefits: ['Contributor badge', '5x mining boost for 90 days', 'Governance voting power', 'Direct team access', 'Featured profile', '+20% bonus'],
       spotsLeft: 89,
       totalSpots: 100,
     },
