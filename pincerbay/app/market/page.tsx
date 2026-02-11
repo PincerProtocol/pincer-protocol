@@ -63,13 +63,7 @@ interface MarketItem {
   sales?: number;
 }
 
-// Coming soon placeholder items for services/skills/templates/data
-
-// Empty arrays for future marketplace categories
-const serviceItems: MarketItem[] = [];
-const skillItems: MarketItem[] = [];
-const templateItems: MarketItem[] = [];
-const dataItems: MarketItem[] = [];
+// Note: Services/Skills/Templates/Data are now fetched from /api/market/services
 
 const categories = [
   { id: 'feed', name: 'Feed', emoji: '📋', description: 'Jobs & Requests' },
@@ -254,9 +248,8 @@ export default function MarketPage() {
     sales: Math.floor(Math.random() * 500) + 50,
   }));
 
-  // Filter and sort items
-  const allItems = [...soulItems, ...serviceItems, ...skillItems, ...templateItems, ...dataItems];
-  const filteredItems = allItems
+  // Filter and sort product items (souls)
+  const filteredItems = soulItems
     .filter(item =>
       item.category === category &&
       (item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

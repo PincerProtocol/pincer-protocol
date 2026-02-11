@@ -1,24 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { PrismaClient } from '@prisma/client';
 
-// Hire requests storage (would use database in production)
-const hireRequests: Map<string, {
-  id: string;
-  serviceId: string;
-  serviceTitle: string;
-  buyerId: string;
-  buyerName: string;
-  sellerId: string;
-  sellerName: string;
-  price: number;
-  currency: string;
-  requirements: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'in_progress' | 'completed' | 'disputed';
-  escrowId?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}> = new Map();
+const prisma = new PrismaClient();
 
 export async function POST(
   request: NextRequest,
@@ -34,46 +19,104 @@ export async function POST(
     const body = await request.json();
     const { requirements } = body;
 
-    // In production: fetch service from database
-    // For now: mock service lookup
-    const mockService = {
-      id: serviceId,
-      title: 'Service',
-      price: 50,
-      currency: 'PNCR',
-      creator: 'agent@example.com',
-      creatorName: 'Agent',
-    };
+    // Get buyer
+    const buyer = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { wallet: true },
+    });
 
-    const id = `hire_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-    const hireRequest = {
-      id,
-      serviceId,
-      serviceTitle: mockService.title,
-      buyerId: session.user.email,
-      buyerName: session.user.name || 'Anonymous',
-      sellerId: mockService.creator,
-      sellerName: mockService.creatorName,
-      price: mockService.price,
-      currency: mockService.currency,
-      requirements: requirements || '',
-      status: 'pending' as const,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    if (!buyer) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
-    hireRequests.set(id, hireRequest);
+    // Get service
+    const service = await prisma.service.findUnique({
+      where: { id: serviceId },
+      include: { creator: true },
+    });
 
-    // In production: 
-    // 1. Create escrow
-    // 2. Deduct from buyer's balance
-    // 3. Notify seller
-    // 4. Create chat room
+    if (!service) {
+      return NextResponse.json({ error: 'Service not found' }, { status: 404 });
+    }
+
+    if (service.status !== 'active') {
+      return NextResponse.json({ error: 'Service is not available' }, { status: 400 });
+    }
+
+    // Can't hire your own service
+    if (service.creatorId === buyer.id) {
+      return NextResponse.json({ error: 'Cannot hire your own service' }, { status: 400 });
+    }
+
+    // Check buyer balance
+    const buyerBalance = buyer.wallet?.balance || 0;
+    if (buyerBalance < service.price) {
+      return NextResponse.json({ 
+        error: 'Insufficient balance', 
+        required: service.price,
+        available: buyerBalance,
+      }, { status: 400 });
+    }
+
+    // Create hire request and deduct balance in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Deduct from buyer's wallet (escrow)
+      if (buyer.wallet) {
+        await tx.userWallet.update({
+          where: { id: buyer.wallet.id },
+          data: { balance: { decrement: service.price } },
+        });
+
+        // Record transaction
+        await tx.walletTransaction.create({
+          data: {
+            fromWalletId: buyer.wallet.id,
+            amount: service.price,
+            txType: 'escrow',
+            status: 'confirmed',
+            description: `Escrow for service: ${service.title}`,
+          },
+        });
+      }
+
+      // Create hire request
+      const hireRequest = await tx.hireRequest.create({
+        data: {
+          serviceId: service.id,
+          buyerId: buyer.id,
+          sellerId: service.creatorId,
+          price: service.price,
+          currency: service.currency,
+          requirements: requirements || null,
+          status: 'pending',
+        },
+        include: {
+          service: true,
+          buyer: { select: { id: true, name: true, email: true } },
+          seller: { select: { id: true, name: true, email: true } },
+        },
+      });
+
+      return hireRequest;
+    });
 
     return NextResponse.json({
       success: true,
-      data: hireRequest,
-      message: 'Hire request submitted! The seller will be notified.',
+      data: {
+        id: result.id,
+        serviceId: result.serviceId,
+        serviceTitle: result.service.title,
+        buyerId: result.buyerId,
+        buyerName: result.buyer.name,
+        sellerId: result.sellerId,
+        sellerName: result.seller.name,
+        price: result.price,
+        currency: result.currency,
+        requirements: result.requirements,
+        status: result.status,
+        createdAt: result.createdAt.toISOString(),
+      },
+      message: 'Hire request submitted! The seller will be notified. Payment is held in escrow.',
     });
   } catch (error: any) {
     console.error('Hire service error:', error);
@@ -92,16 +135,49 @@ export async function GET(
     }
 
     const { id: serviceId } = await params;
-    
-    // Get hire requests for this service
-    const requests = Array.from(hireRequests.values())
-      .filter(r => r.serviceId === serviceId)
-      .filter(r => r.buyerId === session.user?.email || r.sellerId === session.user?.email)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    // Get user
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Get hire requests for this service where user is buyer or seller
+    const requests = await prisma.hireRequest.findMany({
+      where: {
+        serviceId,
+        OR: [
+          { buyerId: user.id },
+          { sellerId: user.id },
+        ],
+      },
+      include: {
+        service: true,
+        buyer: { select: { id: true, name: true } },
+        seller: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
 
     return NextResponse.json({
       success: true,
-      data: requests,
+      data: requests.map(r => ({
+        id: r.id,
+        serviceId: r.serviceId,
+        serviceTitle: r.service.title,
+        buyerId: r.buyerId,
+        buyerName: r.buyer.name,
+        sellerId: r.sellerId,
+        sellerName: r.seller.name,
+        price: r.price,
+        currency: r.currency,
+        requirements: r.requirements,
+        status: r.status,
+        createdAt: r.createdAt.toISOString(),
+      })),
     });
   } catch (error: any) {
     console.error('Get hire requests error:', error);

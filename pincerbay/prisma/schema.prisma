@@ -36,6 +36,13 @@ model User {
   miningSessions MiningSession[]
   miningRewards  MiningReward[]
   reviewsGiven   Review[]       @relation("ReviewsGiven")
+  
+  // Service Marketplace
+  services        Service[]
+  hireRequestsBuyer  HireRequest[] @relation("HireBuyer")
+  hireRequestsSeller HireRequest[] @relation("HireSeller")
+  purchaseRequests   PurchaseRequest[]
+  agentReviewsGiven  AgentReview[] @relation("AgentReviewsGiven")
 
   @@index([email])
   @@index([role])
@@ -470,4 +477,109 @@ model PlatformStats {
   totalTxVolume   Float    @default(0)
   totalMined      Float    @default(0)
   updatedAt       DateTime @updatedAt
+}
+
+// ============================================
+// Service Marketplace (Services/Skills/Templates/Data)
+// ============================================
+
+model Service {
+  id            String   @id @default(cuid())
+  creatorId     String
+  type          String   @default("service") // service, skill, template, data
+  title         String
+  description   String   @db.Text
+  price         Float
+  currency      String   @default("PNCR")
+  category      String   @default("general")
+  tags          String[] @default([])
+  imageUrl      String?
+  rating        Float    @default(0)
+  reviewCount   Int      @default(0)
+  sales         Int      @default(0)
+  status        String   @default("active") // active, paused, deleted
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  creator       User     @relation(fields: [creatorId], references: [id])
+  hireRequests  HireRequest[]
+
+  @@index([creatorId])
+  @@index([type])
+  @@index([category])
+  @@index([status])
+}
+
+model HireRequest {
+  id            String   @id @default(cuid())
+  serviceId     String
+  buyerId       String
+  sellerId      String
+  price         Float
+  currency      String   @default("PNCR")
+  requirements  String?  @db.Text
+  status        String   @default("pending") // pending, accepted, rejected, in_progress, completed, disputed, cancelled
+  escrowId      String?
+  chatRoomId    String?
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  service       Service  @relation(fields: [serviceId], references: [id])
+  buyer         User     @relation("HireBuyer", fields: [buyerId], references: [id])
+  seller        User     @relation("HireSeller", fields: [sellerId], references: [id])
+
+  @@index([serviceId])
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([status])
+}
+
+// ============================================
+// PNCR Purchase Requests
+// ============================================
+
+model PurchaseRequest {
+  id            String    @id @default(cuid())
+  userId        String
+  txHash        String    @unique
+  fromToken     String    // ETH, USDT, USDC
+  fromAmount    String
+  toPNCR        Float
+  walletAddress String
+  status        String    @default("pending") // pending, verified, credited, failed
+  createdAt     DateTime  @default(now())
+  verifiedAt    DateTime?
+  creditedAt    DateTime?
+
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([txHash])
+  @@index([status])
+}
+
+// ============================================
+// Agent Reviews (Enhanced)
+// ============================================
+
+model AgentReview {
+  id            String   @id @default(cuid())
+  agentId       String
+  userId        String
+  hireRequestId String?  @unique
+  rating        Int      // 1-5
+  title         String
+  content       String   @db.Text
+  helpful       Int      @default(0)
+  verified      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation("AgentReviewsGiven", fields: [userId], references: [id])
+
+  @@unique([agentId, userId])
+  @@index([agentId])
+  @@index([userId])
+  @@index([rating])
 }
