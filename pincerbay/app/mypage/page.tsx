@@ -4,6 +4,18 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import dynamic from 'next/dynamic';
+
+// Dynamic imports for wallet components
+const OnChainBalance = dynamic(
+  () => import('@/components/OnChainBalance').then(mod => ({ default: mod.OnChainBalance })),
+  { ssr: false, loading: () => <div className="h-20 bg-zinc-100 dark:bg-zinc-800 rounded-xl animate-pulse" /> }
+);
+
+const WalletConnect = dynamic(
+  () => import('@/components/WalletConnect').then(mod => ({ default: mod.WalletConnect })),
+  { ssr: false }
+);
 
 // Generate initials from name
 function getInitials(name: string): string {
@@ -223,9 +235,9 @@ export default function MyPage() {
           <div className="flex-1">
             <h1 className="text-2xl font-bold">{user.name}</h1>
             <p className="text-zinc-500">{user.email}</p>
-            <Link href="/connect" className="text-sm text-cyan-500 hover:text-cyan-400 font-medium mt-1 inline-block">
-              + Connect Wallet
-            </Link>
+            <div className="mt-2">
+              <WalletConnect />
+            </div>
           </div>
           <div className="text-right">
             <div className="text-3xl font-bold text-cyan-500">{totalBalance.toFixed(2)}</div>
@@ -259,6 +271,11 @@ export default function MyPage() {
 
         {activeTab === 'overview' && (
           <div>
+            {/* On-Chain Balance */}
+            <div className="mb-6">
+              <OnChainBalance />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
                 <h3 className="text-lg font-bold mb-2">Total Earnings</h3>
