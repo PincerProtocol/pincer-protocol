@@ -43,28 +43,44 @@ const typeConfig: Record<ListingType, {
     emoji: '🛠️',
     description: 'Offer task-based work (translations, coding, analysis)',
     placeholder: 'e.g., Professional translation service for technical documents',
-    categories: ['translation', 'coding', 'writing', 'design', 'analysis', 'other']
+    categories: [
+      'Translation', 'Coding', 'Writing', 'Design', 'Analysis', 'Research',
+      'Marketing', 'Audio/Video', 'Legal', 'Finance', 'Education', 'Consulting',
+      'Data Entry', 'Customer Support', 'Social Media', 'SEO', 'Testing/QA'
+    ]
   },
   skill: {
     name: 'Skill',
     emoji: '⚡',
     description: 'Ongoing capability that agents can use',
     placeholder: 'e.g., Real-time sentiment analysis API',
-    categories: ['api', 'automation', 'integration', 'monitoring', 'other']
+    categories: [
+      'API', 'Automation', 'Integration', 'Monitoring', 'AI/ML', 'NLP',
+      'Image Processing', 'Web Scraping', 'Notification', 'Analytics',
+      'Search', 'Storage', 'Authentication', 'Payment', 'Communication'
+    ]
   },
   template: {
     name: 'Template',
     emoji: '📄',
     description: 'Code templates, frameworks, or starter kits',
     placeholder: 'e.g., Next.js + Prisma + Auth starter template',
-    categories: ['frontend', 'backend', 'fullstack', 'ai', 'blockchain', 'other']
+    categories: [
+      'Frontend', 'Backend', 'Fullstack', 'AI/ML', 'Blockchain', 'Mobile',
+      'CLI Tool', 'Chrome Extension', 'VS Code Extension', 'Discord Bot',
+      'Telegram Bot', 'Smart Contract', 'Serverless', 'DevOps', 'Testing'
+    ]
   },
   data: {
     name: 'Data',
     emoji: '📊',
     description: 'Datasets, APIs, or data feeds',
     placeholder: 'e.g., Crypto price history dataset (2020-2026)',
-    categories: ['financial', 'social', 'technical', 'geographic', 'other']
+    categories: [
+      'Financial', 'Social Media', 'Technical', 'Geographic', 'Healthcare',
+      'E-commerce', 'News', 'Weather', 'Sports', 'Government', 'Academic',
+      'Real Estate', 'Job Market', 'Crypto/DeFi', 'NFT', 'Gaming'
+    ]
   }
 };
 
@@ -193,21 +209,25 @@ function CreateListingForm({ initialType }: { initialType: ListingType }) {
               <p className="text-xs text-zinc-500 mt-1">{description.length}/2000</p>
             </div>
 
-            {/* Category */}
+            {/* Category - Combobox (select or type custom) */}
             <div>
               <label className="block text-sm font-medium mb-2">Category</label>
-              <select
+              <input
+                type="text"
+                list={`categories-${listingType}`}
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
+                placeholder="Select or type your own..."
                 className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
-              >
-                <option value="">Select category...</option>
+              />
+              <datalist id={`categories-${listingType}`}>
                 {config.categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                  </option>
+                  <option key={cat} value={cat} />
                 ))}
-              </select>
+              </datalist>
+              <p className="text-xs text-zinc-500 mt-1">
+                💡 Select from suggestions or type a custom category
+              </p>
             </div>
 
             {/* Price */}
