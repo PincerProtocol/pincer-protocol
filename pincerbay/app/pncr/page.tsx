@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/Toast';
 
-type Tab = 'airdrop' | 'staking' | 'mine' | 'purchase' | 'rewards';
+type Tab = 'airdrop' | 'staking' | 'mine' | 'purchase' | 'rewards' | 'wallet';
 
 interface MiningSession {
   id: string;
@@ -36,6 +36,12 @@ export default function PNCRPage() {
   const [selectedCoin, setSelectedCoin] = useState('ETH');
   const [purchaseAmount, setPurchaseAmount] = useState('');
   const statusIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Wallet tab state
+  const [depositTxHash, setDepositTxHash] = useState('');
+  const [withdrawAddress, setWithdrawAddress] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [isProcessingWallet, setIsProcessingWallet] = useState(false);
 
   // Load wallet balance
   useEffect(() => {
@@ -212,6 +218,7 @@ export default function PNCRPage() {
         {/* Tabs */}
         <div className="flex gap-1 mb-6 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto">
           {[
+            { id: 'wallet', label: '💼 Wallet', desc: 'Deposit/Withdraw' },
             { id: 'airdrop', label: '🎁 Airdrop', desc: 'Free tokens' },
             { id: 'staking', label: '📈 Staking', desc: 'Earn APY' },
             { id: 'mine', label: '⛏️ Mine', desc: 'Activity mining' },
@@ -231,6 +238,200 @@ export default function PNCRPage() {
             </button>
           ))}
         </div>
+
+        {/* Wallet Tab */}
+        {activeTab === 'wallet' && (
+          <div className="space-y-6">
+            {/* Deposit Section */}
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
+              <h2 className="text-xl font-bold mb-4">💰 Deposit PNCR</h2>
+              <p className="text-sm text-zinc-500 mb-6">
+                Send PNCR from your MetaMask wallet to deposit into your PincerBay account.
+              </p>
+
+              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 mb-4">
+                <p className="text-xs text-zinc-500 mb-2">Send PNCR to this address on Base network:</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-sm font-mono break-all text-cyan-500">
+                    0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb
+                  </code>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText('0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb');
+                      showToast('Address copied!', 'success');
+                    }}
+                    className="px-3 py-1 bg-zinc-200 dark:bg-zinc-700 rounded text-xs hover:bg-zinc-300 dark:hover:bg-zinc-600"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Transaction Hash</label>
+                <input
+                  type="text"
+                  value={depositTxHash}
+                  onChange={(e) => setDepositTxHash(e.target.value)}
+                  placeholder="0x..."
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <button
+                onClick={async () => {
+                  if (!depositTxHash.trim()) {
+                    showToast('Please enter a transaction hash', 'warning');
+                    return;
+                  }
+                  setIsProcessingWallet(true);
+                  try {
+                    const res = await fetch('/api/wallet/verify-deposit', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ txHash: depositTxHash.trim() }),
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      showToast(data.data.message || 'Deposit verified!', 'success');
+                      setDepositTxHash('');
+                      // Refresh balance
+                      const walletRes = await fetch('/api/my-wallet');
+                      const walletData = await walletRes.json();
+                      setBalance(walletData.data?.userWallet?.balance || '0');
+                    } else {
+                      showToast(data.error || 'Verification failed', 'error');
+                    }
+                  } catch (error) {
+                    showToast('Failed to verify deposit', 'error');
+                  } finally {
+                    setIsProcessingWallet(false);
+                  }
+                }}
+                disabled={isProcessingWallet || !depositTxHash.trim()}
+                className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold transition-colors disabled:opacity-50"
+              >
+                {isProcessingWallet ? 'Verifying...' : 'Verify Deposit'}
+              </button>
+            </div>
+
+            {/* Withdraw Section */}
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
+              <h2 className="text-xl font-bold mb-4">📤 Withdraw PNCR</h2>
+              <p className="text-sm text-zinc-500 mb-6">
+                Withdraw PNCR from your PincerBay account to your MetaMask wallet.
+              </p>
+
+              <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 mb-4">
+                <div className="flex justify-between text-sm">
+                  <span className="text-zinc-500">Available Balance</span>
+                  <span className="font-bold text-cyan-500">{Number(balance).toFixed(2)} PNCR</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="text-zinc-500">Withdrawal Fee</span>
+                  <span className="text-orange-500">1 PNCR</span>
+                </div>
+                <div className="flex justify-between text-sm mt-1">
+                  <span className="text-zinc-500">Minimum Withdrawal</span>
+                  <span>10 PNCR</span>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Destination Address (Base Network)</label>
+                <input
+                  type="text"
+                  value={withdrawAddress}
+                  onChange={(e) => setWithdrawAddress(e.target.value)}
+                  placeholder="0x..."
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Amount (PNCR)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    value={withdrawAmount}
+                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                    placeholder="0"
+                    min="10"
+                    max={Math.max(0, Number(balance) - 1)}
+                    className="flex-1 px-4 py-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
+                  />
+                  <button
+                    onClick={() => setWithdrawAmount(String(Math.max(0, Number(balance) - 1)))}
+                    className="px-4 py-3 bg-zinc-200 dark:bg-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-300 dark:hover:bg-zinc-600"
+                  >
+                    Max
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={async () => {
+                  if (!withdrawAddress.trim() || !withdrawAmount) {
+                    showToast('Please fill in all fields', 'warning');
+                    return;
+                  }
+                  const amount = Number(withdrawAmount);
+                  if (amount < 10) {
+                    showToast('Minimum withdrawal is 10 PNCR', 'warning');
+                    return;
+                  }
+                  if (amount + 1 > Number(balance)) {
+                    showToast('Insufficient balance (including 1 PNCR fee)', 'error');
+                    return;
+                  }
+                  setIsProcessingWallet(true);
+                  try {
+                    const res = await fetch('/api/wallet/withdraw', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        amount,
+                        toAddress: withdrawAddress.trim(),
+                      }),
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                      showToast(data.data.txHash 
+                        ? `Withdrawal complete! TX: ${data.data.txHash.slice(0, 10)}...` 
+                        : 'Withdrawal queued for processing', 'success');
+                      setWithdrawAddress('');
+                      setWithdrawAmount('');
+                      // Refresh balance
+                      const walletRes = await fetch('/api/my-wallet');
+                      const walletData = await walletRes.json();
+                      setBalance(walletData.data?.userWallet?.balance || '0');
+                    } else {
+                      showToast(data.error || 'Withdrawal failed', 'error');
+                    }
+                  } catch (error) {
+                    showToast('Failed to process withdrawal', 'error');
+                  } finally {
+                    setIsProcessingWallet(false);
+                  }
+                }}
+                disabled={isProcessingWallet || !withdrawAddress.trim() || !withdrawAmount}
+                className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold transition-colors disabled:opacity-50"
+              >
+                {isProcessingWallet ? 'Processing...' : 'Withdraw'}
+              </button>
+            </div>
+
+            {/* Network Info */}
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center">
+              <p className="text-sm text-blue-400">
+                ⛓️ All on-chain transactions happen on <span className="font-bold">Base Mainnet</span>
+              </p>
+              <p className="text-xs text-zinc-500 mt-1">
+                PNCR Token: 0x09De9dE982E488Cd92774Ecc1b98e8EDF8dAF57c
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Mine Tab */}
         {activeTab === 'mine' && (
