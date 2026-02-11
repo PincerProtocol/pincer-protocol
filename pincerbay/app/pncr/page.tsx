@@ -864,8 +864,8 @@ export default function PNCRPage() {
                   <div className="flex-1 relative">
                     <div className="bg-purple-500 text-white rounded-lg p-4 text-center relative z-10">
                       <p className="text-xs font-medium mb-1">🚀 IDO</p>
-                      <p className="text-xl font-bold">$0.000286</p>
-                      <p className="text-xs mt-1 text-green-300">+400%</p>
+                      <p className="text-xl font-bold">$0.000371</p>
+                      <p className="text-xs mt-1 text-green-300">+550%</p>
                     </div>
                     <div className="absolute top-1/2 right-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500 -z-0" />
                   </div>
@@ -884,8 +884,8 @@ export default function PNCRPage() {
                   <div className="flex-1">
                     <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-black rounded-lg p-4 text-center">
                       <p className="text-xs font-medium mb-1">🎯 TARGET 2027</p>
-                      <p className="text-xl font-bold">$0.004</p>
-                      <p className="text-xs mt-1 font-bold">+7,000% (70x)</p>
+                      <p className="text-xl font-bold">$0.01+</p>
+                      <p className="text-xs mt-1 font-bold">+17,400%</p>
                     </div>
                   </div>
                 </div>
@@ -915,10 +915,10 @@ export default function PNCRPage() {
                   </div>
                   <div className="px-4 py-2 bg-zinc-800 rounded-lg">
                     <span className="text-zinc-400">Potential:</span>{' '}
-                    <span className="text-green-400 font-bold">$0.004</span>
+                    <span className="text-green-400 font-bold">$0.01+</span>
                   </div>
                   <div className="px-4 py-2 bg-gradient-to-r from-green-500/20 to-cyan-500/20 rounded-lg border border-green-500/30">
-                    <span className="text-green-400 font-bold">70x Growth Potential</span>
+                    <span className="text-green-400 font-bold">175x Growth Potential</span>
                   </div>
                 </div>
               </div>
