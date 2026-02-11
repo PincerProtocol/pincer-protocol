@@ -187,7 +187,7 @@ export default function PNCRPage() {
     return `${hours}h ${mins}m`;
   };
 
-  // Package tiers - paid packages for early supporters
+  // Package tiers - paid packages for early supporters (FDV $10M = $0.0000571/PNCR)
   const packages = [
     { 
       id: 'pioneer', 
@@ -195,8 +195,8 @@ export default function PNCRPage() {
       description: 'First 1,000 supporters only',
       price: '$7.90 (0.002 ETH)', 
       priceETH: '0.002',
-      pncr: '100,000 PNCR',
-      pncrAmount: 100000,
+      pncr: '138,000 PNCR',
+      pncrAmount: 138000,
       benefits: ['Early adopter badge', '2x mining boost for 30 days', 'Exclusive Discord role'],
       spotsLeft: 847,
       totalSpots: 1000,
@@ -207,8 +207,8 @@ export default function PNCRPage() {
       description: 'For serious contributors',
       price: '$39 (0.01 ETH)', 
       priceETH: '0.01',
-      pncr: '600,000 PNCR',
-      pncrAmount: 600000,
+      pncr: '683,000 PNCR',
+      pncrAmount: 683000,
       benefits: ['Builder badge', '3x mining boost for 60 days', 'Priority support', 'Beta features access'],
       spotsLeft: 412,
       totalSpots: 500,
@@ -219,8 +219,8 @@ export default function PNCRPage() {
       description: 'Maximum allocation',
       price: '$99 (0.025 ETH)', 
       priceETH: '0.025',
-      pncr: '2,000,000 PNCR',
-      pncrAmount: 2000000,
+      pncr: '1,733,000 PNCR',
+      pncrAmount: 1733000,
       benefits: ['Contributor badge', '5x mining boost for 90 days', 'Governance voting power', 'Direct team access', 'Featured profile'],
       spotsLeft: 89,
       totalSpots: 100,
@@ -1049,6 +1049,8 @@ function PackagePurchaseButton({
       console.error('Purchase failed:', error);
       if (error.code === 4001) {
         showToast('Transaction cancelled', 'warning');
+      } else if (error.code === -32002 || error.message?.includes('already pending')) {
+        showToast('MetaMask is waiting for your response. Check the MetaMask popup!', 'warning');
       } else {
         showToast('Purchase failed: ' + (error.message || 'Unknown error'), 'error');
       }
