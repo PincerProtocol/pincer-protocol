@@ -692,6 +692,7 @@ export default function PNCRPage() {
                     <PackagePurchaseButton 
                       packageId={pkg.id}
                       priceETH={pkg.priceETH}
+                      priceUSD={pkg.priceUSD}
                       pncrAmount={pkg.pncrAmount}
                       session={session}
                       showToast={showToast}
@@ -975,11 +976,12 @@ export default function PNCRPage() {
   );
 }
 
-// Package Purchase Button Component
+// Package Purchase Button Component with Confirmation Modal
 function PackagePurchaseButton({ 
   packageId, 
   priceETH, 
-  pncrAmount, 
+  pncrAmount,
+  priceUSD,
   session, 
   showToast,
   onSuccess 
@@ -987,17 +989,35 @@ function PackagePurchaseButton({
   packageId: string;
   priceETH: string;
   pncrAmount: number;
+  priceUSD: number;
   session: any;
   showToast: (msg: string, type: 'success' | 'error' | 'warning' | 'info') => void;
   onSuccess: () => void;
 }) {
   const [isPurchasing, setIsPurchasing] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+
+  const treasuryAddress = '0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb';
 
   const handlePurchase = async () => {
     if (!session) {
       showToast('Please connect your wallet first', 'warning');
       return;
     }
+
+    // Show confirmation modal first
+    setShowConfirmModal(true);
+    setConfirmed(false);
+  };
+
+  const executePurchase = async () => {
+    if (!confirmed) {
+      showToast('Please confirm by checking the box', 'warning');
+      return;
+    }
+
+    setShowConfirmModal(false);
 
     // Check if ethereum is available
     if (typeof window === 'undefined' || !(window as any).ethereum) {
@@ -1034,9 +1054,6 @@ function PackagePurchaseButton({
         }
       }
 
-      // Treasury address
-      const treasuryAddress = '0x8a6d01Bb78cFd520AfE3e5D24CA5B3d0b37aC3cb';
-      
       // Convert ETH to wei (hex)
       const weiAmount = BigInt(Math.floor(parseFloat(priceETH) * 1e18));
       const hexAmount = '0x' + weiAmount.toString(16);
@@ -1098,13 +1115,88 @@ function PackagePurchaseButton({
   }
 
   return (
-    <button
-      onClick={handlePurchase}
-      disabled={isPurchasing}
-      className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white rounded-xl font-bold transition-all disabled:opacity-50"
-    >
-      {isPurchasing ? 'Processing...' : `Buy with ${priceETH} ETH`}
-    </button>
+    <>
+      <button
+        onClick={handlePurchase}
+        disabled={isPurchasing}
+        className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white rounded-xl font-bold transition-all disabled:opacity-50"
+      >
+        {isPurchasing ? 'Processing...' : `Buy with ${priceETH} ETH`}
+      </button>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4 text-center">⚠️ 결제 확인</h3>
+            
+            <div className="space-y-4 mb-6">
+              <div className="bg-zinc-800 rounded-lg p-4">
+                <p className="text-xs text-zinc-500 mb-1">받는 주소 (Treasury)</p>
+                <code className="text-sm text-cyan-400 break-all">{treasuryAddress}</code>
+                <a 
+                  href={`https://basescan.org/address/${treasuryAddress}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-400 hover:underline block mt-1"
+                >
+                  Basescan에서 확인 →
+                </a>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-zinc-800 rounded-lg p-3 text-center">
+                  <p className="text-xs text-zinc-500 mb-1">결제 금액</p>
+                  <p className="font-bold text-white">{priceETH} ETH</p>
+                  <p className="text-xs text-zinc-400">(${priceUSD})</p>
+                </div>
+                <div className="bg-zinc-800 rounded-lg p-3 text-center">
+                  <p className="text-xs text-zinc-500 mb-1">받을 PNCR</p>
+                  <p className="font-bold text-cyan-400">{pncrAmount.toLocaleString()}</p>
+                </div>
+              </div>
+
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
+                <p className="text-xs text-yellow-400">
+                  ⚠️ 주소를 반드시 확인하세요. 잘못된 주소로 전송 시 복구 불가합니다.
+                </p>
+              </div>
+            </div>
+
+            <label className="flex items-center gap-3 mb-6 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={confirmed}
+                onChange={(e) => setConfirmed(e.target.checked)}
+                className="w-5 h-5 rounded border-zinc-600 bg-zinc-800 text-cyan-500 focus:ring-cyan-500"
+              />
+              <span className="text-sm text-zinc-300">
+                위 주소가 PincerBay Treasury 주소임을 확인했습니다
+              </span>
+            </label>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  setConfirmed(false);
+                }}
+                className="flex-1 py-3 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl font-bold transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={executePurchase}
+                disabled={!confirmed}
+                className="flex-1 py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                확인 후 결제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
