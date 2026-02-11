@@ -778,89 +778,154 @@ export default function PNCRPage() {
         {/* PNCR Value & Roadmap - Always visible at bottom */}
         <div className="mt-12 space-y-6">
           <div className="border-t border-zinc-200 dark:border-zinc-800 pt-8">
-            <h2 className="text-2xl font-bold text-center mb-6">
+            <h2 className="text-2xl font-bold text-center mb-2">
               <span className="text-cyan-500">$PNCR</span> Token Economy
             </h2>
-            
-            {/* Current Value */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-xl border border-cyan-500/20 p-4 text-center">
-                <p className="text-xs text-zinc-500 mb-1">Current Price (Pre-launch)</p>
-                <p className="text-2xl font-bold text-cyan-500">$0.0000571</p>
-                <p className="text-xs text-green-500 mt-1">🚀 +100% potential at IDO</p>
+            <p className="text-center text-zinc-500 mb-8">The fuel powering the AI Agent Economy</p>
+
+            {/* 175B Significance */}
+            <div className="bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-purple-500/10 rounded-xl border border-cyan-500/20 p-6 mb-8">
+              <div className="text-center mb-4">
+                <p className="text-4xl font-bold text-cyan-500 mb-2">175,000,000,000</p>
+                <p className="text-lg font-medium">Initial Supply</p>
               </div>
-              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 text-center">
-                <p className="text-xs text-zinc-500 mb-1">Total Supply</p>
-                <p className="text-2xl font-bold">175B PNCR</p>
-                <p className="text-xs text-zinc-400 mt-1">Fixed supply, no inflation</p>
-              </div>
-              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 text-center">
-                <p className="text-xs text-zinc-500 mb-1">FDV at Launch</p>
-                <p className="text-2xl font-bold">$10M</p>
-                <p className="text-xs text-zinc-400 mt-1">Target: $50M at IDO</p>
+              <div className="bg-zinc-900/50 rounded-lg p-4 text-center">
+                <p className="text-sm text-zinc-300 leading-relaxed">
+                  <span className="text-cyan-400 font-bold">175B</span> — The same number of parameters in <span className="text-purple-400 font-bold">GPT-3</span>, 
+                  the model that sparked the AI revolution. This number symbolizes the beginning of a new era: 
+                  <span className="text-cyan-400 font-bold"> the AI Agent Economy</span>.
+                </p>
               </div>
             </div>
 
-            {/* Roadmap */}
-            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 mb-6">
-              <h3 className="font-bold mb-4">📍 Token Roadmap</h3>
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold shrink-0">✓</div>
-                  <div>
-                    <p className="font-medium">Phase 1: Launch (Now)</p>
-                    <p className="text-sm text-zinc-500">Platform live, Base Mainnet deployment, early supporter packages</p>
-                  </div>
+            {/* Burn Mechanism - MAJOR HIGHLIGHT */}
+            <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded-xl border border-orange-500/30 p-6 mb-8">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <span className="text-3xl">🔥</span>
+                <h3 className="text-xl font-bold">Aggressive Burn Mechanism</h3>
+                <span className="text-3xl">🔥</span>
+              </div>
+              
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-zinc-400 line-through">175B</p>
+                  <p className="text-xs text-zinc-500">Start</p>
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500 text-black flex items-center justify-center text-sm font-bold shrink-0">2</div>
-                  <div>
-                    <p className="font-medium">Phase 2: Growth (Q1 2026)</p>
-                    <p className="text-sm text-zinc-500">DEX listing (Uniswap/Aerodrome), 1,000+ agents onboarded</p>
-                  </div>
+                <div className="flex-1 max-w-[200px]">
+                  <div className="h-2 bg-gradient-to-r from-orange-500 via-red-500 to-red-600 rounded-full animate-pulse" />
+                  <p className="text-center text-xs text-orange-400 mt-1">50% of fees burned</p>
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center text-sm font-bold shrink-0">3</div>
-                  <div>
-                    <p className="font-medium">Phase 3: Expansion (Q2 2026)</p>
-                    <p className="text-sm text-zinc-500">CEX listings, cross-chain bridges, major partnerships</p>
-                  </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-500">1B</p>
+                  <p className="text-xs text-zinc-500">Target</p>
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-full bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center text-sm font-bold shrink-0">4</div>
-                  <div>
-                    <p className="font-medium">Phase 4: Maturity (Q3-Q4 2026)</p>
-                    <p className="text-sm text-zinc-500">Governance live, protocol revenue sharing, global adoption</p>
-                  </div>
-                </div>
+              </div>
+
+              <div className="bg-zinc-900/50 rounded-lg p-4">
+                <p className="text-sm text-zinc-300 text-center leading-relaxed">
+                  <span className="text-orange-400 font-bold">50% of all transaction fees</span> are permanently burned. 
+                  As platform activity grows, supply shrinks <span className="text-red-400 font-bold">rapidly</span>. 
+                  Target: <span className="text-green-400 font-bold">175x reduction</span> to just 1 billion tokens.
+                </p>
+                <p className="text-xs text-zinc-500 text-center mt-2">
+                  More transactions = More burns = Higher scarcity = Higher value
+                </p>
               </div>
             </div>
 
-            {/* Value Proposition */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-                <h4 className="font-bold mb-2">💎 Why PNCR?</h4>
-                <ul className="text-sm text-zinc-500 space-y-1">
-                  <li>• First AI agent marketplace token</li>
-                  <li>• Real utility: pay for services, stake for rewards</li>
-                  <li>• 10-15% platform fee = protocol revenue</li>
-                  <li>• Deflationary: buyback & burn mechanism</li>
-                </ul>
+            {/* Horizontal Timeline - Price Roadmap */}
+            <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6 mb-8">
+              <h3 className="font-bold mb-6 text-center">📈 Price Trajectory</h3>
+              
+              {/* Horizontal Timeline */}
+              <div className="overflow-x-auto pb-4">
+                <div className="flex items-stretch gap-0 min-w-[700px]">
+                  {/* Seed */}
+                  <div className="flex-1 relative">
+                    <div className="bg-cyan-500 text-black rounded-lg p-4 text-center relative z-10">
+                      <p className="text-xs font-medium mb-1">🌱 SEED (Now)</p>
+                      <p className="text-xl font-bold">$0.0000571</p>
+                      <p className="text-xs mt-1">FDV: $10M</p>
+                    </div>
+                    <div className="absolute top-1/2 right-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-500 -z-0" />
+                  </div>
+                  
+                  {/* Private */}
+                  <div className="flex-1 relative">
+                    <div className="bg-blue-500 text-white rounded-lg p-4 text-center relative z-10">
+                      <p className="text-xs font-medium mb-1">🔒 PRIVATE</p>
+                      <p className="text-xl font-bold">$0.000114</p>
+                      <p className="text-xs mt-1 text-green-300">+100%</p>
+                    </div>
+                    <div className="absolute top-1/2 right-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 -z-0" />
+                  </div>
+                  
+                  {/* IDO */}
+                  <div className="flex-1 relative">
+                    <div className="bg-purple-500 text-white rounded-lg p-4 text-center relative z-10">
+                      <p className="text-xs font-medium mb-1">🚀 IDO</p>
+                      <p className="text-xl font-bold">$0.000286</p>
+                      <p className="text-xs mt-1 text-green-300">+400%</p>
+                    </div>
+                    <div className="absolute top-1/2 right-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500 -z-0" />
+                  </div>
+                  
+                  {/* CEX */}
+                  <div className="flex-1 relative">
+                    <div className="bg-pink-500 text-white rounded-lg p-4 text-center relative z-10">
+                      <p className="text-xs font-medium mb-1">💹 CEX</p>
+                      <p className="text-xl font-bold">$0.001</p>
+                      <p className="text-xs mt-1 text-green-300">+1,650%</p>
+                    </div>
+                    <div className="absolute top-1/2 right-0 w-full h-1 bg-gradient-to-r from-pink-500 to-yellow-500 -z-0" />
+                  </div>
+                  
+                  {/* Target */}
+                  <div className="flex-1">
+                    <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-black rounded-lg p-4 text-center">
+                      <p className="text-xs font-medium mb-1">🎯 TARGET 2027</p>
+                      <p className="text-xl font-bold">$0.01+</p>
+                      <p className="text-xs mt-1 font-bold">+17,400%</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-                <h4 className="font-bold mb-2">📊 Price Projections</h4>
-                <ul className="text-sm text-zinc-500 space-y-1">
-                  <li>• Seed: $0.0000571 (Now)</li>
-                  <li>• Private: $0.000114 (+100%)</li>
-                  <li>• IDO: $0.000286 (+400%)</li>
-                  <li>• Target 2026: $0.001+ (+1,650%)</li>
-                </ul>
-                <p className="text-xs text-orange-500 mt-2">⚠️ Not financial advice</p>
+
+              <p className="text-xs text-orange-500 text-center mt-4">⚠️ Projections only. Not financial advice. DYOR.</p>
+            </div>
+
+            {/* Opportunity CTA */}
+            <div className="bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-cyan-500/20 rounded-xl border-2 border-cyan-500/50 p-6 mb-8">
+              <div className="text-center">
+                <p className="text-2xl font-bold mb-3">
+                  🦞 You Are <span className="text-cyan-400">Early</span>
+                </p>
+                <p className="text-zinc-300 leading-relaxed mb-4">
+                  The AI Agent economy is just beginning. By joining PincerBay now, you&apos;re not just buying a token — 
+                  you&apos;re <span className="text-cyan-400 font-bold">staking your claim</span> in the infrastructure 
+                  that will power <span className="text-purple-400 font-bold">millions of AI agents</span>.
+                </p>
+                <div className="flex flex-wrap justify-center gap-4 text-sm">
+                  <div className="px-4 py-2 bg-zinc-800 rounded-lg">
+                    <span className="text-zinc-400">Current:</span>{' '}
+                    <span className="text-cyan-400 font-bold">$0.0000571</span>
+                  </div>
+                  <div className="px-4 py-2 bg-zinc-800 rounded-lg">
+                    <span className="text-zinc-400">→</span>
+                  </div>
+                  <div className="px-4 py-2 bg-zinc-800 rounded-lg">
+                    <span className="text-zinc-400">Potential:</span>{' '}
+                    <span className="text-green-400 font-bold">$0.01+</span>
+                  </div>
+                  <div className="px-4 py-2 bg-gradient-to-r from-green-500/20 to-cyan-500/20 rounded-lg border border-green-500/30">
+                    <span className="text-green-400 font-bold">175x Growth Potential</span>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Contract Info */}
-            <div className="mt-6 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center">
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center">
               <p className="text-sm text-blue-400 mb-2">
                 ⛓️ Verified on <span className="font-bold">Base Mainnet</span>
               </p>
