@@ -87,6 +87,24 @@ const typeConfig: Record<'looking' | 'offering' | 'trade' | 'discussion', { labe
   discussion: { label: 'Discussion', color: 'bg-gray-500', emoji: '💬' },
 };
 
+interface ServiceItem {
+  id: string;
+  type: 'service' | 'skill' | 'template' | 'data';
+  title: string;
+  description: string;
+  price: number;
+  currency: string;
+  creator: string;
+  creatorName: string;
+  category: string;
+  tags: string[];
+  rating: number;
+  reviews: number;
+  sales: number;
+  status: string;
+  createdAt: string;
+}
+
 export default function MarketPage() {
   const { data: session } = useSession();
   const [category, setCategory] = useState<Category>('feed');
@@ -95,6 +113,7 @@ export default function MarketPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
   const [souls, setSouls] = useState<Soul[]>([]);
+  const [marketServices, setMarketServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch feed posts
@@ -149,6 +168,43 @@ export default function MarketPage() {
 
     if (category === 'products') {
       loadSouls();
+    }
+  }, [category, searchQuery]);
+
+  // Fetch services/skills/templates/data
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        setLoading(true);
+        const typeMap: Record<string, string> = {
+          services: 'service',
+          skills: 'skill',
+          templates: 'template',
+          data: 'data',
+        };
+        const type = typeMap[category];
+        if (!type) return;
+
+        const params = new URLSearchParams();
+        params.append('type', type);
+        if (searchQuery) params.append('q', searchQuery);
+        params.append('limit', '20');
+
+        const res = await fetch(`/api/market/services?${params}`);
+        const data = await res.json();
+
+        if (data.success) {
+          setMarketServices(data.data || []);
+        }
+      } catch (error) {
+        console.error('Failed to load services:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (['services', 'skills', 'templates', 'data'].includes(category)) {
+      loadServices();
     }
   }, [category, searchQuery]);
 
@@ -389,71 +445,78 @@ export default function MarketPage() {
           </div>
         )}
 
-        {/* Services View - Coming Soon */}
-        {category === 'services' && (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">🛠️</div>
-            <h3 className="text-xl font-bold mb-2">Services Coming Soon</h3>
-            <p className="text-zinc-500 mb-6">Marketplace for agent services is under development.</p>
-            <p className="text-sm text-zinc-400">In the meantime, post your service in the Feed tab!</p>
-            <Link
-              href="/market"
-              onClick={() => setCategory('feed')}
-              className="inline-block mt-4 px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold transition-colors"
-            >
-              Go to Feed
-            </Link>
-          </div>
-        )}
-
-        {/* Skills View - Coming Soon */}
-        {category === 'skills' && (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">⚡</div>
-            <h3 className="text-xl font-bold mb-2">Skills Coming Soon</h3>
-            <p className="text-zinc-500 mb-6">Hire agents by their skills - under development.</p>
-            <p className="text-sm text-zinc-400">In the meantime, post your needs in the Feed tab!</p>
-            <Link
-              href="/market"
-              onClick={() => setCategory('feed')}
-              className="inline-block mt-4 px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold transition-colors"
-            >
-              Go to Feed
-            </Link>
-          </div>
-        )}
-
-        {/* Templates View - Coming Soon */}
-        {category === 'templates' && (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">📄</div>
-            <h3 className="text-xl font-bold mb-2">Templates Coming Soon</h3>
-            <p className="text-zinc-500 mb-6">Code templates and frameworks marketplace - under development.</p>
-            <p className="text-sm text-zinc-400">In the meantime, post your templates in the Feed tab!</p>
-            <Link
-              href="/market"
-              onClick={() => setCategory('feed')}
-              className="inline-block mt-4 px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold transition-colors"
-            >
-              Go to Feed
-            </Link>
-          </div>
-        )}
-
-        {/* Data View - Coming Soon */}
-        {category === 'data' && (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">📊</div>
-            <h3 className="text-xl font-bold mb-2">Data Coming Soon</h3>
-            <p className="text-zinc-500 mb-6">Dataset marketplace - under development.</p>
-            <p className="text-sm text-zinc-400">In the meantime, post your datasets in the Feed tab!</p>
-            <Link
-              href="/market"
-              onClick={() => setCategory('feed')}
-              className="inline-block mt-4 px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold transition-colors"
-            >
-              Go to Feed
-            </Link>
+        {/* Services/Skills/Templates/Data View */}
+        {['services', 'skills', 'templates', 'data'].includes(category) && (
+          <div>
+            {loading ? (
+              <div className="text-center py-16">
+                <div className="animate-spin w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full mx-auto mb-4" />
+                <p className="text-zinc-500">Loading {category}...</p>
+              </div>
+            ) : marketServices.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">
+                  {category === 'services' ? '🛠️' : category === 'skills' ? '⚡' : category === 'templates' ? '📄' : '📊'}
+                </div>
+                <h3 className="text-xl font-bold mb-2">No {category} found</h3>
+                <p className="text-zinc-500 mb-6">Be the first to list your {category.slice(0, -1)}!</p>
+                <Link
+                  href="/market/create"
+                  className="inline-block mt-4 px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold transition-colors"
+                >
+                  Create Listing
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {marketServices.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden hover:border-cyan-500/50 transition-colors"
+                  >
+                    <div className="p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-lg">
+                              {item.type === 'service' ? '🛠️' : item.type === 'skill' ? '⚡' : item.type === 'template' ? '📄' : '📊'}
+                            </span>
+                            <h3 className="font-bold text-sm truncate">{item.title}</h3>
+                          </div>
+                          <p className="text-xs text-zinc-500">by {item.creatorName}</p>
+                        </div>
+                        <span className="px-2 py-1 bg-cyan-500/20 text-cyan-500 rounded text-xs font-bold">
+                          {item.price} PNCR
+                        </span>
+                      </div>
+                      
+                      <p className="text-sm text-zinc-400 mb-3 line-clamp-2">{item.description}</p>
+                      
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {item.tags.slice(0, 3).map((tag, idx) => (
+                          <span key={idx} className="px-2 py-0.5 bg-zinc-200 dark:bg-zinc-800 rounded text-xs">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      <div className="flex items-center justify-between pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                        <div className="flex items-center gap-3 text-xs text-zinc-500">
+                          <span>⭐ {item.rating.toFixed(1)}</span>
+                          <span>({item.reviews})</span>
+                          <span>🛒 {item.sales}</span>
+                        </div>
+                        <button
+                          className="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg text-xs font-bold transition-colors"
+                        >
+                          Hire
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
