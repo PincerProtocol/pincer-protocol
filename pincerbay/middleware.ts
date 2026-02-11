@@ -1,11 +1,12 @@
 /**
  * 🛡️ Simplified Middleware (Edge Runtime Compatible)
- * Security headers + Basic CORS only
+ * Security headers + Basic CORS + Auth checks
  * Rate limiting handled in API routes
  */
 
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { getToken } from "next-auth/jwt"
 
 // ============================================================================
 // Configuration
@@ -26,24 +27,44 @@ const getAllowedOrigins = (): string[] => {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  
+
   // Handle OPTIONS preflight
   if (request.method === "OPTIONS") {
     return handleCORS(request, new NextResponse(null, { status: 204 }))
   }
-  
+
+  // Check authentication for mutating API routes
+  if (pathname.startsWith("/api/") && !pathname.startsWith("/api/auth/")) {
+    const isReadOnly = request.method === "GET" || request.method === "HEAD"
+
+    if (!isReadOnly) {
+      // Check for session token or API key
+      const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+      const apiKey = request.headers.get("X-API-Key")
+
+      if (!token && !apiKey) {
+        return NextResponse.json(
+          { error: "Unauthorized: Authentication required" },
+          { status: 401 }
+        )
+      }
+
+      // API key validation happens in route handlers via validateApiKey()
+    }
+  }
+
   // Continue with response
   const response = NextResponse.next()
-  
+
   // Apply CORS headers
   handleCORS(request, response)
-  
+
   // Apply security headers
   applySecurityHeaders(response)
-  
+
   // Add request tracking
   response.headers.set("X-Request-ID", crypto.randomUUID())
-  
+
   return response
 }
 
@@ -54,19 +75,18 @@ export async function middleware(request: NextRequest) {
 function handleCORS(request: NextRequest, response: NextResponse): NextResponse {
   const origin = request.headers.get("origin")
   const allowedOrigins = getAllowedOrigins()
-  
+
   if (origin && allowedOrigins.includes(origin)) {
     response.headers.set("Access-Control-Allow-Origin", origin)
     response.headers.set("Access-Control-Allow-Credentials", "true")
-  } else if (!origin) {
-    response.headers.set("Access-Control-Allow-Origin", "*")
   }
-  
+  // Removed: wildcard CORS when no origin (fail-closed security posture)
+
   response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
   response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key, X-Requested-With, X-Agent-ID")
   response.headers.set("Access-Control-Expose-Headers", "X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-Request-ID")
   response.headers.set("Access-Control-Max-Age", "86400")
-  
+
   return response
 }
 
@@ -80,6 +100,7 @@ function applySecurityHeaders(response: NextResponse) {
   response.headers.set("X-XSS-Protection", "1; mode=block")
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
   response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), interest-cohort=()")
+  response.headers.set("Content-Length-Limit", "52428800") // 50MB max request body
   
   const cspDirectives = [
     "default-src 'self'",

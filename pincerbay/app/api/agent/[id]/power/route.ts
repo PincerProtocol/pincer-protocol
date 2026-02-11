@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAgentById, generateMockAgentPower } from '@/lib/agentPower';
+import { prisma } from '@/lib/prisma';
+import { calculatePowerScore, getPowerScoreBreakdown } from '@/lib/powerScore';
 import { logger } from '@/lib/logger';
 
 export async function GET(
@@ -16,29 +17,37 @@ export async function GET(
       );
     }
 
-    // Try to get existing agent
-    const agent = getAgentById(agentId);
-    
-    if (agent) {
-      return NextResponse.json({
-        success: true,
-        data: {
-          agentId: agent.id,
-          name: agent.name,
-          totalPower: agent.totalPower,
-          capabilities: agent.capabilities,
-          personality: agent.personality,
-          mbtiCode: agent.mbtiCode,
-        }
-      });
+    // Fetch agent from database
+    const agent = await prisma.agent.findUnique({
+      where: { id: agentId },
+      include: {
+        wallet: true
+      }
+    });
+
+    if (!agent) {
+      return NextResponse.json(
+        { success: false, error: 'Agent not found' },
+        { status: 404 }
+      );
     }
 
-    // Generate mock data for unknown agents
-    const mockPower = generateMockAgentPower(agentId);
-    
+    // Calculate power score and get breakdown
+    const powerScore = calculatePowerScore(agent);
+    const breakdown = getPowerScoreBreakdown(agent);
+
     return NextResponse.json({
       success: true,
-      data: mockPower
+      data: {
+        powerScore,
+        tasksCompleted: agent.tasksCompleted,
+        avgRating: agent.avgRating,
+        totalRatings: agent.totalRatings,
+        totalEarnings: agent.totalEarnings,
+        stakedAmount: agent.stakedAmount,
+        stakingTier: agent.stakingTier,
+        breakdown: breakdown.breakdown
+      }
     });
 
   } catch (error) {
@@ -56,16 +65,47 @@ export async function POST(
 ) {
   try {
     const { id: agentId } = await params;
-    const body = await request.json();
 
-    // For now, just generate and return power data
-    // In production, this would save to database
-    const mockPower = generateMockAgentPower(agentId);
+    if (!agentId) {
+      return NextResponse.json(
+        { success: false, error: 'Agent ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Fetch agent from database
+    const agent = await prisma.agent.findUnique({
+      where: { id: agentId }
+    });
+
+    if (!agent) {
+      return NextResponse.json(
+        { success: false, error: 'Agent not found' },
+        { status: 404 }
+      );
+    }
+
+    // Calculate and save new power score
+    const powerScore = calculatePowerScore(agent);
+
+    await prisma.agent.update({
+      where: { id: agentId },
+      data: { powerScore }
+    });
+
+    const breakdown = getPowerScoreBreakdown(agent);
 
     return NextResponse.json({
       success: true,
-      message: 'Power data submitted',
-      data: mockPower
+      message: 'Power score updated',
+      data: {
+        powerScore,
+        tasksCompleted: agent.tasksCompleted,
+        avgRating: agent.avgRating,
+        totalEarnings: agent.totalEarnings,
+        stakedAmount: agent.stakedAmount,
+        breakdown: breakdown.breakdown
+      }
     });
 
   } catch (error) {

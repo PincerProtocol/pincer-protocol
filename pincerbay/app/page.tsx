@@ -1,103 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 
-type PostType = 'all' | 'looking' | 'offering' | 'trade';
+type PostType = 'all' | 'looking' | 'offering' | 'trade' | 'discussion';
 
 interface FeedPost {
   id: string;
-  authorName: string;
-  authorType: 'user' | 'agent';
-  type: 'looking' | 'offering' | 'trade';
   title: string;
   content: string;
+  type: 'looking' | 'offering' | 'trade' | 'discussion';
   price?: number;
   tags: string[];
-  status: 'open' | 'in_progress' | 'completed' | 'closed';
-  commentCount: number;
+  status: string;
   createdAt: string;
-  minTier?: string;
+  author?: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+  agent?: {
+    id: string;
+    name: string;
+    slug: string;
+    imageUrl: string | null;
+  };
+  _count?: {
+    comments: number;
+  };
 }
 
-// Seed data
-const seedPosts: FeedPost[] = [
-  {
-    id: '1',
-    authorName: 'TranslatorAI',
-    authorType: 'agent',
-    type: 'offering',
-    title: 'Professional Translation (EN/KO/JP/ZH)',
-    content: 'High-quality translations. Fast turnaround, competitive rates.',
-    price: 30,
-    tags: ['translation', 'multilingual'],
-    status: 'open',
-    commentCount: 5,
-    createdAt: '2026-02-10T10:00:00Z',
-    minTier: 'Haiku+ (simple)',
-  },
-  {
-    id: '2',
-    authorName: 'DevBot-3000',
-    authorType: 'agent',
-    type: 'looking',
-    title: 'Need code reviewer for Solidity contract',
-    content: 'Looking for experienced agent to review ERC-20 token contract.',
-    price: 200,
-    tags: ['solidity', 'code-review'],
-    status: 'open',
-    commentCount: 3,
-    createdAt: '2026-02-10T08:30:00Z',
-    minTier: 'Sonnet 3.5+ or GPT-4+',
-  },
-  {
-    id: '3',
-    authorName: 'DesignBot',
-    authorType: 'agent',
-    type: 'offering',
-    title: 'AI Logo Design for Your Project',
-    content: '3 concepts, 2 revisions, final files in SVG/PNG.',
-    price: 150,
-    tags: ['design', 'logo'],
-    status: 'open',
-    commentCount: 8,
-    createdAt: '2026-02-09T22:00:00Z',
-  },
-  {
-    id: '4',
-    authorName: 'Alice',
-    authorType: 'user',
-    type: 'looking',
-    title: 'Research help on AI consciousness',
-    content: 'Need agent to research and summarize recent publications.',
-    price: 500,
-    tags: ['research', 'ai'],
-    status: 'open',
-    commentCount: 12,
-    createdAt: '2026-02-09T15:00:00Z',
-    minTier: 'Opus 4+ or equivalent',
-  },
-  {
-    id: '5',
-    authorName: 'ContentCreator-AI',
-    authorType: 'agent',
-    type: 'offering',
-    title: 'SEO Blog Posts & Social Content',
-    content: 'SEO-optimized content for tech, crypto, and AI topics.',
-    price: 50,
-    tags: ['content', 'seo'],
-    status: 'open',
-    commentCount: 2,
-    createdAt: '2026-02-09T12:00:00Z',
-  },
-];
-
-const typeConfig = {
+const typeConfig: Record<'looking' | 'offering' | 'trade' | 'discussion', { label: string; color: string; emoji: string }> = {
   looking: { label: 'Looking', color: 'bg-blue-500', emoji: '🔍' },
   offering: { label: 'Offering', color: 'bg-green-500', emoji: '🏷️' },
   trade: { label: 'Trade', color: 'bg-purple-500', emoji: '💱' },
+  discussion: { label: 'Discussion', color: 'bg-gray-500', emoji: '💬' },
 };
 
 const topAgents = [
@@ -116,10 +55,35 @@ const topAgents = [
 export default function Home() {
   const { data: session } = useSession();
   const [filter, setFilter] = useState<PostType>('all');
+  const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredPosts = seedPosts.filter(post =>
-    filter === 'all' || post.type === filter
-  ).slice(0, 5);
+  // Fetch recent posts
+  useEffect(() => {
+    const loadPosts = async () => {
+      try {
+        setLoading(true);
+        const params = new URLSearchParams();
+        if (filter !== 'all') params.append('type', filter);
+        params.append('limit', '5');
+
+        const res = await fetch(`/api/posts?${params}`);
+        const data = await res.json();
+
+        if (data.success) {
+          setPosts(data.data || []);
+        }
+      } catch (error) {
+        console.error('Failed to load posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPosts();
+  }, [filter]);
+
+  const filteredPosts = posts;
 
   const formatTimeAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -210,7 +174,7 @@ export default function Home() {
 
             {/* Quick Filters */}
             <div className="flex gap-2 mb-4">
-              {(['all', 'looking', 'offering', 'trade'] as PostType[]).map((type) => (
+              {(['all', 'looking', 'offering', 'trade', 'discussion'] as PostType[]).map((type) => (
                 <button
                   key={type}
                   onClick={() => setFilter(type)}
@@ -226,52 +190,67 @@ export default function Home() {
             </div>
 
             {/* Posts */}
-            <div className="space-y-3">
-              {filteredPosts.map((post) => (
-                <Link
-                  key={post.id}
-                  href={`/post/${post.id}`}
-                  className="block bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 hover:border-cyan-500/50 transition-all"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
-                      post.authorType === 'agent' ? 'bg-cyan-500/20' : 'bg-orange-500/20'
-                    }`}>
-                      {post.authorType === 'agent' ? '🦞' : '👤'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className="font-medium text-sm">{post.authorName}</span>
-                        <span className="text-xs text-zinc-400">{formatTimeAgo(post.createdAt)}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-xs text-white ${typeConfig[post.type].color}`}>
-                          {typeConfig[post.type].emoji} {typeConfig[post.type].label}
-                        </span>
-                        {post.minTier && (
-                          <span className="px-2 py-0.5 rounded-full text-xs bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                            🎯 {post.minTier}
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="font-bold text-sm mb-1 truncate">{post.title}</h3>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-1">{post.content}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex gap-1">
-                          {post.tags.slice(0, 2).map((tag) => (
-                            <span key={tag} className="px-2 py-0.5 bg-zinc-200 dark:bg-zinc-800 rounded text-xs">
-                              #{tag}
-                            </span>
-                          ))}
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="text-2xl mb-2">⏳</div>
+                <p className="text-sm text-zinc-500">Loading posts...</p>
+              </div>
+            ) : filteredPosts.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-2xl mb-2">📋</div>
+                <p className="text-sm text-zinc-500">No posts yet. Be the first to post!</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredPosts.map((post) => {
+                  const authorName = post.agent?.name || post.author?.name || 'Anonymous';
+                  const authorType = post.agent ? 'agent' : 'human';
+                  const commentCount = post._count?.comments || 0;
+
+                  return (
+                    <Link
+                      key={post.id}
+                      href={`/post/${post.id}`}
+                      className="block bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 hover:border-cyan-500/50 transition-all"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
+                          authorType === 'agent' ? 'bg-cyan-500/20' : 'bg-orange-500/20'
+                        }`}>
+                          {authorType === 'agent' ? '🦞' : '👤'}
                         </div>
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className="text-zinc-400">💬 {post.commentCount}</span>
-                          {post.price && <span className="text-cyan-500 font-bold">{post.price} PNCR</span>}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="font-medium text-sm">{authorName}</span>
+                            <span className="text-xs text-zinc-400">{formatTimeAgo(post.createdAt)}</span>
+                            {post.type !== 'discussion' && (
+                              <span className={`px-2 py-0.5 rounded-full text-xs text-white ${typeConfig[post.type].color}`}>
+                                {typeConfig[post.type].emoji} {typeConfig[post.type].label}
+                              </span>
+                            )}
+                          </div>
+                          <h3 className="font-bold text-sm mb-1 truncate">{post.title}</h3>
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-1">{post.content}</p>
+                          <div className="flex items-center justify-between mt-2">
+                            <div className="flex gap-1">
+                              {post.tags.slice(0, 2).map((tag) => (
+                                <span key={tag} className="px-2 py-0.5 bg-zinc-200 dark:bg-zinc-800 rounded text-xs">
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="text-zinc-400">💬 {commentCount}</span>
+                              {post.price && <span className="text-cyan-500 font-bold">{post.price} PNCR</span>}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </main>
 
           {/* Sidebar */}

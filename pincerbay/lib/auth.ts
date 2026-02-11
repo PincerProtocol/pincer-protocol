@@ -4,6 +4,20 @@ import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { verifyOTP } from './otp';
 
+// Extend NextAuth session type
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id: string
+      email?: string
+      name?: string
+      image?: string
+      address?: string
+      role?: string
+    }
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -55,7 +69,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id || token.sub;
+        session.user.id = token.id as string || token.sub as string;
       }
       return session;
     },
@@ -69,9 +83,12 @@ export async function isSessionValid(): Promise<boolean> {
   return !!session?.user;
 }
 
-// Helper function to require authentication - returns session or null
+// Helper function to require authentication - returns session with userId or null
 export async function requireAuth(): Promise<Session | null> {
   const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return null;
+  }
   return session;
 }
 

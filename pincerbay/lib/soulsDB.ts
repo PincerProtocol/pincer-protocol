@@ -1,3 +1,8 @@
+// ============================================
+// IMPORTANT: This file is now used ONLY for prisma/seed.ts
+// Runtime queries use Prisma DB. Do NOT import this in API routes.
+// ============================================
+
 export interface Soul {
   id: string;
   name: string;
@@ -12,8 +17,7 @@ export interface Soul {
   disclaimer?: string;
 }
 
-// In-memory DB (will be replaced with real DB)
-// Collection of famous people, AI, and crypto influencer Souls
+// Seed data source - Collection of famous people, AI, and crypto influencer Souls
 const souls: Soul[] = [
   // === 🇺🇸 USA (10) ===
   {
@@ -833,28 +837,8 @@ export interface Purchase {
   txHash?: string;
   timestamp: string;
 }
-
-// In-memory purchases DB
-const purchases: Purchase[] = [];
-
-export function recordPurchase(soulId: string, buyer: string, price: number, txHash?: string): Purchase {
-  const purchase: Purchase = {
-    id: `${soulId}-${Date.now()}`,
-    soulId,
-    buyer,
-    price,
-    txHash,
-    timestamp: new Date().toISOString()
-  };
-  purchases.push(purchase);
-
-  return purchase;
-}
-
-export function getPurchasesByBuyer(buyer: string): Purchase[] {
-  return purchases.filter(p => p.buyer === buyer);
-}
-
-export function hasPurchased(soulId: string, buyer: string): boolean {
-  return purchases.some(p => p.soulId === soulId && p.buyer === buyer);
-}
+// In-memory purchases REMOVED - Now using Prisma Purchase model
+// All purchase operations should use Prisma:
+// - Create: await prisma.purchase.create({ ... })
+// - Query by buyer: await prisma.purchase.findMany({ where: { userId: buyerId } })
+// - Check if purchased: await prisma.purchase.findFirst({ where: { soulId, userId } })

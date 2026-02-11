@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
+import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
 import { logger } from '@/lib/logger';
+import { walletService } from '@/lib/walletService';
 
 /**
  * POST /api/agent/connect
- * Agent connection and registration
+ * Agent connection and registration with DB-backed storage and on-chain wallet creation
  */
 
 interface ConnectRequest {
@@ -20,30 +23,37 @@ interface ConnectRequest {
 
 interface ConnectResponse {
   success: boolean;
-  agentId: string;
+  agentId?: string;
   apiKey?: string;
-  walletAddress?: string;
+  walletAddress?: string | null;
   registeredAt?: string;
   error?: string;
 }
 
-// In-memory storage (in production, use DB)
-const registeredAgents = new Map<string, {
-  agentId: string;
-  name: string;
-  version: string;
-  publicKey: string;
-  apiKey: string;
-  walletAddress: string;
-  registeredAt: string;
-  metadata?: any;
-}>();
+/**
+ * Convert name to slug (e.g., "My Agent" -> "my-agent")
+ */
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Generate API key with pb_ prefix
+ */
+function generateApiKey(): string {
+  return `pb_${randomUUID()}`;
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body: ConnectRequest = await request.json();
 
-    // Validation
+    // Step 1: Validate input
     if (!body.name || !body.version || !body.publicKey) {
       return NextResponse.json(
         {
@@ -77,7 +87,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // PublicKey format check (Base58 check omitted, should be implemented in production)
+    // PublicKey format check
     if (body.publicKey.length < 32) {
       return NextResponse.json(
         {
@@ -88,52 +98,102 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if agent is already registered
-    const existingAgent = Array.from(registeredAgents.values()).find(
-      agent => agent.publicKey === body.publicKey
-    );
-
-    if (existingAgent) {
+    // Step 2: Get session and require authentication
+    const session = await requireAuth();
+    if (!session || !session.user?.id) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Agent already registered with this public key'
+          error: 'Authentication required. Please log in to register an agent.'
         } as ConnectResponse,
-        { status: 409 }
+        { status: 401 }
       );
     }
 
-    // Agent registration
-    const agentId = body.publicKey; // Use publicKey as agentId
+    const ownerId = session.user.id;
+
+    // Step 3: Create Agent in DB with slug
+    const slug = slugify(body.name);
+
+    // Check if slug already exists
+    let finalSlug = slug;
+    let counter = 1;
+    while (await prisma.agent.findUnique({ where: { slug: finalSlug } })) {
+      finalSlug = `${slug}-${counter}`;
+      counter++;
+    }
+
+    const agent = await prisma.agent.create({
+      data: {
+        ownerId,
+        name: body.name,
+        slug: finalSlug,
+        description: body.metadata?.description,
+        type: 'general',
+        status: 'active',
+      }
+    });
+
+    // Step 4: Create AgentWallet in DB (address initially null)
+    const agentWallet = await prisma.agentWallet.create({
+      data: {
+        agentId: agent.id,
+        address: null,
+        balance: 0,
+        dailyLimit: 100,
+        spentToday: 0,
+      }
+    });
+
+    // Step 5: Queue on-chain wallet creation
+    let walletAddress: string | null = null;
+    const platformPrivateKey = process.env.PLATFORM_PRIVATE_KEY;
+
+    if (platformPrivateKey) {
+      try {
+        const signer = walletService.getSigner(platformPrivateKey);
+        const walletResult = await walletService.createAgentWallet(
+          signer,
+          agent.id,
+          '100' // 100 PNCR daily limit
+        );
+
+        walletAddress = walletResult.walletId;
+
+        // Update AgentWallet with on-chain address
+        await prisma.agentWallet.update({
+          where: { id: agentWallet.id },
+          data: { address: walletAddress }
+        });
+
+        logger.info(`On-chain wallet created for agent ${agent.id}: ${walletAddress}`);
+      } catch (error) {
+        logger.error('On-chain wallet creation failed', error);
+        // Continue without on-chain wallet - it will be marked as pending
+      }
+    } else {
+      logger.warn('PLATFORM_PRIVATE_KEY not set, wallet creation queued');
+    }
+
+    // Step 6: Generate API key
     const apiKey = generateApiKey();
-    const walletAddress = generateWalletAddress(body.publicKey);
-    const registeredAt = new Date().toISOString();
 
-    const agentData = {
-      agentId,
-      name: body.name,
-      version: body.version,
-      publicKey: body.publicKey,
-      apiKey,
-      walletAddress,
-      registeredAt,
-      metadata: body.metadata
-    };
+    // Step 7: Store API key in Agent.apiKey (plaintext for MVP)
+    await prisma.agent.update({
+      where: { id: agent.id },
+      data: { apiKey }
+    });
 
-    registeredAgents.set(agentId, agentData);
-
-    // In production, save to DB
-    // await prisma.agent.create({ data: agentData });
-
-    logger.info(`✅ Agent registered: ${body.name} (${agentId})`);
+    // Step 8: Return response
+    logger.info(`Agent registered: ${body.name} (${agent.id}) by user ${ownerId}`);
 
     return NextResponse.json(
       {
         success: true,
-        agentId,
+        agentId: agent.id,
         apiKey,
-        walletAddress,
-        registeredAt
+        walletAddress: walletAddress || null,
+        registeredAt: agent.createdAt.toISOString()
       } as ConnectResponse,
       { status: 201 }
     );
@@ -149,66 +209,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-/**
- * API Key generation (temporary implementation)
- */
-function generateApiKey(): string {
-  const prefix = 'pb_'; // PincerBay prefix
-  const randomPart = uuidv4().replace(/-/g, '');
-  return `${prefix}${randomPart}`;
-}
-
-/**
- * Wallet Address generation (temporary implementation)
- * In production, use Solana Keypair generation logic
- */
-function generateWalletAddress(publicKey: string): string {
-  // In production, generate Solana wallet address
-  // For now, generate address based on publicKey
-  return `wallet_${publicKey.substring(0, 16)}`;
-}
-
-/**
- * Handle GET request (query registered Agent)
- */
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const publicKey = searchParams.get('publicKey');
-
-  if (!publicKey) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'publicKey parameter required'
-      },
-      { status: 400 }
-    );
-  }
-
-  const agent = Array.from(registeredAgents.values()).find(
-    a => a.publicKey === publicKey
-  );
-
-  if (!agent) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Agent not found'
-      },
-      { status: 404 }
-    );
-  }
-
-  return NextResponse.json({
-    success: true,
-    agent: {
-      agentId: agent.agentId,
-      name: agent.name,
-      version: agent.version,
-      walletAddress: agent.walletAddress,
-      registeredAt: agent.registeredAt
-    }
-  });
 }

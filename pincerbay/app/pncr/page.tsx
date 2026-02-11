@@ -1,34 +1,164 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
-type Tab = 'airdrop' | 'staking' | 'mine' | 'purchase';
+type Tab = 'airdrop' | 'staking' | 'mine' | 'purchase' | 'rewards';
+
+interface MiningSession {
+  id: string;
+  startedAt: string;
+  estimatedEarnings: number;
+}
+
+interface MiningStats {
+  session: MiningSession | null;
+  durationMinutes: number;
+  estimatedEarnings: number;
+  miningBoost: number;
+  activityBonus: boolean;
+  todayStats: {
+    earned: number;
+    cap: number;
+  };
+}
 
 export default function PNCRPage() {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<Tab>('airdrop');
+  const [balance, setBalance] = useState('0');
   const [isMining, setIsMining] = useState(false);
-  const [hashRate, setHashRate] = useState(0);
-  const [totalMined, setTotalMined] = useState(0);
+  const [miningSession, setMiningSession] = useState<MiningSession | null>(null);
+  const [miningStats, setMiningStats] = useState<MiningStats | null>(null);
   const [selectedCoin, setSelectedCoin] = useState('ETH');
   const [purchaseAmount, setPurchaseAmount] = useState('');
+  const statusIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const startMining = () => {
-    setIsMining(true);
-    // Simulate mining
-    const interval = setInterval(() => {
-      setHashRate(Math.floor(Math.random() * 50) + 100);
-      setTotalMined(prev => prev + (Math.random() * 0.01));
-    }, 1000);
-    
+  // Load wallet balance
+  useEffect(() => {
+    if (!session) return;
+
+    const loadWallet = async () => {
+      try {
+        const res = await fetch('/api/my-wallet');
+        const data = await res.json();
+        setBalance(data.data?.userWallet?.balance || '0');
+      } catch (error) {
+        console.error('Failed to load wallet:', error);
+      }
+    };
+
+    loadWallet();
+    const interval = setInterval(loadWallet, 30000); // Refresh every 30s
     return () => clearInterval(interval);
+  }, [session]);
+
+  // Poll mining status
+  const startStatusPolling = () => {
+    if (statusIntervalRef.current) {
+      clearInterval(statusIntervalRef.current);
+    }
+
+    const pollStatus = async () => {
+      try {
+        const res = await fetch('/api/mining/status');
+        const data = await res.json();
+        setMiningStats(data.data);
+
+        // Stop polling if session ended
+        if (!data.data?.session) {
+          setIsMining(false);
+          setMiningSession(null);
+          if (statusIntervalRef.current) {
+            clearInterval(statusIntervalRef.current);
+            statusIntervalRef.current = null;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch mining status:', error);
+      }
+    };
+
+    pollStatus(); // Initial fetch
+    statusIntervalRef.current = setInterval(pollStatus, 5000); // Poll every 5s
   };
 
-  const stopMining = () => {
-    setIsMining(false);
-    setHashRate(0);
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (statusIntervalRef.current) {
+        clearInterval(statusIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const startMining = async () => {
+    try {
+      const res = await fetch('/api/mining/start', { method: 'POST' });
+      const data = await res.json();
+
+      if (data.success) {
+        setMiningSession(data.data);
+        setIsMining(true);
+        startStatusPolling();
+      } else {
+        alert(data.error || 'Failed to start mining');
+      }
+    } catch (error) {
+      console.error('Failed to start mining:', error);
+      alert('Failed to start mining');
+    }
+  };
+
+  const stopMining = async () => {
+    if (!miningSession) return;
+
+    try {
+      const res = await fetch('/api/mining/stop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: miningSession.id })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Show earned PNCR
+        alert(`Mining session complete! Earned ${data.data.earnedPNCR} PNCR`);
+
+        // Stop polling
+        if (statusIntervalRef.current) {
+          clearInterval(statusIntervalRef.current);
+          statusIntervalRef.current = null;
+        }
+
+        setIsMining(false);
+        setMiningSession(null);
+        setMiningStats(null);
+
+        // Refresh balance
+        const walletRes = await fetch('/api/my-wallet');
+        const walletData = await walletRes.json();
+        setBalance(walletData.data?.userWallet?.balance || '0');
+      } else {
+        alert(data.error || 'Failed to stop mining');
+      }
+    } catch (error) {
+      console.error('Failed to stop mining:', error);
+      alert('Failed to stop mining');
+    }
+  };
+
+  // Calculate session duration
+  const getSessionDuration = () => {
+    if (!miningSession) return '0m';
+    const start = new Date(miningSession.startedAt).getTime();
+    const now = Date.now();
+    const minutes = Math.floor((now - start) / 60000);
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
   };
 
   const airdropTiers = [
@@ -62,7 +192,7 @@ export default function PNCRPage() {
             <div>
               <p className="text-sm text-zinc-400 mb-1">Your Balance</p>
               <p className="text-3xl font-bold">
-                {session ? '1,247.50' : '---'} <span className="text-cyan-500">PNCR</span>
+                {session ? Number(balance).toFixed(2) : '---'} <span className="text-cyan-500">PNCR</span>
               </p>
             </div>
             {!session && (
@@ -81,7 +211,8 @@ export default function PNCRPage() {
           {[
             { id: 'airdrop', label: '🎁 Airdrop', desc: 'Free tokens' },
             { id: 'staking', label: '📈 Staking', desc: 'Earn APY' },
-            { id: 'mine', label: '⛏️ Mine', desc: 'Browser mining' },
+            { id: 'mine', label: '⛏️ Mine', desc: 'Activity mining' },
+            { id: 'rewards', label: '🏆 Rewards', desc: 'Activity history' },
             { id: 'purchase', label: '💳 Purchase', desc: 'Buy PNCR' },
           ].map((tab) => (
             <button
@@ -102,20 +233,24 @@ export default function PNCRPage() {
         {activeTab === 'mine' && (
           <div className="space-y-6">
             <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
-              <h2 className="text-xl font-bold mb-4">Browser Mining</h2>
+              <h2 className="text-xl font-bold mb-4">Activity-Based Mining</h2>
               <p className="text-sm text-zinc-500 mb-6">
-                Contribute your browser's computing power to earn $PNCR. Mining runs in the background.
+                Earn $PNCR through platform activity. Mining rewards are based on your engagement and contributions (Proof of Contribution).
               </p>
-              
+
               {/* Mining Stats */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 text-center">
-                  <p className="text-xs text-zinc-500 mb-1">Hash Rate</p>
-                  <p className="text-xl font-bold text-cyan-500">{hashRate} H/s</p>
+                  <p className="text-xs text-zinc-500 mb-1">Duration</p>
+                  <p className="text-xl font-bold text-cyan-500">{getSessionDuration()}</p>
                 </div>
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 text-center">
-                  <p className="text-xs text-zinc-500 mb-1">Session Mined</p>
-                  <p className="text-xl font-bold">{totalMined.toFixed(4)} PNCR</p>
+                  <p className="text-xs text-zinc-500 mb-1">Session Earned</p>
+                  <p className="text-xl font-bold">{miningStats?.estimatedEarnings?.toFixed(4) || '0.0000'} PNCR</p>
+                </div>
+                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 text-center">
+                  <p className="text-xs text-zinc-500 mb-1">Mining Boost</p>
+                  <p className="text-xl font-bold text-purple-500">{miningStats?.miningBoost?.toFixed(2) || '1.00'}x</p>
                 </div>
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4 text-center">
                   <p className="text-xs text-zinc-500 mb-1">Status</p>
@@ -125,33 +260,66 @@ export default function PNCRPage() {
                 </div>
               </div>
 
-              {/* Mining Animation */}
-              {isMining && (
-                <div className="mb-6 p-4 bg-black rounded-lg font-mono text-xs text-green-400 overflow-hidden">
-                  <div className="animate-pulse">
-                    {`[${new Date().toLocaleTimeString()}] Mining block #${Math.floor(Math.random() * 1000000)}...`}
-                    <br />
-                    {`[${new Date().toLocaleTimeString()}] Hash: 0x${Math.random().toString(16).slice(2, 18)}...`}
-                    <br />
-                    {`[${new Date().toLocaleTimeString()}] Reward: +0.0001 PNCR`}
+              {/* Daily Progress */}
+              {miningStats?.todayStats && (
+                <div className="mb-6 bg-zinc-100 dark:bg-zinc-800 rounded-lg p-4">
+                  <div className="flex justify-between text-xs text-zinc-500 mb-2">
+                    <span>Daily Progress</span>
+                    <span>{miningStats.todayStats.earned.toFixed(2)} / {miningStats.todayStats.cap.toFixed(2)} PNCR</span>
+                  </div>
+                  <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-cyan-500 to-purple-500 h-2 rounded-full transition-all"
+                      style={{ width: `${Math.min(100, (miningStats.todayStats.earned / miningStats.todayStats.cap) * 100)}%` }}
+                    />
                   </div>
                 </div>
               )}
 
+              {/* Activity Info */}
+              {isMining && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/20 rounded-lg">
+                  <p className="text-sm text-zinc-300 mb-2">
+                    {miningStats?.activityBonus ? (
+                      <>
+                        <span className="text-green-500 font-bold">✓ Active Bonus (1.5x):</span> You have recent activity!
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-yellow-500 font-bold">⏸ No Activity Bonus:</span> Stay engaged to maximize rewards!
+                      </>
+                    )}
+                  </p>
+                  <p className="text-xs text-zinc-500">
+                    Post, comment, or complete jobs in the last hour to activate the 1.5x activity bonus.
+                  </p>
+                </div>
+              )}
+
               {/* Control Button */}
-              <button
-                onClick={isMining ? stopMining : startMining}
-                className={`w-full py-4 rounded-xl font-bold text-lg transition-colors ${
-                  isMining
-                    ? 'bg-red-500 hover:bg-red-600 text-white'
-                    : 'bg-cyan-500 hover:bg-cyan-600 text-black'
-                }`}
-              >
-                {isMining ? '⏹️ Stop Mining' : '▶️ Start Mining'}
-              </button>
+              {session ? (
+                <button
+                  onClick={isMining ? stopMining : startMining}
+                  disabled={!session}
+                  className={`w-full py-4 rounded-xl font-bold text-lg transition-colors ${
+                    isMining
+                      ? 'bg-red-500 hover:bg-red-600 text-white'
+                      : 'bg-cyan-500 hover:bg-cyan-600 text-black'
+                  }`}
+                >
+                  {isMining ? '⏹️ Stop Mining' : '▶️ Start Mining'}
+                </button>
+              ) : (
+                <Link
+                  href="/connect"
+                  className="block w-full py-4 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold text-lg text-center transition-colors"
+                >
+                  Connect to Start Mining
+                </Link>
+              )}
 
               <p className="text-xs text-zinc-400 mt-4 text-center">
-                Mining uses ~10% CPU. You can close this tab to stop.
+                Mining is activity-based (Proof of Contribution). Complete jobs and engage with the platform to earn more.
               </p>
             </div>
           </div>
@@ -364,7 +532,108 @@ export default function PNCRPage() {
             </p>
           </div>
         )}
+
+        {/* Rewards Tab */}
+        {activeTab === 'rewards' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-xl border border-yellow-500/20 p-6">
+              <h2 className="text-xl font-bold mb-2">🏆 Activity Rewards</h2>
+              <p className="text-sm text-zinc-500">View your mining history and activity-based earnings.</p>
+            </div>
+
+            <ActivityRewardsHistory session={session} />
+          </div>
+        )}
       </div>
     </main>
+  );
+}
+
+// Activity Rewards History Component
+function ActivityRewardsHistory({ session }: { session: any }) {
+  const [rewards, setRewards] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!session) {
+      setLoading(false);
+      return;
+    }
+
+    const loadRewards = async () => {
+      try {
+        const res = await fetch('/api/mining/rewards');
+        const data = await res.json();
+        setRewards(data.data?.rewards || []);
+      } catch (error) {
+        console.error('Failed to load rewards:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRewards();
+  }, [session]);
+
+  if (!session) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-zinc-500 mb-4">Connect your wallet to view reward history</p>
+        <Link
+          href="/connect"
+          className="inline-block px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold"
+        >
+          Connect Wallet
+        </Link>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-zinc-500">Loading rewards...</p>
+      </div>
+    );
+  }
+
+  if (rewards.length === 0) {
+    return (
+      <div className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-8 text-center">
+        <p className="text-zinc-500 mb-2">No rewards yet</p>
+        <p className="text-xs text-zinc-400">Start mining to earn your first rewards!</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {rewards.map((reward: any, index: number) => (
+        <div
+          key={index}
+          className="bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center text-lg">
+                {reward.type === 'mining' ? '⛏️' : reward.type === 'job' ? '💼' : reward.type === 'referral' ? '🤝' : '🎁'}
+              </div>
+              <div>
+                <h3 className="font-bold text-sm">{reward.description || reward.type}</h3>
+                <p className="text-xs text-zinc-500">
+                  {new Date(reward.createdAt).toLocaleDateString()} at {new Date(reward.createdAt).toLocaleTimeString()}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="font-bold text-cyan-500">+{Number(reward.amount).toFixed(4)} PNCR</p>
+              {reward.boost && reward.boost > 1 && (
+                <p className="text-xs text-purple-500">{reward.boost}x boost</p>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

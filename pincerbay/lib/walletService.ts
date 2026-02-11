@@ -291,6 +291,37 @@ export class WalletService {
   parseAmount(amount: string, decimals: number = 18): bigint {
     return ethers.parseUnits(amount, decimals)
   }
+
+  // ============================================
+  // Server-Side Agent Wallet Creation
+  // ============================================
+
+  /**
+   * Create agent wallet on-chain (server-side)
+   * Used during agent registration to create on-chain wallet
+   * Returns wallet address or null if creation fails
+   */
+  async createAgentWalletOnChain(agentId: string, dailyLimit: string = '100'): Promise<string | null> {
+    const privateKey = process.env.PLATFORM_PRIVATE_KEY
+
+    if (!privateKey) {
+      console.warn('PLATFORM_PRIVATE_KEY not set, wallet creation queued')
+      return null
+    }
+
+    try {
+      const signer = new ethers.Wallet(privateKey, this.provider)
+      const dailyLimitWei = ethers.parseEther(dailyLimit)
+
+      // Call createAgentWallet with the platform signer
+      const result = await this.createAgentWallet(signer, agentId, dailyLimit)
+
+      return result.walletId
+    } catch (error) {
+      console.error('Agent wallet creation failed:', error)
+      return null
+    }
+  }
 }
 
 // Singleton instance

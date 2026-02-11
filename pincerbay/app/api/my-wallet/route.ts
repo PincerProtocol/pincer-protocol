@@ -1,120 +1,108 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { requireAuth } from '@/lib/auth'
 import { walletService } from '@/lib/walletService'
-import { PrismaClient } from '@prisma/client'
-import { authOptions } from '@/lib/auth'
-import { ethers } from 'ethers'
+import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/logger'
-
-const prisma = new PrismaClient()
 
 /**
  * GET /api/my-wallet
- * Logged-in user's Human Wallet information
- * 
+ * Logged-in user's wallet information with real on-chain PNCR balances
+ *
  * Response:
  * {
- *   address: string,
- *   balance: string,
- *   agents: Array<{
- *     agentId: string,
- *     agentName: string,
- *     walletId: string,
- *     balance: string,
- *     dailyLimit: string,
- *     active: boolean
- *   }>
+ *   success: true,
+ *   data: {
+ *     needsWallet?: boolean,
+ *     userWallet?: { id, userId, address, type, balance },
+ *     agentWallets?: Array<{ id, agentId, address, balance, agent: { id, name } }>,
+ *     totalBalance?: string
+ *   }
  * }
  */
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user) {
+    const session = await requireAuth()
+
+    if (!session) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    // In a real implementation, you would:
-    // 1. Look up the user's custodial wallet from database
-    // 2. Decrypt the private key to get the address
-    // 3. Or store the address directly in the database
-    
-    // For now, we'll use the user's Ethereum address if available
-    // @ts-ignore - session.user might have an address field
-    const userAddress = session.user.address || session.user.email
-    
-    if (!userAddress) {
-      return NextResponse.json(
-        { error: 'User wallet not found. Please connect a wallet.' },
-        { status: 404 }
-      )
+    // 1. Get UserWallet by userId
+    let userWallet = await prisma.userWallet.findUnique({
+      where: { userId: session.user.id }
+    })
+
+    // 2. If no wallet, return needsWallet flag
+    if (!userWallet) {
+      return NextResponse.json({
+        success: true,
+        data: { needsWallet: true }
+      })
     }
 
-    // Validate address format
-    let walletAddress = userAddress
-    if (!walletService.isValidAddress(userAddress)) {
-      // If not a valid address, try to look up from database
-      // This would be where you'd look up custodial wallet
-      return NextResponse.json(
-        { error: 'Invalid wallet address. Please connect a wallet.' },
-        { status: 400 }
-      )
+    // 3. Get real on-chain balance via walletService
+    let onChainBalance = '0'
+    try {
+      onChainBalance = await walletService.getPNCRBalance(userWallet.address)
+    } catch (error) {
+      // 4. If RPC fails, use cached DB balance
+      logger.warn('RPC unavailable, using cached balance', { error })
+      onChainBalance = userWallet.balance.toString()
     }
 
-    // Get user's PNCR balance
-    const balance = await walletService.getPNCRBalance(walletAddress)
+    // 5. Update cached balance in DB
+    await prisma.userWallet.update({
+      where: { id: userWallet.id },
+      data: { balance: parseFloat(onChainBalance) }
+    })
 
-    // Get all agent wallets owned by this user
-    const agentWalletIds = await walletService.getAgentWalletsByOwner(walletAddress)
-    
-    const agents = await Promise.all(
-      agentWalletIds.map(async (walletId) => {
+    // 6. Get agent wallets owned by this user
+    const agentWallets = await prisma.agentWallet.findMany({
+      where: { agent: { ownerId: session.user.id } },
+      include: { agent: { select: { id: true, name: true } } }
+    })
+
+    // 7. Get on-chain balance for each agent wallet
+    const agentWalletsWithBalance = await Promise.all(
+      agentWallets.map(async (wallet) => {
+        if (!wallet.address) {
+          return { ...wallet, balance: wallet.balance }
+        }
+
         try {
-          const wallet = await walletService.getAgentWallet(walletId)
-          
-          // Get agent metadata from database
-          const agentWallet = await prisma.agentWallet.findFirst({
-            where: { agentId: wallet.agentId },
-            include: { agent: true }
+          const balance = await walletService.getPNCRBalance(wallet.address)
+          await prisma.agentWallet.update({
+            where: { id: wallet.id },
+            data: { balance: parseFloat(balance) }
           })
-          
-          return {
-            agentId: wallet.agentId,
-            agentName: agentWallet?.agent?.name || wallet.agentId,
-            walletId,
-            balance: wallet.balance,
-            dailyLimit: wallet.dailyLimit,
-            remainingToday: wallet.remainingToday,
-            active: wallet.active,
-            transactionCount: wallet.transactionCount
-          }
+          return { ...wallet, balance: parseFloat(balance) }
         } catch (error) {
-          logger.error(`Failed to get wallet ${walletId}:`, error)
-          return null
+          logger.warn(`Failed to fetch balance for agent wallet ${wallet.id}, using cached`, { error })
+          return { ...wallet, balance: wallet.balance }
         }
       })
     )
 
-    // Filter out failed fetches
-    const validAgents = agents.filter(agent => agent !== null)
-
-    // Calculate total balance across all wallets
-    const totalAgentBalance = validAgents.reduce(
-      (sum, agent) => sum + parseFloat(agent!.balance),
-      0
-    )
-    const totalBalance = (parseFloat(balance) + totalAgentBalance).toFixed(4)
+    // 8. Return aggregated response
+    const totalBalance = (
+      parseFloat(onChainBalance) +
+      agentWalletsWithBalance.reduce((sum, w) => sum + parseFloat(w.balance.toString()), 0)
+    ).toFixed(4)
 
     return NextResponse.json({
-      address: walletAddress,
-      balance,
-      totalBalance,
-      agents: validAgents,
-      agentCount: validAgents.length
+      success: true,
+      data: {
+        userWallet: {
+          ...userWallet,
+          balance: parseFloat(onChainBalance)
+        },
+        agentWallets: agentWalletsWithBalance,
+        totalBalance
+      }
     })
   } catch (error) {
     logger.error('GET /api/my-wallet error:', error)
@@ -127,86 +115,70 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/my-wallet
- * Create or link a wallet for the logged-in user
- * 
+ * Link an existing wallet to the logged-in user
+ *
  * Request:
  * {
- *   address?: string (to link existing wallet)
- *   createNew?: boolean (to create custodial wallet)
+ *   address: string
  * }
  */
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user) {
+    const session = await requireAuth()
+
+    if (!session) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
     const body = await request.json()
-    const { address, createNew } = body
+    const { address } = body
 
-    if (address) {
-      // Link existing wallet
-      if (!walletService.isValidAddress(address)) {
-        return NextResponse.json(
-          { error: 'Invalid Ethereum address' },
-          { status: 400 }
-        )
-      }
-
-      // In production, you would:
-      // 1. Verify ownership of the address (signature challenge)
-      // 2. Store the address in the user's profile
-      // 3. Return the linked wallet info
-
-      return NextResponse.json({
-        success: true,
-        message: 'Wallet linked successfully',
-        address
-      })
-    } else if (createNew) {
-      // Create new custodial wallet
-      // This is a simplified version - in production you would:
-      // 1. Generate a new wallet using ethers.Wallet.createRandom()
-      // 2. Encrypt the private key with AES-256
-      // 3. Store encrypted key in database
-      // 4. Return only the address
-
-      const newWallet = walletService.getSigner(
-        ethers.Wallet.createRandom().privateKey
-      )
-      const newAddress = await newWallet.getAddress()
-
-      // TODO: Store encrypted private key in database
-      // await prisma.humanWallet.create({
-      //   data: {
-      //     userId: session.user.id,
-      //     address: newAddress,
-      //     encryptedPrivateKey: encryptedKey,
-      //     provider: 'custodial'
-      //   }
-      // })
-
-      return NextResponse.json({
-        success: true,
-        message: 'Custodial wallet created',
-        address: newAddress,
-        warning: 'This is a demo. In production, the private key would be securely encrypted and stored.'
-      })
-    } else {
+    // Validate address format
+    if (!address || !walletService.isValidAddress(address)) {
       return NextResponse.json(
-        { error: 'Either address or createNew must be provided' },
+        { error: 'Invalid address' },
         { status: 400 }
       )
     }
+
+    // Check if address is already linked to another user
+    const existingWallet = await prisma.userWallet.findUnique({
+      where: { address }
+    })
+
+    if (existingWallet && existingWallet.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: 'Address already linked to another user' },
+        { status: 409 }
+      )
+    }
+
+    // Create or update UserWallet
+    const userWallet = await prisma.userWallet.upsert({
+      where: { userId: session.user.id },
+      create: {
+        userId: session.user.id,
+        address,
+        balance: 0,
+        type: 'connected'
+      },
+      update: {
+        address,
+        type: 'connected'
+      }
+    })
+
+    return NextResponse.json({
+      success: true,
+      data: userWallet
+    })
   } catch (error) {
     logger.error('POST /api/my-wallet error:', error)
     return NextResponse.json(
-      { error: 'Failed to create/link wallet' },
+      { error: 'Failed to link wallet' },
       { status: 500 }
     )
   }

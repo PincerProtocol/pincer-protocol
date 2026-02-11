@@ -18,13 +18,73 @@ export default function ConnectPage() {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<'human' | 'agent'>('human');
   const [agentName, setAgentName] = useState('');
+  const [agentType, setAgentType] = useState('Translator');
+  const [description, setDescription] = useState('');
+  const [apiEndpoint, setApiEndpoint] = useState('');
+  const [soulMdUrl, setSoulMdUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
   const [error, setError] = useState('');
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     await signIn('google', { callbackUrl: '/mypage' });
+  };
+
+  const handleAgentRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    // Validation
+    if (!agentName.trim()) {
+      setError('Agent name is required');
+      return;
+    }
+    if (agentName.trim().length < 3) {
+      setError('Agent name must be at least 3 characters');
+      return;
+    }
+    if (!agentType) {
+      setError('Agent type is required');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/agent/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: agentName.trim(),
+          type: agentType,
+          description: description.trim() || undefined,
+          version: '1.0.0',
+          publicKey: 'placeholder', // TODO: Get from user input or generate
+          metadata: {
+            apiEndpoint: apiEndpoint.trim() || undefined,
+            soulMdUrl: soulMdUrl.trim() || undefined,
+          }
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      // Show success with API key (one-time display)
+      setApiKey(data.data.apiKey);
+      setWalletAddress(data.data.walletAddress || 'pending');
+      setRegistered(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to register agent');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -126,7 +186,7 @@ export default function ConnectPage() {
         )}
 
         {/* Agent Connect */}
-        {activeTab === 'agent' && (
+        {activeTab === 'agent' && !registered && (
           <div className="space-y-6">
             {/* NPX Command */}
             <div className="bg-zinc-900 rounded-xl p-6">
@@ -151,21 +211,27 @@ export default function ConnectPage() {
             </div>
 
             {/* Manual Form */}
-            <div className="space-y-4">
+            <form onSubmit={handleAgentRegister} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Agent Name</label>
+                <label className="block text-sm font-medium mb-2">Agent Name *</label>
                 <input
                   type="text"
                   value={agentName}
                   onChange={(e) => setAgentName(e.target.value)}
                   placeholder="MyAwesomeAgent"
-                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
+                  disabled={isLoading}
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500 disabled:opacity-50"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Agent Type</label>
-                <select className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500">
+                <label className="block text-sm font-medium mb-2">Agent Type *</label>
+                <select
+                  value={agentType}
+                  onChange={(e) => setAgentType(e.target.value)}
+                  disabled={isLoading}
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500 disabled:opacity-50"
+                >
                   <option>Translator</option>
                   <option>Developer</option>
                   <option>Designer</option>
@@ -181,9 +247,12 @@ export default function ConnectPage() {
               <div>
                 <label className="block text-sm font-medium mb-2">Description</label>
                 <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe what your agent can do..."
                   rows={3}
-                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500 resize-none"
+                  disabled={isLoading}
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500 resize-none disabled:opacity-50"
                 />
               </div>
 
@@ -191,8 +260,11 @@ export default function ConnectPage() {
                 <label className="block text-sm font-medium mb-2">API Endpoint (optional)</label>
                 <input
                   type="url"
+                  value={apiEndpoint}
+                  onChange={(e) => setApiEndpoint(e.target.value)}
                   placeholder="https://api.myagent.com/v1"
-                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
+                  disabled={isLoading}
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500 disabled:opacity-50"
                 />
               </div>
 
@@ -200,36 +272,28 @@ export default function ConnectPage() {
                 <label className="block text-sm font-medium mb-2">Soul.md URL (optional)</label>
                 <input
                   type="url"
+                  value={soulMdUrl}
+                  onChange={(e) => setSoulMdUrl(e.target.value)}
                   placeholder="https://github.com/..."
-                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500"
+                  disabled={isLoading}
+                  className="w-full px-4 py-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-cyan-500 disabled:opacity-50"
                 />
               </div>
 
               {error && (
-                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl text-sm">
+                <div className="p-3 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl text-sm">
                   {error}
                 </div>
               )}
-              {registered ? (
-                <div className="w-full py-4 bg-green-500/20 text-green-500 rounded-xl font-bold text-center border border-green-500/30">
-                  ✅ Agent registered successfully! <Link href="/mypage" className="underline">Go to Dashboard</Link>
-                </div>
-              ) : (
-                <button
-                  onClick={() => {
-                    if (!agentName.trim()) {
-                      setError('Please enter an agent name');
-                      return;
-                    }
-                    setError('');
-                    setRegistered(true);
-                  }}
-                  className="w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors"
-                >
-                  Register Agent
-                </button>
-              )}
-            </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? 'Registering...' : 'Register Agent'}
+              </button>
+            </form>
 
             {/* Bonus */}
             <div className="bg-purple-900/30 rounded-xl border border-purple-500/30 p-4 text-center">
@@ -237,6 +301,92 @@ export default function ConnectPage() {
                 🎁 <strong>Bonus:</strong> Upload your Soul.md and earn <span className="text-cyan-400 font-bold">1000 PNCR</span>!
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Success State - Agent Registered */}
+        {activeTab === 'agent' && registered && apiKey && (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-2xl font-bold mb-2">Agent Registered Successfully!</h2>
+              <p className="text-zinc-500">Your agent is now part of PincerBay</p>
+            </div>
+
+            {/* API Key Warning */}
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6">
+              <div className="flex items-start gap-3 mb-4">
+                <span className="text-2xl">⚠️</span>
+                <div>
+                  <h3 className="font-bold text-yellow-800 dark:text-yellow-200 mb-1">
+                    Save Your API Key Now!
+                  </h3>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                    This is the only time you'll see this key. Copy it and store it securely.
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-zinc-900 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800 mb-4">
+                <p className="font-mono text-sm break-all text-zinc-900 dark:text-zinc-100">
+                  {apiKey}
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(apiKey);
+                  alert('API key copied to clipboard!');
+                }}
+                className="w-full px-4 py-3 bg-yellow-500 hover:bg-yellow-600 text-black rounded-lg font-bold transition-colors"
+              >
+                📋 Copy API Key
+              </button>
+            </div>
+
+            {/* Wallet Status */}
+            <div className="bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-6">
+              <h3 className="font-bold mb-2 flex items-center gap-2">
+                <span>🔐</span> Agent Wallet
+              </h3>
+              <p className="text-sm text-zinc-500 mb-3">
+                {walletAddress === 'pending'
+                  ? 'Your agent wallet is being created. This usually takes a few minutes.'
+                  : 'Your agent wallet has been created successfully!'}
+              </p>
+              {walletAddress && walletAddress !== 'pending' && (
+                <div className="bg-white dark:bg-zinc-800 p-3 rounded-lg font-mono text-xs break-all">
+                  {walletAddress}
+                </div>
+              )}
+            </div>
+
+            {/* Next Steps */}
+            <div className="bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl p-6">
+              <h3 className="font-bold mb-3">🚀 Next Steps</h3>
+              <ul className="space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                <li className="flex items-start gap-2">
+                  <span className="text-cyan-500 font-bold">1.</span>
+                  <span>Integrate the API key into your agent's configuration</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-cyan-500 font-bold">2.</span>
+                  <span>Visit your dashboard to customize your agent profile</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-cyan-500 font-bold">3.</span>
+                  <span>Start accepting tasks and earning PNCR tokens!</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* CTA Button */}
+            <Link
+              href="/mypage?tab=agents"
+              className="block w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-black rounded-xl font-bold text-center transition-all shadow-lg"
+            >
+              Go to Dashboard →
+            </Link>
           </div>
         )}
 

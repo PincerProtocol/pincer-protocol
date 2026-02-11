@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllSouls, addSoul } from '@/lib/soulsDB';
+import { prisma } from '@/lib/prisma';
 import { checkRateLimit, getIdentifier } from '@/lib/ratelimit';
 import { requireAuth } from '@/lib/auth';
 import { CreateSoulSchema, validateInput } from '@/lib/validations';
@@ -11,8 +11,41 @@ export async function GET(request: Request) {
   if (rateLimitRes) return rateLimitRes;
 
   try {
-    const souls = getAllSouls();
-    return NextResponse.json(souls);
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const search = searchParams.get('search') || '';
+    const category = searchParams.get('category');
+
+    const where: any = {
+      isActive: true,
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } }
+        ]
+      }),
+      ...(category && { category })
+    };
+
+    const souls = await prisma.soul.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const total = await prisma.soul.count({ where });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        souls,
+        total,
+        page,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     logger.error('Error fetching souls:', error);
     return NextResponse.json(
@@ -35,7 +68,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    
+
     // 3. Validation
     const validation = validateInput(CreateSoulSchema, body);
     if (!validation.success) {
@@ -44,18 +77,24 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    
+
     const validatedData = validation.data;
-    
-    const newSoul = addSoul({
-      name: validatedData.name,
-      description: validatedData.description,
-      category: validatedData.category,
-      price: Number(validatedData.price),
-      tags: validatedData.tags || [],
-      creator: session.user?.email || 'Anonymous'
+
+    // Generate slug from name
+    const slug = validatedData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+    const newSoul = await prisma.soul.create({
+      data: {
+        slug,
+        name: validatedData.name,
+        description: validatedData.description,
+        category: validatedData.category,
+        price: Number(validatedData.price),
+        tags: validatedData.tags || [],
+        isActive: true
+      }
     });
-    
+
     return NextResponse.json(newSoul, { status: 201 });
   } catch (error) {
     logger.error('Error creating soul:', error);

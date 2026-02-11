@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSoulById, getSoulContent } from '@/lib/soulsDB';
+import { prisma } from '@/lib/prisma';
 import { checkRateLimit, getIdentifier } from '@/lib/ratelimit';
 import { IdSchema, validateInput } from '@/lib/validations';
 import { logger } from '@/lib/logger';
@@ -14,7 +14,7 @@ export async function GET(
 
   try {
     const { id } = await params;
-    
+
     // 3. Validation
     const validation = validateInput(IdSchema, id);
     if (!validation.success) {
@@ -24,15 +24,17 @@ export async function GET(
       );
     }
 
-    const soul = getSoulById(id);
-    
+    const soul = await prisma.soul.findUnique({
+      where: { id }
+    });
+
     if (!soul) {
       return NextResponse.json(
         { error: 'Soul not found' },
         { status: 404 }
       );
     }
-    
+
     return NextResponse.json(soul);
   } catch (error) {
     logger.error('Error fetching soul:', error);

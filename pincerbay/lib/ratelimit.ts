@@ -22,22 +22,33 @@ export const ratelimit = {
 }
 
 export async function checkRateLimit(identifier: string): Promise<Response | null> {
-  // Skip rate limiting if not configured (development mode)
+  // FAIL CLOSED: If rate limiting not configured, block in production
   if (!ratelimiter) {
-    console.warn("Rate limiting not configured - skipping check")
+    if (process.env.NODE_ENV === 'production') {
+      console.error("CRITICAL: Rate limiting not configured in production")
+      return new Response(
+        JSON.stringify({ error: "Service temporarily unavailable" }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" }
+        }
+      )
+    }
+    // Allow in development with warning
+    console.warn("Rate limiting not configured - allowing request in development")
     return null
   }
 
   try {
     const { success, limit, reset, remaining } = await ratelimiter.limit(identifier)
-    
+
     if (!success) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: "Too Many Requests - Please slow down",
           retryAfter: Math.ceil((reset - Date.now()) / 1000)
-        }), 
-        { 
+        }),
+        {
           status: 429,
           headers: {
             "Content-Type": "application/json",
@@ -49,11 +60,22 @@ export async function checkRateLimit(identifier: string): Promise<Response | nul
         }
       )
     }
-    
+
     return null
   } catch (error) {
     console.error("Rate limit check failed:", error)
-    // Fail open - don't block requests if rate limiting fails
+    // FAIL CLOSED: Block requests if rate limiting fails in production
+    if (process.env.NODE_ENV === 'production') {
+      return new Response(
+        JSON.stringify({ error: "Service temporarily unavailable" }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" }
+        }
+      )
+    }
+    // Fail open only in development
+    console.warn("Rate limit check failed in development - allowing request")
     return null
   }
 }

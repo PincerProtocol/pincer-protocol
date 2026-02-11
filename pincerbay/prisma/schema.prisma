@@ -35,6 +35,7 @@ model User {
   messages      ChatMessage[]
   miningSessions MiningSession[]
   miningRewards  MiningReward[]
+  reviewsGiven   Review[]       @relation("ReviewsGiven")
 
   @@index([email])
   @@index([role])
@@ -176,6 +177,7 @@ model Agent {
   posts           FeedPost[]
   escrowsAsSeller Escrow[] @relation("EscrowSeller")
   escrowsAsBuyer  Escrow[] @relation("EscrowBuyer")
+  reviews         Review[]
 
   @@index([ownerId])
   @@index([slug])
@@ -342,6 +344,26 @@ model Escrow {
   @@index([listingId])
   @@index([buyerId])
   @@index([status])
+}
+
+// ============================================
+// Reviews & Ratings
+// ============================================
+
+model Review {
+  id            String   @id @default(cuid())
+  reviewerId    String
+  agentId       String
+  escrowId      String?  @unique
+  rating        Int      // 1-5 stars
+  comment       String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  reviewer      User     @relation("ReviewsGiven", fields: [reviewerId], references: [id])
+  agent         Agent    @relation(fields: [agentId], references: [id])
+
+  @@index([agentId])
+  @@index([reviewerId])
 }
 
 // ============================================

@@ -1,55 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { requireAuth } from '@/lib/auth'
 import { walletService } from '@/lib/walletService'
-import { PrismaClient } from '@prisma/client'
+import { verifyTransferSignature } from '@/lib/signatureVerify'
+import { prisma } from '@/lib/prisma'
 import { ratelimit } from '@/lib/ratelimit'
-import { z } from 'zod'
 import { logger } from '@/lib/logger'
-
-const prisma = new PrismaClient()
-
-// Request validation schema
-// Note: Transfers require Web3 wallet signature - no privateKey accepted
-const transferSchema = z.object({
-  from: z.string().min(1, 'From address/walletId is required'),
-  to: z.string().min(1, 'To address is required'),
-  amount: z.string().regex(/^\d+(\.\d+)?$/, 'Invalid amount format'),
-  memo: z.string().optional(),
-  signature: z.string().optional(), // Web3 wallet signature (replaces privateKey)
-  type: z.enum(['agent-to-human', 'human-to-agent', 'agent-to-agent']).optional()
-})
+import { TransferSchema, getSafeErrorMessage } from '@/lib/validations'
 
 /**
  * POST /api/wallet/transfer
- * Transfer between Agent ↔ Human wallets
- * 
+ * Transfer PNCR with wallet signature verification
+ *
  * Request:
  * {
- *   from: string (wallet ID for agent, address for human),
+ *   from: string (address or walletId),
  *   to: string (address),
  *   amount: string,
- *   memo?: string,
- *   privateKey?: string (required for human-to-agent),
+ *   signature: string (wallet signature),
  *   type?: 'agent-to-human' | 'human-to-agent' | 'agent-to-agent'
  * }
- * 
+ *
  * Response:
  * {
- *   txHash: string,
- *   status: string,
- *   from: string,
- *   to: string,
- *   amount: string
+ *   success: true,
+ *   data: {
+ *     txHash: string,
+ *     status: string
+ *   }
  * }
  */
 export async function POST(request: NextRequest) {
   try {
+    // Authentication check
+    const session = await requireAuth()
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     // Rate limiting
     const forwarded = request.headers.get('x-forwarded-for')
-    const identifier = forwarded?.split(',')[0] ?? 'anonymous'
-    const { success } = await ratelimit.limit(identifier)
-    
-    if (!success) {
+    const identifier = forwarded?.split(',')[0] ?? session.user.id
+    const { success: rateLimitSuccess } = await ratelimit.limit(identifier)
+
+    if (!rateLimitSuccess) {
       return NextResponse.json(
         { error: 'Rate limit exceeded' },
         { status: 429 }
@@ -58,8 +54,8 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json()
-    const validation = transferSchema.safeParse(body)
-    
+    const validation = TransferSchema.safeParse(body)
+
     if (!validation.success) {
       return NextResponse.json(
         { error: 'Validation failed', details: validation.error.issues },
@@ -67,11 +63,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { from, to, amount, memo, signature, type } = validation.data
-
-    // Security: Web3 signature required for production transfers
-    // Demo mode: Returns mock response for testing UI
-    const isDemoMode = process.env.DEMO_MODE === 'true' || !process.env.BASE_RPC_URL
+    const { from, to, amount, signature, type } = validation.data
 
     // Validate addresses
     if (!walletService.isValidAddress(to)) {
@@ -81,11 +73,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    let txResult
-    let transferType = type
+    // Verify signature matches `from` address
+    const message = {
+      from,
+      to,
+      amount,
+      timestamp: Date.now()
+    }
+
+    const isValidSignature = verifyTransferSignature(message, signature, from)
+    if (!isValidSignature) {
+      return NextResponse.json(
+        { error: 'Invalid signature' },
+        { status: 401 }
+      )
+    }
 
     // Determine transfer type if not specified
+    let transferType = type
     if (!transferType) {
+      // If from is a walletId (66 chars with 0x prefix), it's agent-to-*
       if (from.startsWith('0x') && from.length === 66) {
         transferType = 'agent-to-human'
       } else if (walletService.isValidAddress(from)) {
@@ -98,66 +105,87 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Demo mode: Return mock transaction
-    if (isDemoMode) {
-      const mockTxHash = `0x${Date.now().toString(16)}${'0'.repeat(48)}`
-      txResult = {
-        txHash: mockTxHash,
-        status: 'pending',
-        demo: true
-      }
-    } else {
-      // Production: Require Web3 signature
-      const session = await getServerSession()
-      if (!session?.user) {
-        return NextResponse.json(
-          { error: 'Authentication required. Connect wallet first.' },
-          { status: 401 }
-        )
-      }
+    // Get platform signer for agent wallet operations
+    const platformPrivateKey = process.env.PLATFORM_PRIVATE_KEY
+    if (!platformPrivateKey) {
+      logger.error('PLATFORM_PRIVATE_KEY not configured')
+      return NextResponse.json(
+        { error: 'Platform wallet not configured' },
+        { status: 500 }
+      )
+    }
 
-      if (!signature) {
+    let txHash: string
+
+    try {
+      if (transferType === 'agent-to-agent' || transferType === 'agent-to-human') {
+        // Platform signer calls agentTransfer on behalf of agent wallet
+        const signer = walletService.getSigner(platformPrivateKey)
+        const result = await walletService.agentTransfer(
+          signer,
+          from, // walletId
+          to,   // recipient address
+          amount
+        )
+        txHash = result.txHash
+      } else {
+        // human-to-agent: User transfers directly (not implemented in MVP)
+        // In production, this would require user to sign transaction via wallet UI
         return NextResponse.json(
-          { error: 'Web3 signature required for transfers' },
+          { error: 'User-to-agent transfers must be done via wallet UI' },
           { status: 400 }
         )
       }
 
-      // TODO: Verify signature and execute on-chain transfer
-      // For now, return not implemented
+      // Create WalletTransaction record
+      await prisma.walletTransaction.create({
+        data: {
+          fromAgentWalletId: transferType.startsWith('agent') ? from : null,
+          toAgentWalletId: transferType === 'agent-to-agent' ? to : null,
+          amount: parseFloat(amount),
+          txType: 'transfer',
+          txHash: txHash,
+          status: 'completed',
+          description: `${transferType} transfer`
+        }
+      })
+
+      // Update cached balances in DB
+      // Note: from is a walletId (66 chars), not an address
+      // We'll update balances by querying the agent wallet by address
+      const toBalance = await walletService.getPNCRBalance(to)
+
+      // Update recipient wallet if it's an agent wallet
+      if (transferType === 'agent-to-agent' || transferType === 'agent-to-human') {
+        // Only update if recipient is an agent wallet (has address in AgentWallet table)
+        if (transferType === 'agent-to-agent') {
+          await prisma.agentWallet.updateMany({
+            where: { address: to },
+            data: { balance: parseFloat(toBalance) }
+          })
+        }
+      }
+
+      logger.info('Transfer completed', { txHash, from, to, amount, type: transferType })
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          txHash,
+          status: 'completed'
+        }
+      })
+    } catch (error: unknown) {
+      logger.error('Transfer execution failed:', error)
       return NextResponse.json(
-        { error: 'Production transfers not yet implemented. Enable DEMO_MODE for testing.' },
-        { status: 501 }
+        { error: getSafeErrorMessage(error) },
+        { status: 500 }
       )
     }
-
-    // Record transaction in database
-    await prisma.walletTransaction.create({
-      data: {
-        fromAgentWalletId: transferType.startsWith('agent') ? from : null,
-        toAgentWalletId: transferType === 'human-to-agent' ? to : null,
-        amount: parseFloat(amount),
-        txType: 'transfer',
-        txHash: txResult.txHash,
-        status: txResult.status,
-        description: memo || `${transferType} transfer`
-      }
-    })
-
-    return NextResponse.json({
-      success: true,
-      txHash: txResult.txHash,
-      status: txResult.status,
-      from,
-      to,
-      amount,
-      type: transferType
-    })
   } catch (error: unknown) {
     logger.error('POST /api/wallet/transfer error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Failed to process transfer'
     return NextResponse.json(
-      { error: errorMessage },
+      { error: getSafeErrorMessage(error) },
       { status: 500 }
     )
   }

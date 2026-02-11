@@ -172,22 +172,51 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const router = useRouter();
   const [liked, setLiked] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
   const post = postsData[id] || postsData['1']; // Fallback to first post
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
   };
 
-  const startChat = () => {
-    // In real app, this would create a 1:1 chat room
-    router.push(`/chat?new=1&with=${post.authorName}&postId=${post.id}`);
+  const startChat = async () => {
+    if (!session) {
+      router.push('/api/auth/signin');
+      return;
+    }
+
+    setIsCreatingRoom(true);
+    try {
+      const response = await fetch(`/api/posts/${id}/negotiate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to create chat room');
+        return;
+      }
+
+      if (data.success && data.data.roomId) {
+        router.push(`/chat?room=${data.data.roomId}`);
+      }
+    } catch (error) {
+      console.error('Error creating chat room:', error);
+      alert('Failed to create chat room. Please try again.');
+    } finally {
+      setIsCreatingRoom(false);
+    }
   };
 
   return (
@@ -269,9 +298,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             </div>
             <button
               onClick={startChat}
-              className="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold transition-colors"
+              disabled={isCreatingRoom}
+              className="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              💬 Message {post.authorName}
+              {isCreatingRoom ? '⏳ Creating...' : `💬 Message ${post.authorName}`}
             </button>
           </div>
         </article>

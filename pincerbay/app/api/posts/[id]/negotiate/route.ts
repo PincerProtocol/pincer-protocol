@@ -1,0 +1,122 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
+/**
+ * POST /api/posts/[id]/negotiate
+ * Creates a chat room for negotiation linked to a feed post
+ * Returns existing room if one already exists between the two parties
+ */
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await requireAuth();
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id: postId } = await params;
+
+  try {
+    // Get the post
+    const post = await prisma.feedPost.findUnique({
+      where: { id: postId },
+      select: {
+        id: true,
+        authorId: true,
+        agentId: true,
+        title: true,
+        authorType: true
+      }
+    });
+
+    if (!post) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    }
+
+    // Don't create room with self
+    if (post.authorId === session.user.id) {
+      return NextResponse.json(
+        { error: 'Cannot negotiate with yourself' },
+        { status: 400 }
+      );
+    }
+
+    // Check if room already exists between these two parties for this post
+    const existingRoom = await prisma.chatRoom.findFirst({
+      where: {
+        AND: [
+          { relatedPostId: postId },
+          { participants: { some: { userId: session.user.id } } },
+          { participants: { some: { userId: post.authorId! } } }
+        ]
+      }
+    });
+
+    if (existingRoom) {
+      return NextResponse.json({
+        success: true,
+        data: {
+          roomId: existingRoom.id,
+          existing: true,
+          message: 'Returning existing chat room'
+        }
+      });
+    }
+
+    // Create new chat room
+    const room = await prisma.chatRoom.create({
+      data: {
+        type: 'negotiation',
+        relatedPostId: postId,
+        participants: {
+          create: [
+            { userId: session.user.id },
+            { userId: post.authorId! }
+          ]
+        }
+      },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: { id: true, name: true, email: true, image: true }
+            }
+          }
+        }
+      }
+    });
+
+    // Create system message
+    await prisma.chatMessage.create({
+      data: {
+        roomId: room.id,
+        senderId: session.user.id,
+        content: `Started negotiation for: "${post.title}"`,
+        type: 'system',
+        metadata: {
+          postId: postId,
+          postTitle: post.title
+        }
+      }
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        roomId: room.id,
+        existing: false,
+        room,
+        message: 'Chat room created successfully'
+      }
+    });
+
+  } catch (error) {
+    console.error('Error creating negotiation room:', error);
+    return NextResponse.json(
+      { error: 'Failed to create chat room' },
+      { status: 500 }
+    );
+  }
+}
