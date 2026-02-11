@@ -59,6 +59,9 @@ export default function PNCRPage() {
   const [withdrawAddress, setWithdrawAddress] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [isProcessingWallet, setIsProcessingWallet] = useState(false);
+  
+  // ETH price state
+  const [ethPrice, setEthPrice] = useState<number>(2500); // Default fallback
 
   // Load wallet balance
   useEffect(() => {
@@ -78,6 +81,25 @@ export default function PNCRPage() {
     const interval = setInterval(loadWallet, 30000); // Refresh every 30s
     return () => clearInterval(interval);
   }, [session]);
+
+  // Load ETH price
+  useEffect(() => {
+    const loadETHPrice = async () => {
+      try {
+        const res = await fetch('/api/wallet/purchase-package');
+        const data = await res.json();
+        if (data.success && data.data?.ethPrice) {
+          setEthPrice(data.data.ethPrice);
+        }
+      } catch (error) {
+        console.error('Failed to load ETH price:', error);
+      }
+    };
+
+    loadETHPrice();
+    const interval = setInterval(loadETHPrice, 60000); // Refresh every 60s
+    return () => clearInterval(interval);
+  }, []);
 
   // Poll mining status
   const startStatusPolling = () => {
@@ -189,13 +211,15 @@ export default function PNCRPage() {
 
   // Package tiers - paid packages for early supporters (FDV $10M = $0.0000571/PNCR)
   // Builder +10% bonus, Contributor +20% bonus
+  // ETH price is dynamic - USD prices are fixed
   const packages = [
     { 
       id: 'pioneer', 
       name: 'Pioneer Package', 
       description: 'First 1,000 supporters only',
-      price: '$7.90 (0.002 ETH)', 
-      priceETH: '0.002',
+      priceUSD: 7.90,
+      get priceETH() { return (this.priceUSD / ethPrice).toFixed(5); },
+      get price() { return `$${this.priceUSD} (${this.priceETH} ETH)`; },
       pncr: '138,000 PNCR',
       pncrAmount: 138000,
       benefits: ['Early adopter badge', '2x mining boost for 30 days', 'Exclusive Discord role'],
@@ -206,8 +230,9 @@ export default function PNCRPage() {
       id: 'builder', 
       name: 'Builder Package', 
       description: 'For serious contributors',
-      price: '$39 (0.01 ETH)', 
-      priceETH: '0.01',
+      priceUSD: 39,
+      get priceETH() { return (this.priceUSD / ethPrice).toFixed(5); },
+      get price() { return `$${this.priceUSD} (${this.priceETH} ETH)`; },
       pncr: '751,000 PNCR',
       pncrAmount: 751000,
       benefits: ['Builder badge', '3x mining boost for 60 days', 'Priority support', 'Beta features access', '+10% bonus'],
@@ -218,8 +243,9 @@ export default function PNCRPage() {
       id: 'contributor', 
       name: 'Contributor Package', 
       description: 'Maximum allocation',
-      price: '$99 (0.025 ETH)', 
-      priceETH: '0.025',
+      priceUSD: 99,
+      get priceETH() { return (this.priceUSD / ethPrice).toFixed(5); },
+      get price() { return `$${this.priceUSD} (${this.priceETH} ETH)`; },
       pncr: '2,080,000 PNCR',
       pncrAmount: 2080000,
       benefits: ['Contributor badge', '5x mining boost for 90 days', 'Governance voting power', 'Direct team access', 'Featured profile', '+20% bonus'],
