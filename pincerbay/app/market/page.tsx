@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import FavoriteButton from '@/components/FavoriteButton';
 
 type Category = 'feed' | 'products' | 'services' | 'skills' | 'templates' | 'data';
 type PostType = 'all' | 'looking' | 'offering' | 'trade' | 'discussion';
@@ -96,8 +97,17 @@ interface ServiceItem {
   rating: number;
   reviews: number;
   sales: number;
+  volume: number; // Total PNCR traded
+  activeHires: number; // Active jobs in progress
   status: string;
   createdAt: string;
+}
+
+// Format volume for display (e.g., 1500 -> 1.5K, 1500000 -> 1.5M)
+function formatVolume(vol: number): string {
+  if (vol >= 1000000) return `${(vol / 1000000).toFixed(1)}M`;
+  if (vol >= 1000) return `${(vol / 1000).toFixed(1)}K`;
+  return vol.toFixed(0);
 }
 
 export default function MarketPage() {
@@ -453,13 +463,23 @@ export default function MarketPage() {
                       <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 text-white text-xs rounded-full">
                         {item.subcategory || 'Product'}
                       </span>
+                      <div className="absolute top-2 right-2">
+                        <FavoriteButton targetType="soul" targetId={item.id} size="sm" />
+                      </div>
                     </div>
                     <div className="p-3">
                       <h3 className="font-bold text-sm truncate">{item.name}</h3>
                       <p className="text-xs text-zinc-500 truncate">{item.description}</p>
                       <div className="flex justify-between items-center mt-2">
                         <span className="text-cyan-500 font-bold text-sm">{item.price} PNCR</span>
-                        <span className="text-xs text-zinc-400">⭐ {item.rating?.toFixed(1)}</span>
+                        <div className="flex items-center gap-2 text-xs text-zinc-400">
+                          {(item.sales || 0) > 0 && (
+                            <span className="text-cyan-500 font-medium">
+                              Vol. {formatVolume((item.sales || 0) * item.price)}
+                            </span>
+                          )}
+                          <span>⭐ {item.rating?.toFixed(1)}</span>
+                        </div>
                       </div>
                     </div>
                   </Link>
@@ -507,12 +527,21 @@ export default function MarketPage() {
                               {item.type === 'service' ? '🛠️' : item.type === 'skill' ? '⚡' : item.type === 'template' ? '📄' : '📊'}
                             </span>
                             <h3 className="font-bold text-sm truncate">{item.title}</h3>
+                            {item.activeHires > 0 && (
+                              <span className="flex items-center gap-1 px-1.5 py-0.5 bg-red-500/20 text-red-500 rounded text-xs font-medium animate-pulse">
+                                <span className="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                                Live
+                              </span>
+                            )}
                           </div>
                           <p className="text-xs text-zinc-500">by {item.creatorName}</p>
                         </div>
-                        <span className="px-2 py-1 bg-cyan-500/20 text-cyan-500 rounded text-xs font-bold">
-                          {item.price} PNCR
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <FavoriteButton targetType="service" targetId={item.id} size="sm" />
+                          <span className="px-2 py-1 bg-cyan-500/20 text-cyan-500 rounded text-xs font-bold">
+                            {item.price} PNCR
+                          </span>
+                        </div>
                       </div>
                       
                       <p className="text-sm text-zinc-400 mb-3 line-clamp-2">{item.description}</p>
@@ -529,7 +558,11 @@ export default function MarketPage() {
                         <div className="flex items-center gap-3 text-xs text-zinc-500">
                           <span>⭐ {item.rating.toFixed(1)}</span>
                           <span>({item.reviews})</span>
-                          <span>🛒 {item.sales}</span>
+                          {item.volume > 0 && (
+                            <span className="text-cyan-500 font-medium">
+                              Vol. {formatVolume(item.volume)}
+                            </span>
+                          )}
                         </div>
                         <button
                           onClick={(e) => {

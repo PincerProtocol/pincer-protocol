@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Get services with creator info
+    // Get services with creator info and active hire requests
     const [services, total] = await Promise.all([
       prisma.service.findMany({
         where,
@@ -46,6 +46,12 @@ export async function GET(request: NextRequest) {
               name: true,
               image: true,
             },
+          },
+          hireRequests: {
+            where: {
+              status: { in: ['pending', 'accepted', 'in_progress'] },
+            },
+            select: { id: true },
           },
         },
         orderBy: { sales: 'desc' },
@@ -70,6 +76,8 @@ export async function GET(request: NextRequest) {
       rating: s.rating,
       reviews: s.reviewCount,
       sales: s.sales,
+      volume: s.sales * s.price, // Total PNCR traded
+      activeHires: s.hireRequests?.length || 0, // Active jobs in progress
       status: s.status,
       createdAt: s.createdAt.toISOString(),
       updatedAt: s.updatedAt.toISOString(),

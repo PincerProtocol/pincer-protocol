@@ -44,6 +44,7 @@ model User {
   hireRequestsSeller HireRequest[] @relation("HireSeller")
   purchaseRequests   PurchaseRequest[]
   agentReviewsGiven  AgentReview[] @relation("AgentReviewsGiven")
+  favorites          Favorite[]
 
   @@index([email])
   @@index([role])
@@ -617,4 +618,22 @@ model QuestCompletion {
   @@unique([userId, questId], name: "uniqueUserQuest")
   @@index([userId])
   @@index([questId])
+}
+
+// ============================================
+// Favorites / Watchlist
+// ============================================
+
+model Favorite {
+  id            String   @id @default(cuid())
+  userId        String
+  targetType    String   // agent, service, soul
+  targetId      String
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, targetId])
+  @@index([userId])
+  @@index([targetType, targetId])
 }
