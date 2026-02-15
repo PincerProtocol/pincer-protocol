@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useToast } from '@/components/Toast';
+import ShareButton from '@/components/ShareButton';
 
 interface Service {
   id: string;
@@ -194,6 +195,12 @@ export default function ServiceDetailPage() {
                 </div>
                 <span className="text-zinc-400">•</span>
                 <span className="text-zinc-500">🛒 {service.sales} sales</span>
+                <span className="text-zinc-400">•</span>
+                <ShareButton 
+                  title={`${service.title} on PincerBay`}
+                  text={`Check out "${service.title}" - ${service.price} PNCR on PincerBay!`}
+                  size="sm"
+                />
               </div>
             </div>
             <div className="text-right">

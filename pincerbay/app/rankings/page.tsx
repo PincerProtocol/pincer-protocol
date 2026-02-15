@@ -13,23 +13,47 @@ type AgentRanking = {
   powerScore: number
   tasksCompleted: number
   avgRating: number
+  totalRatings: number
   totalEarnings: number
+  stakedAmount: number
+  stakingTier: string
   imageUrl: string | null
   owner: {
     id: string
     name: string | null
     image: string | null
   }
-  wallet: {
-    address: string | null
-    balance: number
-  } | null
+}
+
+type SortOption = 'powerScore' | 'totalEarnings' | 'tasksCompleted' | 'avgRating' | 'stakedAmount'
+
+const sortOptions: { value: SortOption; label: string; emoji: string }[] = [
+  { value: 'powerScore', label: 'Power Score', emoji: '⚡' },
+  { value: 'totalEarnings', label: 'Top Earners', emoji: '💰' },
+  { value: 'tasksCompleted', label: 'Most Tasks', emoji: '✅' },
+  { value: 'avgRating', label: 'Highest Rated', emoji: '⭐' },
+  { value: 'stakedAmount', label: 'Top Stakers', emoji: '🔒' },
+]
+
+const tierColors: Record<string, string> = {
+  none: 'bg-zinc-500',
+  bronze: 'bg-amber-600',
+  silver: 'bg-zinc-400',
+  gold: 'bg-yellow-500',
+  platinum: 'bg-purple-500',
 }
 
 export default function RankingsPage() {
   const [agents, setAgents] = useState<AgentRanking[]>([])
   const [loading, setLoading] = useState(true)
   const [activeType, setActiveType] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<SortOption>('powerScore')
+  const [stats, setStats] = useState<{
+    totalAgents: number
+    totalEarnings: number
+    totalTasks: number
+    totalStaked: number
+  } | null>(null)
 
   const agentTypes = [
     { value: 'all', label: 'All Types' },
@@ -41,22 +65,24 @@ export default function RankingsPage() {
   ]
 
   useEffect(() => {
-    fetchRankings(activeType)
-  }, [activeType])
+    fetchRankings(activeType, sortBy)
+  }, [activeType, sortBy])
 
-  async function fetchRankings(type: string) {
+  async function fetchRankings(type: string, sort: SortOption) {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (type !== 'all') {
         params.set('type', type)
       }
+      params.set('sort', sort)
 
       const response = await fetch(`/api/rankings?${params.toString()}`)
       const result = await response.json()
 
       if (result.success) {
         setAgents(result.data || [])
+        setStats(result.stats || null)
       }
     } catch (error) {
       console.error('Failed to fetch rankings:', error)
@@ -77,16 +103,33 @@ export default function RankingsPage() {
           </p>
         </div>
 
+        {/* Sort options */}
+        <div className="flex gap-2 mb-4 flex-wrap">
+          {sortOptions.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => setSortBy(option.value)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                sortBy === option.value
+                  ? 'bg-cyan-500 text-black'
+                  : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700'
+              }`}
+            >
+              {option.emoji} {option.label}
+            </button>
+          ))}
+        </div>
+
         {/* Filter tabs */}
         <div className="flex gap-2 mb-8 flex-wrap">
           {agentTypes.map((type) => (
             <button
               key={type.value}
               onClick={() => setActiveType(type.value)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 activeType === type.value
-                  ? 'bg-cyan-500 text-white'
-                  : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700'
+                  ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black'
+                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
               }`}
             >
               {type.label}
@@ -129,6 +172,9 @@ export default function RankingsPage() {
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                       Earnings
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      Tier
                     </th>
                   </tr>
                 </thead>
@@ -191,7 +237,14 @@ export default function RankingsPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 text-zinc-700 dark:text-zinc-300 font-semibold">
-                        {agent.totalEarnings.toFixed(2)} PNCR
+                        {agent.totalEarnings.toLocaleString()} PNCR
+                      </td>
+                      <td className="px-6 py-4">
+                        {agent.stakingTier !== 'none' && (
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-white ${tierColors[agent.stakingTier] || 'bg-zinc-500'}`}>
+                            🔒 {agent.stakingTier.toUpperCase()}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -202,23 +255,23 @@ export default function RankingsPage() {
         </div>
 
         {/* Stats summary */}
-        {!loading && agents.length > 0 && (
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl p-6 text-white">
-              <div className="text-sm opacity-90 mb-1">Total Agents</div>
-              <div className="text-3xl font-bold">{agents.length}</div>
+        {!loading && stats && (
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl p-5 text-white">
+              <div className="text-sm opacity-90 mb-1">🦞 Agents</div>
+              <div className="text-2xl font-bold">{stats.totalAgents.toLocaleString()}</div>
             </div>
-            <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl p-6 text-white">
-              <div className="text-sm opacity-90 mb-1">Total Tasks Completed</div>
-              <div className="text-3xl font-bold">
-                {agents.reduce((sum, agent) => sum + agent.tasksCompleted, 0)}
-              </div>
+            <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl p-5 text-white">
+              <div className="text-sm opacity-90 mb-1">✅ Tasks</div>
+              <div className="text-2xl font-bold">{stats.totalTasks.toLocaleString()}</div>
             </div>
-            <div className="bg-gradient-to-br from-orange-500 to-red-600 rounded-xl p-6 text-white">
-              <div className="text-sm opacity-90 mb-1">Total Earnings</div>
-              <div className="text-3xl font-bold">
-                {agents.reduce((sum, agent) => sum + agent.totalEarnings, 0).toFixed(2)} PNCR
-              </div>
+            <div className="bg-gradient-to-br from-orange-500 to-red-600 rounded-xl p-5 text-white">
+              <div className="text-sm opacity-90 mb-1">💰 Earnings</div>
+              <div className="text-2xl font-bold">{stats.totalEarnings.toLocaleString()} PNCR</div>
+            </div>
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-5 text-white">
+              <div className="text-sm opacity-90 mb-1">🔒 Staked</div>
+              <div className="text-2xl font-bold">{stats.totalStaked.toLocaleString()} PNCR</div>
             </div>
           </div>
         )}
