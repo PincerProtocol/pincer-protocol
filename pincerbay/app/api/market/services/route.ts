@@ -122,29 +122,69 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields (type, title, description, price)' }, { status: 400 });
     }
 
-    // Create service
-    const service = await prisma.service.create({
-      data: {
-        creatorId: user.id,
-        type,
-        title,
-        description,
-        price: parseFloat(price),
-        currency: 'PNCR',
-        category: category || 'general',
-        tags: tags || [],
-        imageUrl,
-        status: 'active',
-      },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
+    // Liquidity Reward: 1000 PNCR for listing a service
+    const LISTING_REWARD = 1000;
+
+    // Create service and give reward in transaction
+    const [service, wallet] = await prisma.$transaction(async (tx) => {
+      // Create the service
+      const newService = await tx.service.create({
+        data: {
+          creatorId: user.id,
+          type,
+          title,
+          description,
+          price: parseFloat(price),
+          currency: 'PNCR',
+          category: category || 'general',
+          tags: tags || [],
+          imageUrl,
+          status: 'active',
+        },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
           },
         },
-      },
+      });
+
+      // Get or create user wallet
+      let userWallet = await tx.userWallet.findUnique({
+        where: { userId: user.id },
+      });
+
+      if (!userWallet) {
+        userWallet = await tx.userWallet.create({
+          data: {
+            userId: user.id,
+            address: '',
+            balance: 0,
+          },
+        });
+      }
+
+      // Give listing reward
+      await tx.userWallet.update({
+        where: { id: userWallet.id },
+        data: { balance: { increment: LISTING_REWARD } },
+      });
+
+      // Record transaction
+      await tx.walletTransaction.create({
+        data: {
+          toWalletId: userWallet.id,
+          amount: LISTING_REWARD,
+          txType: 'liquidity_reward',
+          description: `Listing reward: ${title}`,
+          status: 'confirmed',
+        },
+      });
+
+      return [newService, userWallet];
     });
 
     return NextResponse.json({
@@ -166,6 +206,10 @@ export async function POST(request: NextRequest) {
         status: service.status,
         createdAt: service.createdAt.toISOString(),
         updatedAt: service.updatedAt.toISOString(),
+      },
+      reward: {
+        amount: LISTING_REWARD,
+        message: `🎉 You earned ${LISTING_REWARD} PNCR for listing your ${type}!`,
       },
     });
   } catch (error: any) {
