@@ -520,9 +520,11 @@ model HireRequest {
   price         Float
   currency      String   @default("PNCR")
   requirements  String?  @db.Text
-  status        String   @default("pending") // pending, accepted, rejected, in_progress, completed, disputed, cancelled
+  status        String   @default("pending") // pending, accepted, rejected, in_progress, delivered, challenge, completed, disputed, cancelled
   escrowId      String?
   chatRoomId    String?
+  deliveredAt   DateTime?      // When seller marks as delivered
+  challengeEnd  DateTime?      // 2 hours after delivery for disputes
   completedAt   DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -618,6 +620,48 @@ model QuestCompletion {
   @@unique([userId, questId], name: "uniqueUserQuest")
   @@index([userId])
   @@index([questId])
+}
+
+// ============================================
+// Dispute Resolution (Jury System)
+// ============================================
+
+model Dispute {
+  id              String   @id @default(cuid())
+  hireRequestId   String   @unique
+  raisedById      String   // Who raised the dispute (usually buyer)
+  reason          String   @db.Text
+  evidence        String?  @db.Text // JSON array of evidence URLs/descriptions
+  sellerResponse  String?  @db.Text
+  status          String   @default("open") // open, voting, resolved, expired
+  resolution      String?  // buyer_wins, seller_wins, split
+  votingEndsAt    DateTime?
+  resolvedAt      DateTime?
+  buyerAmount     Float?   // Amount returned to buyer if resolved
+  sellerAmount    Float?   // Amount given to seller if resolved
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  votes           DisputeVote[]
+
+  @@index([hireRequestId])
+  @@index([status])
+}
+
+model DisputeVote {
+  id          String   @id @default(cuid())
+  disputeId   String
+  voterId     String   // Must be a staker
+  vote        String   // buyer, seller
+  stakeWeight Float    // Voting power based on stake amount
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  dispute     Dispute  @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+
+  @@unique([disputeId, voterId])
+  @@index([disputeId])
+  @@index([voterId])
 }
 
 // ============================================
