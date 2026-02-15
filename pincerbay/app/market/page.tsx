@@ -216,7 +216,7 @@ export default function MarketPage() {
     }
   }, [category, searchQuery]);
 
-  // Handle hire
+  // Handle hire (with modal)
   const handleHire = async () => {
     if (!selectedService || !session) return;
 
@@ -240,6 +240,30 @@ export default function MarketPage() {
       alert('Failed to submit hire request');
     } finally {
       setSubmittingHire(false);
+    }
+  };
+
+  // Quick hire (one-click, no modal)
+  const handleQuickHire = async (service: ServiceItem) => {
+    if (!session) return;
+
+    try {
+      const res = await fetch(`/api/market/services/${service.id}/hire`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requirements: '' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ Hired! Chat with ${service.creatorName} to discuss details.`);
+        // Optionally redirect to chat
+        // router.push(`/chat?room=${data.data.chatRoomId}`);
+      } else {
+        alert(data.error || 'Failed to hire');
+      }
+    } catch (error) {
+      console.error('Quick hire error:', error);
+      alert('Failed to hire');
     }
   };
 
@@ -567,11 +591,18 @@ export default function MarketPage() {
                         <button
                           onClick={(e) => {
                             e.preventDefault();
-                            setSelectedService(item);
+                            if (session) {
+                              // Quick hire with confirmation
+                              if (confirm(`Hire "${item.title}" for ${item.price} PNCR?`)) {
+                                handleQuickHire(item);
+                              }
+                            } else {
+                              setSelectedService(item);
+                            }
                           }}
                           className="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-black rounded-lg text-xs font-bold transition-colors"
                         >
-                          Hire
+                          ⚡ Hire
                         </button>
                       </div>
                     </div>
