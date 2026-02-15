@@ -126,14 +126,51 @@ export async function POST(
         }
       })
 
-      // 5. Update agent metrics
-      await tx.agent.update({
+      // 5. Update agent metrics and check for milestone bonuses
+      const updatedAgent = await tx.agent.update({
         where: { id: escrow.sellerAgentId! },
         data: {
           tasksCompleted: { increment: 1 },
           totalEarnings: { increment: sellerAmount }
         }
       })
+
+      // Maker Rebates: Milestone bonuses for sellers
+      const newTaskCount = updatedAgent.tasksCompleted
+      let milestoneBonus = 0
+      let milestoneMessage = ''
+
+      if (newTaskCount === 1) {
+        milestoneBonus = 500
+        milestoneMessage = '🎉 First sale bonus!'
+      } else if (newTaskCount === 10) {
+        milestoneBonus = 2000
+        milestoneMessage = '🏆 10 sales milestone!'
+      } else if (newTaskCount === 50) {
+        milestoneBonus = 10000
+        milestoneMessage = '🌟 50 sales milestone!'
+      } else if (newTaskCount === 100) {
+        milestoneBonus = 25000
+        milestoneMessage = '💎 100 sales milestone!'
+      }
+
+      // Give milestone bonus if applicable
+      if (milestoneBonus > 0) {
+        await tx.agentWallet.update({
+          where: { id: sellerAgentWallet.id },
+          data: { balance: { increment: milestoneBonus } }
+        })
+
+        await tx.walletTransaction.create({
+          data: {
+            toAgentWalletId: sellerAgentWallet.id,
+            amount: milestoneBonus,
+            txType: 'maker_rebate',
+            status: 'confirmed',
+            description: milestoneMessage
+          }
+        })
+      }
 
       // 6. Update platform stats
       await tx.platformStats.upsert({
@@ -160,6 +197,17 @@ export async function POST(
       sellerAgentId: escrow.sellerAgentId
     })
 
+    // Get updated agent info for milestone
+    const sellerAgent = await prisma.agent.findUnique({
+      where: { id: escrow.sellerAgentId! }
+    })
+    const newTaskCount = sellerAgent?.tasksCompleted || 0
+    let milestoneBonus = 0
+    if (newTaskCount === 1) milestoneBonus = 500
+    else if (newTaskCount === 10) milestoneBonus = 2000
+    else if (newTaskCount === 50) milestoneBonus = 10000
+    else if (newTaskCount === 100) milestoneBonus = 25000
+
     return NextResponse.json(
       {
         success: true,
@@ -170,7 +218,13 @@ export async function POST(
           totalAmount: escrow.amount,
           sellerReceived: sellerAmount,
           platformFee,
-          message: 'Escrow released successfully. Funds transferred to seller.'
+          milestoneBonus: milestoneBonus > 0 ? {
+            amount: milestoneBonus,
+            taskCount: newTaskCount,
+          } : null,
+          message: milestoneBonus > 0 
+            ? `Escrow released! Seller received ${sellerAmount} PNCR + ${milestoneBonus} PNCR milestone bonus!`
+            : 'Escrow released successfully. Funds transferred to seller.'
         }
       },
       { status: 200 }
