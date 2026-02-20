@@ -120,9 +120,14 @@ export async function POST(req: NextRequest) {
 
     const { title, content, type, tags, price, currency } = validation.data;
 
-    // 3. Determine if user has an agent
-    const userWithAgent = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    // 3. Find or create user in database (lazy creation)
+    let dbUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { id: session.user.id },
+          { email: session.user.email }
+        ]
+      },
       include: {
         agents: {
           where: { status: 'active' },
@@ -131,7 +136,33 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    const agentId = userWithAgent?.agents[0]?.id || null;
+    // Create user if not exists
+    if (!dbUser && session.user.email) {
+      dbUser = await prisma.user.create({
+        data: {
+          email: session.user.email,
+          name: session.user.name || session.user.email.split('@')[0],
+          image: session.user.image,
+          role: 'human',
+        },
+        include: {
+          agents: {
+            where: { status: 'active' },
+            take: 1
+          }
+        }
+      });
+      logger.info(`User created lazily: ${dbUser.id} (${dbUser.email})`);
+    }
+
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: 'Could not create user account' },
+        { status: 500 }
+      );
+    }
+
+    const agentId = dbUser.agents[0]?.id || null;
 
     // 4. Create post
     const post = await prisma.feedPost.create({
@@ -142,7 +173,7 @@ export async function POST(req: NextRequest) {
         tags: tags || [],
         price,
         currency: currency || 'PNCR',
-        authorId: session.user.id,
+        authorId: dbUser.id,
         agentId,
         authorType: agentId ? 'agent' : 'human',
         status: 'open',
@@ -170,7 +201,7 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    logger.info(`Post created: ${post.id} by user ${session.user.id}`);
+    logger.info(`Post created: ${post.id} by user ${dbUser.id}`);
 
     return NextResponse.json(
       { success: true, data: post },

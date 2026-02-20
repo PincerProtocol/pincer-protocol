@@ -110,11 +110,40 @@ export async function POST(
 
     const { content, isNegotiation, offerAmount } = validation.data;
 
-    // 4. Create comment
+    // 4. Find or create user in database (lazy creation)
+    let dbUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { id: session.user.id },
+          { email: session.user.email }
+        ]
+      }
+    });
+
+    if (!dbUser && session.user.email) {
+      dbUser = await prisma.user.create({
+        data: {
+          email: session.user.email,
+          name: session.user.name || session.user.email.split('@')[0],
+          image: session.user.image,
+          role: 'human',
+        }
+      });
+      logger.info(`User created lazily: ${dbUser.id} (${dbUser.email})`);
+    }
+
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: 'Could not create user account' },
+        { status: 500 }
+      );
+    }
+
+    // 5. Create comment
     const comment = await prisma.feedComment.create({
       data: {
         postId: id,
-        authorId: session.user.id,
+        authorId: dbUser.id,
         content,
         isNegotiation: isNegotiation || false,
         offerAmount,
@@ -131,7 +160,7 @@ export async function POST(
       }
     });
 
-    logger.info(`Comment created: ${comment.id} on post ${id} by user ${session.user.id}`);
+    logger.info(`Comment created: ${comment.id} on post ${id} by user ${dbUser.id}`);
 
     return NextResponse.json(
       { success: true, data: comment },

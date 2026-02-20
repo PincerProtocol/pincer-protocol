@@ -2,7 +2,6 @@ import { NextAuthOptions, Session } from 'next-auth';
 import { getServerSession } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { prisma } from './prisma';
 import { verifyOTP } from './otp';
 
 // Extend NextAuth session type
@@ -44,26 +43,11 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // Find or create user for email OTP
-        let user = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        });
-
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              email: credentials.email,
-              name: credentials.email.split('@')[0],
-              role: 'human',
-            }
-          });
-        }
-
+        // OTP verified - return user info (DB creation happens lazily)
         return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
+          id: credentials.email,
+          email: credentials.email,
+          name: credentials.email.split('@')[0],
         };
       },
     }),
@@ -73,64 +57,24 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 7 * 24 * 60 * 60, // 7 days (reduced from 30 for security)
+    maxAge: 7 * 24 * 60 * 60, // 7 days
   },
   callbacks: {
-    // Create or find user on sign in
-    async signIn({ user, account }) {
-      if (account?.provider === 'google' && user.email) {
-        try {
-          // Find or create user in database
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email }
-          });
-
-          if (!existingUser) {
-            const newUser = await prisma.user.create({
-              data: {
-                email: user.email,
-                name: user.name || user.email.split('@')[0],
-                image: user.image,
-                role: 'human',
-              }
-            });
-            // Store database ID for later use
-            user.id = newUser.id;
-          } else {
-            // Use existing user's database ID
-            user.id = existingUser.id;
-          }
-        } catch (error) {
-          console.error('Error in signIn callback:', error);
-          // Allow sign in even if DB fails (graceful degradation)
-        }
-      }
-      return true;
-    },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
         token.email = user.email;
-      }
-      // For Google users, ensure we have database ID
-      if (account?.provider === 'google' && token.email && !token.dbId) {
-        try {
-          const dbUser = await prisma.user.findUnique({
-            where: { email: token.email as string }
-          });
-          if (dbUser) {
-            token.dbId = dbUser.id;
-          }
-        } catch (error) {
-          console.error('Error fetching user in jwt callback:', error);
-        }
+        token.name = user.name;
+        token.picture = user.image;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        // Prefer database ID, fallback to token.id or token.sub
-        session.user.id = (token.dbId as string) || (token.id as string) || (token.sub as string);
+        // Use email as ID for now - APIs will handle DB user creation lazily
+        session.user.id = token.email as string || token.sub as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.image = token.picture as string;
       }
       return session;
     },
