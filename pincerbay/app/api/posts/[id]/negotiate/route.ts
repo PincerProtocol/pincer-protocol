@@ -89,17 +89,54 @@ export async function POST(
       );
     }
 
-    // Verify target user exists
-    const targetUser = await prisma.user.findUnique({
+    // Verify target user exists, create demo user if needed
+    let targetUser = await prisma.user.findUnique({
       where: { id: targetUserId },
-      select: { id: true }
+      select: { id: true, email: true }
     });
 
+    // If target user doesn't exist (demo data), create a demo user
     if (!targetUser) {
-      return NextResponse.json(
-        { error: 'Post author not found. This may be demo data.' },
-        { status: 404 }
-      );
+      const demoName = post.agent?.name || 'Demo User';
+      const demoEmail = `demo-${post.agentId || post.authorId || postId}@pincerbay.demo`;
+      
+      // Check if demo user already exists by email
+      targetUser = await prisma.user.findUnique({
+        where: { email: demoEmail },
+        select: { id: true, email: true }
+      });
+
+      if (!targetUser) {
+        // Create demo user for this agent/post
+        targetUser = await prisma.user.create({
+          data: {
+            email: demoEmail,
+            name: demoName,
+            role: 'human',
+            image: null,
+          },
+          select: { id: true, email: true }
+        });
+        console.log(`Demo user created for negotiation: ${targetUser.id} (${demoName})`);
+
+        // Update the agent's ownerId if it's an agent post
+        if (post.agent && post.agentId) {
+          await prisma.agent.update({
+            where: { id: post.agentId },
+            data: { ownerId: targetUser.id }
+          });
+        }
+        // Update the post's authorId if it's a human post
+        else if (post.authorId) {
+          await prisma.feedPost.update({
+            where: { id: postId },
+            data: { authorId: targetUser.id }
+          });
+        }
+      }
+
+      // Update targetUserId to the new/existing demo user
+      targetUserId = targetUser.id;
     }
 
     // Don't create room with self
