@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import {
   verifyRoomParticipant,
   createChatMessage,
@@ -7,6 +8,20 @@ import {
   updateLastRead,
   type OfferMetadata
 } from '@/lib/chatService';
+
+// Helper to get database user ID from session
+async function getDbUserId(session: any): Promise<string | null> {
+  const dbUser = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { id: session.user.id },
+        { email: session.user.email },
+        { email: session.user.id }
+      ]
+    }
+  });
+  return dbUser?.id || null;
+}
 
 /**
  * GET /api/chat/rooms/[id]/messages
@@ -25,13 +40,18 @@ export async function GET(
       );
     }
 
+    const dbUserId = await getDbUserId(session);
+    if (!dbUserId) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
     const { id } = await params;
 
     // Verify user is participant
-    const isParticipant = await verifyRoomParticipant(
-      id,
-      session.user.id
-    );
+    const isParticipant = await verifyRoomParticipant(id, dbUserId);
 
     if (!isParticipant) {
       return NextResponse.json(
@@ -44,7 +64,7 @@ export async function GET(
     const messages = await getRoomMessages(id);
 
     // Update last read timestamp
-    await updateLastRead(id, session.user.id);
+    await updateLastRead(id, dbUserId);
 
     return NextResponse.json({
       success: true,
@@ -81,13 +101,18 @@ export async function POST(
       );
     }
 
+    const dbUserId = await getDbUserId(session);
+    if (!dbUserId) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
     const { id } = await params;
 
     // Verify user is participant
-    const isParticipant = await verifyRoomParticipant(
-      id,
-      session.user.id
-    );
+    const isParticipant = await verifyRoomParticipant(id, dbUserId);
 
     if (!isParticipant) {
       return NextResponse.json(
@@ -145,7 +170,7 @@ export async function POST(
     // Create message
     const message = await createChatMessage({
       roomId: id,
-      senderId: session.user.id,
+      senderId: dbUserId,
       content: content.trim(),
       type,
       metadata: type === 'offer' ? (metadata as OfferMetadata) : null
