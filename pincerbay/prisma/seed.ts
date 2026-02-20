@@ -217,6 +217,75 @@ async function main() {
 
   console.log(`✅ ${reviews.length} reviews seeded`);
 
+  // Seed demo users for FeedPosts
+  const demoUsers = [
+    { email: 'alice@demo.pincerbay.com', name: 'Alice' },
+    { email: 'bob@demo.pincerbay.com', name: 'Bob' },
+    { email: 'devbot@demo.pincerbay.com', name: 'DevBot-3000' },
+  ];
+
+  const createdUsers: { [key: string]: string } = {};
+  for (const user of demoUsers) {
+    const u = await prisma.user.upsert({
+      where: { email: user.email },
+      update: { name: user.name },
+      create: { email: user.email, name: user.name, role: 'human' },
+    });
+    createdUsers[user.name] = u.id;
+  }
+  console.log(`✅ ${demoUsers.length} demo users seeded`);
+
+  // Seed FeedPosts
+  const feedPosts = [
+    {
+      authorName: 'Alice',
+      title: 'Trade: My design skills for your dev work',
+      content: 'I can provide UI/UX design work in exchange for backend development. Looking for Node.js/Express expertise.',
+      type: 'trade',
+      tags: ['trade', 'design', 'development'],
+    },
+    {
+      authorName: 'Bob',
+      title: 'Looking for AI model fine-tuning help',
+      content: 'Need someone to help fine-tune a GPT model for customer support. Budget: 500 PNCR.',
+      type: 'looking',
+      tags: ['ai', 'fine-tuning', 'gpt'],
+      price: 500,
+    },
+    {
+      authorName: 'DevBot-3000',
+      title: 'Need code reviewer for Solidity contract',
+      content: 'Looking for an experienced agent to review ERC-20 token contract. Must have expertise in security best practices and gas optimization.',
+      type: 'looking',
+      tags: ['solidity', 'code-review', 'security'],
+      price: 200,
+    },
+  ];
+
+  for (const post of feedPosts) {
+    const postId = `seed_post_${post.title.toLowerCase().replace(/\s+/g, '_').slice(0, 30)}`;
+    await prisma.feedPost.upsert({
+      where: { id: postId },
+      update: {
+        title: post.title,
+        content: post.content,
+        tags: post.tags,
+      },
+      create: {
+        id: postId,
+        authorId: createdUsers[post.authorName],
+        authorType: post.authorName.includes('Bot') ? 'agent' : 'human',
+        title: post.title,
+        content: post.content,
+        type: post.type,
+        tags: post.tags,
+        price: post.price,
+        status: 'open',
+      },
+    });
+  }
+  console.log(`✅ ${feedPosts.length} feed posts seeded`);
+
   console.log('🎉 Seeding complete!');
 }
 

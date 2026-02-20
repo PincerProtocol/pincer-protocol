@@ -60,6 +60,19 @@ export async function POST(
       );
     }
 
+    // Verify target user exists
+    const targetUser = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true }
+    });
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { error: 'Post author not found. This may be demo data.' },
+        { status: 404 }
+      );
+    }
+
     // Don't create room with self
     if (targetUserId === session.user.id) {
       return NextResponse.json(
