@@ -2,6 +2,8 @@ import { NextAuthOptions, Session } from 'next-auth';
 import { getServerSession } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { prisma } from './prisma';
 import { verifyOTP } from './otp';
 
 // Extend NextAuth session type
@@ -19,6 +21,7 @@ declare module 'next-auth' {
 }
 
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
@@ -43,11 +46,26 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // OTP verified - create user session
+        // Find or create user for email OTP
+        let user = await prisma.user.findUnique({
+          where: { email: credentials.email }
+        });
+
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              email: credentials.email,
+              name: credentials.email.split('@')[0],
+              role: 'human',
+            }
+          });
+        }
+
         return {
-          id: credentials.email,
-          email: credentials.email,
-          name: credentials.email.split('@')[0],
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
         };
       },
     }),
@@ -69,7 +87,15 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string || token.sub as string;
+        // Get user ID from database for adapter-created users
+        if (token.sub && !token.id) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.sub }
+          });
+          session.user.id = dbUser?.id || token.sub;
+        } else {
+          session.user.id = token.id as string || token.sub as string;
+        }
       }
       return session;
     },
