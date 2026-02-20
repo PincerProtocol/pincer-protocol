@@ -115,6 +115,12 @@ export default function MyPage() {
 
   // Fetch data when session is ready
   useEffect(() => {
+    // If not authenticated, stop loading
+    if (status === 'unauthenticated') {
+      setLoading(false);
+      return;
+    }
+    
     if (!session) return;
 
     const fetchData = async () => {
@@ -147,9 +153,10 @@ export default function MyPage() {
     };
 
     fetchData();
-  }, [session]);
+  }, [session, status]);
 
-  if (status === 'loading' || loading) {
+  // Show loading during initial auth check OR while fetching data for authenticated user
+  if (status === 'loading' || (session && loading)) {
     return (
       <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-16 px-6">
         <div className="max-w-md mx-auto text-center">
@@ -160,6 +167,7 @@ export default function MyPage() {
     );
   }
 
+  // Not authenticated - show sign in UI
   if (!session) {
     return (
       <main className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white py-16 px-6">
