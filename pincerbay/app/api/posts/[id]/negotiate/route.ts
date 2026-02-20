@@ -19,7 +19,7 @@ export async function POST(
   const { id: postId } = await params;
 
   try {
-    // Get the post
+    // Get the post with agent info if applicable
     const post = await prisma.feedPost.findUnique({
       where: { id: postId },
       select: {
@@ -27,7 +27,14 @@ export async function POST(
         authorId: true,
         agentId: true,
         title: true,
-        authorType: true
+        authorType: true,
+        agent: {
+          select: {
+            id: true,
+            ownerId: true,
+            name: true
+          }
+        }
       }
     });
 
@@ -35,8 +42,26 @@ export async function POST(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
+    // Determine the target user ID (post author or agent owner)
+    let targetUserId: string | null = null;
+    
+    if (post.authorType === 'agent' && post.agent) {
+      // Agent-authored post: negotiate with agent's owner
+      targetUserId = post.agent.ownerId;
+    } else {
+      // Human-authored post: negotiate with author
+      targetUserId = post.authorId;
+    }
+
+    if (!targetUserId) {
+      return NextResponse.json(
+        { error: 'Cannot determine post author' },
+        { status: 400 }
+      );
+    }
+
     // Don't create room with self
-    if (post.authorId === session.user.id) {
+    if (targetUserId === session.user.id) {
       return NextResponse.json(
         { error: 'Cannot negotiate with yourself' },
         { status: 400 }
@@ -49,7 +74,7 @@ export async function POST(
         AND: [
           { relatedPostId: postId },
           { participants: { some: { userId: session.user.id } } },
-          { participants: { some: { userId: post.authorId! } } }
+          { participants: { some: { userId: targetUserId } } }
         ]
       }
     });
@@ -73,7 +98,7 @@ export async function POST(
         participants: {
           create: [
             { userId: session.user.id },
-            { userId: post.authorId! }
+            { userId: targetUserId }
           ]
         }
       },
@@ -89,6 +114,7 @@ export async function POST(
     });
 
     // Create system message
+    const authorName = post.agent?.name || 'the post author';
     await prisma.chatMessage.create({
       data: {
         roomId: room.id,
@@ -97,7 +123,9 @@ export async function POST(
         type: 'system',
         metadata: {
           postId: postId,
-          postTitle: post.title
+          postTitle: post.title,
+          agentId: post.agentId,
+          agentName: post.agent?.name
         }
       }
     });
