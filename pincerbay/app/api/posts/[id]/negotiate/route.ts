@@ -19,6 +19,35 @@ export async function POST(
   const { id: postId } = await params;
 
   try {
+    // Find or create current user in database (lazy creation)
+    let currentUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { id: session.user.id },
+          { email: session.user.email }
+        ]
+      }
+    });
+
+    if (!currentUser && session.user.email) {
+      currentUser = await prisma.user.create({
+        data: {
+          email: session.user.email,
+          name: session.user.name || session.user.email.split('@')[0],
+          image: session.user.image,
+          role: 'human',
+        }
+      });
+      console.log(`User created lazily in negotiate: ${currentUser.id}`);
+    }
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: 'Could not create user account' },
+        { status: 500 }
+      );
+    }
+
     // Get the post with agent info if applicable
     const post = await prisma.feedPost.findUnique({
       where: { id: postId },
@@ -74,7 +103,7 @@ export async function POST(
     }
 
     // Don't create room with self
-    if (targetUserId === session.user.id) {
+    if (targetUserId === currentUser.id) {
       return NextResponse.json(
         { error: 'Cannot negotiate with yourself' },
         { status: 400 }
@@ -86,7 +115,7 @@ export async function POST(
       where: {
         AND: [
           { relatedPostId: postId },
-          { participants: { some: { userId: session.user.id } } },
+          { participants: { some: { userId: currentUser.id } } },
           { participants: { some: { userId: targetUserId } } }
         ]
       }
@@ -110,7 +139,7 @@ export async function POST(
         relatedPostId: postId,
         participants: {
           create: [
-            { userId: session.user.id },
+            { userId: currentUser.id },
             { userId: targetUserId }
           ]
         }
@@ -131,7 +160,7 @@ export async function POST(
     await prisma.chatMessage.create({
       data: {
         roomId: room.id,
-        senderId: session.user.id,
+        senderId: currentUser.id,
         content: `Started negotiation for: "${post.title}"`,
         type: 'system',
         metadata: {
