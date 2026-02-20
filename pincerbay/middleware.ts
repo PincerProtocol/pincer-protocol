@@ -6,7 +6,6 @@
 
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { getToken } from "next-auth/jwt"
 
 // ============================================================================
 // Configuration
@@ -33,25 +32,8 @@ export async function middleware(request: NextRequest) {
     return handleCORS(request, new NextResponse(null, { status: 204 }))
   }
 
-  // Check authentication for mutating API routes
-  if (pathname.startsWith("/api/") && !pathname.startsWith("/api/auth/")) {
-    const isReadOnly = request.method === "GET" || request.method === "HEAD"
-
-    if (!isReadOnly) {
-      // Check for session token or API key
-      const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
-      const apiKey = request.headers.get("X-API-Key")
-
-      if (!token && !apiKey) {
-        return NextResponse.json(
-          { error: "Unauthorized: Authentication required" },
-          { status: 401 }
-        )
-      }
-
-      // API key validation happens in route handlers via validateApiKey()
-    }
-  }
+  // NOTE: Auth checks moved to individual API routes for better reliability
+  // Middleware only handles CORS and security headers now
 
   // Continue with response
   const response = NextResponse.next()
