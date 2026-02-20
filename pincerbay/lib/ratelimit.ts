@@ -22,11 +22,13 @@ export const ratelimit = {
 }
 
 export async function checkRateLimit(identifier: string): Promise<Response | null> {
-  // If rate limiting not configured, allow through with warning
-  // (Better UX than blocking all requests)
+  // SECURITY: Fail-closed - if rate limiting not configured, block requests
   if (!ratelimiter) {
-    console.warn("Rate limiting not configured - allowing request")
-    return null
+    console.error("SECURITY: Rate limiting not configured - blocking request")
+    return new Response(
+      JSON.stringify({ error: "Service temporarily unavailable - security check failed" }),
+      { status: 503, headers: { "Content-Type": "application/json" } }
+    )
   }
 
   try {
@@ -53,11 +55,12 @@ export async function checkRateLimit(identifier: string): Promise<Response | nul
 
     return null
   } catch (error) {
-    console.error("Rate limit check failed:", error)
-    // Fail open: Allow requests if rate limiting fails
-    // (Better UX than blocking all requests)
-    console.warn("Rate limit check failed - allowing request")
-    return null
+    console.error("SECURITY: Rate limit check failed:", error)
+    // SECURITY: Fail-closed - block requests if rate limiting fails
+    return new Response(
+      JSON.stringify({ error: "Service temporarily unavailable - rate limit check failed" }),
+      { status: 503, headers: { "Content-Type": "application/json" } }
+    )
   }
 }
 
