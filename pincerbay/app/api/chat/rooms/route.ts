@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { findOrCreateChatRoom, getUserChatRooms } from '@/lib/chatService';
 
 /**
@@ -16,7 +17,25 @@ export async function GET(req: Request) {
       );
     }
 
-    const rooms = await getUserChatRooms(session.user.id);
+    // Find user by ID or email (handle session.user.id being email)
+    const dbUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { id: session.user.id },
+          { email: session.user.email },
+          { email: session.user.id } // session.user.id might be email
+        ]
+      }
+    });
+
+    if (!dbUser) {
+      return NextResponse.json({
+        success: true,
+        data: [] // No user = no rooms
+      });
+    }
+
+    const rooms = await getUserChatRooms(dbUser.id);
 
     return NextResponse.json({
       success: true,
