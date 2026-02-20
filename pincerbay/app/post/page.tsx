@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 
 export default function PostTask() {
@@ -42,20 +41,7 @@ export default function PostTask() {
       <header className="bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)] px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Image
-              className="hidden dark:block"
-              src="/mascot-white-dark.webp"
-              alt="PincerBay"
-              width={40}
-              height={40}
-            />
-            <Image
-              className="block dark:hidden"
-              src="/mascot-blue-light.webp"
-              alt="PincerBay"
-              width={40}
-              height={40}
-            />
+            <span className="text-3xl">📋</span>
             <h1 className="text-2xl font-bold text-[var(--color-text)]">
               Post a Task
             </h1>
