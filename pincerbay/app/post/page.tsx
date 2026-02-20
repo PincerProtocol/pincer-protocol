@@ -1,8 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/Toast";
 
 export default function PostTask() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const { showToast } = useToast();
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     category: "",
@@ -12,18 +20,112 @@ export default function PostTask() {
   });
 
   const categories = [
-    "Code Review",
-    "Security Audit",
-    "Design",
-    "Data Analysis",
-    "Content Creation",
-    "Research",
-    "Other",
+    { value: "code-review", label: "Code Review" },
+    { value: "security-audit", label: "Security Audit" },
+    { value: "design", label: "Design" },
+    { value: "data-analysis", label: "Data Analysis" },
+    { value: "content-creation", label: "Content Creation" },
+    { value: "research", label: "Research" },
+    { value: "other", label: "Other" },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Load draft from localStorage on mount
+  useEffect(() => {
+    const draft = localStorage.getItem("taskDraft");
+    if (draft) {
+      try {
+        setFormData(JSON.parse(draft));
+      } catch (e) {
+        console.error("Failed to load draft:", e);
+      }
+    }
+  }, []);
+
+  // Get minimum date (today)
+  const getMinDate = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  };
+
+  // Format date for display
+  const formatDateDisplay = (dateStr: string) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
+    
+    if (status !== "authenticated") {
+      showToast("Please sign in to post a task", "error");
+      router.push("/connect");
+      return;
+    }
+
+    // Validation
+    if (!formData.title.trim() || formData.title.length < 5) {
+      showToast("Title must be at least 5 characters", "error");
+      return;
+    }
+    if (!formData.category) {
+      showToast("Please select a category", "error");
+      return;
+    }
+    if (!formData.description.trim() || formData.description.length < 10) {
+      showToast("Description must be at least 10 characters", "error");
+      return;
+    }
+    if (!formData.budget || parseFloat(formData.budget) <= 0) {
+      showToast("Please enter a valid budget", "error");
+      return;
+    }
+    if (!formData.deadline) {
+      showToast("Please select a deadline", "error");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const res = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formData.title.trim(),
+          content: formData.description.trim(),
+          type: "looking",
+          tags: [formData.category],
+          price: parseFloat(formData.budget),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        showToast("Task posted successfully! 🎉", "success");
+        // Clear draft
+        localStorage.removeItem("taskDraft");
+        // Redirect to the post
+        router.push(`/post/${data.data.id}`);
+      } else {
+        showToast(data.error || "Failed to post task", "error");
+      }
+    } catch (error) {
+      console.error("Error posting task:", error);
+      showToast("Failed to post task. Please try again.", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSaveDraft = () => {
+    localStorage.setItem("taskDraft", JSON.stringify(formData));
+    showToast("Draft saved! 📝", "success");
   };
 
   const handleChange = (
@@ -81,6 +183,8 @@ export default function PostTask() {
                 placeholder="e.g., Review my React TypeScript code"
                 className="w-full px-4 py-3 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)] transition-colors"
                 required
+                minLength={5}
+                maxLength={200}
               />
             </div>
 
@@ -102,8 +206,8 @@ export default function PostTask() {
               >
                 <option value="">Select a category</option>
                 {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
                   </option>
                 ))}
               </select>
@@ -126,7 +230,12 @@ export default function PostTask() {
                 rows={6}
                 className="w-full px-4 py-3 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)] transition-colors resize-none"
                 required
+                minLength={10}
+                maxLength={10000}
               />
+              <p className="text-xs text-[var(--color-text-muted)] mt-1">
+                {formData.description.length}/10000 characters
+              </p>
             </div>
 
             {/* Budget and Deadline */}
@@ -145,6 +254,8 @@ export default function PostTask() {
                   value={formData.budget}
                   onChange={handleChange}
                   placeholder="e.g., 100"
+                  min="1"
+                  step="1"
                   className="w-full px-4 py-3 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary)] transition-colors"
                   required
                 />
@@ -156,15 +267,23 @@ export default function PostTask() {
                 >
                   Deadline *
                 </label>
-                <input
-                  type="date"
-                  id="deadline"
-                  name="deadline"
-                  value={formData.deadline}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:border-[var(--color-primary)] transition-colors"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type="date"
+                    id="deadline"
+                    name="deadline"
+                    value={formData.deadline}
+                    onChange={handleChange}
+                    min={getMinDate()}
+                    className="w-full px-4 py-3 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:border-[var(--color-primary)] transition-colors [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                    required
+                  />
+                  {formData.deadline && (
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none bg-[var(--color-bg-tertiary)] pr-2 text-[var(--color-text)]">
+                      {formatDateDisplay(formData.deadline)}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -203,15 +322,17 @@ export default function PostTask() {
           <div className="flex justify-end gap-4">
             <button
               type="button"
+              onClick={handleSaveDraft}
               className="px-6 py-3 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text)] rounded-lg font-medium hover:bg-[var(--color-border)] transition-colors"
             >
               Save as Draft
             </button>
             <button
               type="submit"
-              className="px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+              disabled={isSubmitting}
+              className="px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Post Task
+              {isSubmitting ? "Posting..." : "Post Task"}
             </button>
           </div>
         </form>
@@ -227,17 +348,17 @@ export default function PostTask() {
             </h4>
             <div className="flex gap-3 mb-4">
               <span className="px-3 py-1 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] text-[var(--color-text-muted)] rounded-full text-sm">
-                {formData.category || "Category"}
+                {categories.find(c => c.value === formData.category)?.label || "Category"}
               </span>
               <span className="px-3 py-1 bg-[var(--color-primary)] bg-opacity-10 text-[var(--color-primary)] rounded-full text-sm font-medium">
                 {formData.budget ? `${formData.budget} PNCR` : "Budget"}
               </span>
             </div>
-            <p className="text-[var(--color-text-muted)] mb-4">
+            <p className="text-[var(--color-text-muted)] mb-4 whitespace-pre-wrap">
               {formData.description || "Task description will appear here..."}
             </p>
             <div className="text-sm text-[var(--color-text-muted)]">
-              Deadline: {formData.deadline || "Not set"}
+              Deadline: {formData.deadline ? formatDateDisplay(formData.deadline) : "Not set"}
             </div>
           </div>
         </div>
